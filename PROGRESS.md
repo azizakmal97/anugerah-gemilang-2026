@@ -313,7 +313,7 @@ Every Friday:
 
 **Plan (after the choice):**
 - [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
-- [ ] Apps Script check in `onFeedbackSubmit` + an "approve and send" step for unmatched answers (Model: Sonnet 5.5 · medium)
+- [ ] Apps Script check in `onFeedbackSubmit`: matched → sijil for the chosen role; unmatched → short "tiada dalam senarai kehadiran" email (Model: Sonnet 5.5 · medium)
 - [ ] Urusetia sijil: design the second background + template, pick template by the Urusetia list (Model: Opus 5.5 · medium for design, Sonnet 5.5 · medium for script)
 - [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
 
