@@ -143,6 +143,10 @@ main {
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
+  /* Reach past main's 16px side padding, so the medallion is cut at the screen edge,
+     not 16px inside it, which left a plain strip down each side (owner 2026-11-17). */
+  margin-inline: -16px;
+  padding-inline: 16px;
   text-align: center;
   overflow-x: clip; /* keep the oversized medallion inside the screen width */
 }
