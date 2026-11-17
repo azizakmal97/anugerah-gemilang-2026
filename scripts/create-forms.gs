@@ -100,6 +100,6 @@ function addRating(form, title) {
   return form.addScaleItem()
     .setTitle(title)
     .setBounds(1, 5)
-    .setLabels('1 = ' + RATING_LOW, '5 = ' + RATING_HIGH)
+    .setLabels(RATING_LOW, RATING_HIGH)
     .setRequired(true);
 }
