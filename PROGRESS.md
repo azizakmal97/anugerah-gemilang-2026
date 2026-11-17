@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** _none_
+**Active phase:** _none_ (next: ⬜ P05 sijil redesign on Opus 5.5 · high, then ⬜ P04)
 **Last update:** 2026-11-17, Opus 5.5 (P03 done; forms live on the page)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
