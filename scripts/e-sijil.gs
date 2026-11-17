@@ -18,9 +18,12 @@
  *    run setupUrusetiaTemplate, set its page to A4 by hand, run
  *    fitUrusetiaTemplate, then sendTestUrusetia.
  *
- * Only guests found in the attendance form (by IC) get a sijil,
- * for the role they chose there. Anyone else gets a short "not in the
- * attendance list" email instead.
+ * Only guests found in the attendance form (by IC, answers sent on 5 Dec
+ * 12.00 to 6.00 pm) get a sijil, for the role they chose there: Peserta gets
+ * one PDF, Urus setia gets two (peserta and urus setia) in one email. One set
+ * per IC: the same name again sends nothing, a new name sends a replacement.
+ * Anyone else gets a short "not in the attendance list" email instead, at most
+ * once per IC and per email and 30 a day. Records: sijil-records.gs.
  *
  * Block list: to stop one person getting a sijil, open Project Settings >
  * Script properties and set BLOCKED_ICS to their IC digits (no dashes),
@@ -164,7 +167,11 @@ function installTrigger(form) {
 }
 
 function onFeedbackSubmit(e) {
-  var answers = readAnswers(e.response);
+  handleFeedback(readAnswers(e.response), findAttendee);
+}
+
+// findGuest is findAttendee, or a stand-in in testFeedbackFlow so the rules can be tried before 5 Dec.
+function handleFeedback(answers, findGuest) {
   var name = answers['Nama penuh'];
   var email = answers['Emel'];
   if (!name || !email) {
@@ -181,13 +188,40 @@ function onFeedbackSubmit(e) {
     Logger.log('Disekat: sijil tidak dihantar.');
     return;
   }
-  var attendee = findAttendee(ic);
+  var icDigits = digitsOf(ic);
+  var attendee = findGuest(ic);
   if (!attendee) {
     Logger.log('Tiada dalam senarai kehadiran: ' + email + '. Sijil tidak dihantar.');
-    sendNotListedEmail(name.trim(), email);
+    handleNotListed(name.trim(), icDigits, email);
     return;
   }
-  sendSijil(name, ic, email, attendee.role);
+  var nameToPrint = printedName(name);
+  var claim = claimSijil(icDigits, nameToPrint);
+  if (claim.action === 'skip') {
+    Logger.log('Sijil untuk No. K/P ini sudah dihantar dengan nama yang sama. Tiada apa dihantar.');
+    return;
+  }
+  try {
+    sendSijil(name, ic, email, attendee.role, claim.action === 'replace');
+  } catch (error) {
+    releaseSijilClaim(icDigits, claim.previous); // so the guest can send feedback again and still get it
+    throw error;
+  }
+  logSijilSent(icDigits, nameToPrint, email, attendee.role, claim.action);
+}
+
+// Spec A10: strangers must not use up the mail quota, but every case reaches the urus setia's tab.
+function handleNotListed(name, icDigits, email) {
+  var decision = claimNotListedEmail(icDigits, email);
+  if (decision === 'send') {
+    try {
+      sendNotListedEmail(name, email);
+    } catch (error) {
+      logNotListed(name, icDigits, email, 'Gagal: ' + error.message);
+      throw error;
+    }
+  }
+  logNotListed(name, icDigits, email, NOT_LISTED_NOTES[decision]);
 }
 
 // BLOCKED_ICS lives only in Script properties, so no blocked IC ever reaches the public repo.
@@ -233,27 +267,40 @@ function templateIdFor(propertyKey) {
   throw new Error('Templat belum dibuat. Jalankan setupSijil dahulu.');
 }
 
-function sendSijil(name, ic, email, role) {
-  var isUrusetia = role === URUSETIA_ROLE;
-  var templateId = templateIdFor(isUrusetia ? URUSETIA_TEMPLATE_KEY : TEMPLATE_KEY);
+// Urus setia get the peserta sijil too (owner 2026-11-17: "urusetia patut dapat 2 sijil").
+function sijilKinds(isUrusetia) {
+  var kinds = [{ templateKey: TEMPLATE_KEY, fileTitle: 'e-Sijil Anugerah Gemilang 2026' }];
+  if (isUrusetia) kinds.push({ templateKey: URUSETIA_TEMPLATE_KEY, fileTitle: 'e-Sijil Urus Setia Anugerah Gemilang 2026' });
+  return kinds;
+}
 
-  var cleanName = name.trim().toUpperCase();
-  var copy = DriveApp.getFileById(templateId).makeCopy('e-Sijil sementara - ' + cleanName, findEventFolder());
+function sendSijil(name, ic, email, role, replacesEarlier) {
+  var isUrusetia = role === URUSETIA_ROLE;
+  var kinds = sijilKinds(isUrusetia);
+  var templateIds = kinds.map(function (kind) { return templateIdFor(kind.templateKey); }); // fail before any copy
+
+  var cleanName = printedName(name);
+  var folder = findEventFolder();
+  var copies = [];
   try {
-    fillCertificate(copy.getId(), cleanName, formatIc(ic));
-    var pdf = copy.getAs('application/pdf')
-      .setName('e-Sijil Anugerah Gemilang 2026 - ' + cleanName + '.pdf');
+    var pdfs = kinds.map(function (kind, index) {
+      var copy = DriveApp.getFileById(templateIds[index]).makeCopy('e-Sijil sementara - ' + cleanName, folder);
+      copies.push(copy);
+      fillCertificate(copy.getId(), cleanName, formatIc(ic));
+      return copy.getAs('application/pdf').setName(kind.fileTitle + ' - ' + cleanName + '.pdf');
+    });
+    var body = buildEmailBody(name.trim(), isUrusetia, replacesEarlier);
     MailApp.sendEmail({
       to: email,
-      subject: 'e-Sijil Majlis Anugerah Gemilang 2026',
-      body: buildEmailBody(name.trim(), isUrusetia),
+      subject: 'e-Sijil Majlis Anugerah Gemilang 2026' + (replacesEarlier ? ' (dikemas kini)' : ''),
+      body: body,
       // Plain text alone gets hard-wrapped near 76 characters, which leaves gaps on phones.
-      htmlBody: toHtmlBody(buildEmailBody(name.trim(), isUrusetia)),
-      attachments: [pdf],
+      htmlBody: toHtmlBody(body),
+      attachments: pdfs,
       name: 'PKPD Batang Padang'
     });
   } finally {
-    copy.setTrashed(true);
+    copies.forEach(function (copy) { copy.setTrashed(true); });
   }
 }
 
@@ -344,20 +391,19 @@ function formatIc(ic) {
   return digits.slice(0, 6) + '-' + digits.slice(6, 8) + '-' + digits.slice(8);
 }
 
-function buildEmailBody(name, isUrusetia) {
+function buildEmailBody(name, isUrusetia, replacesEarlier) {
   var thanks = isUrusetia
     ? 'Terima kasih atas sumbangan anda sebagai urus setia Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang pada 5 Disember 2026 di Hotel Grand Kampar. Terima kasih juga atas maklum balas anda.'
     : 'Terima kasih kerana hadir ke Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang pada 5 Disember 2026 di Hotel Grand Kampar. Terima kasih juga atas maklum balas anda.';
-  return [
-    'Assalamualaikum dan salam sejahtera ' + name + ',',
-    '',
-    thanks,
-    '',
-    'e-Sijil anda dilampirkan bersama emel ini.',
-    '',
-    'Urus setia Majlis Anugerah Gemilang 2026',
-    'PKPD Batang Padang'
-  ].join('\n');
+  var attached = isUrusetia
+    ? 'Dua e-Sijil anda dilampirkan bersama emel ini: sijil penyertaan dan sijil penghargaan urus setia.'
+    : 'e-Sijil anda dilampirkan bersama emel ini.';
+  var lines = ['Assalamualaikum dan salam sejahtera ' + name + ',', '', thanks, '', attached];
+  if (replacesEarlier) {
+    lines.push('', (isUrusetia ? 'Kedua-dua e-Sijil ini' : 'e-Sijil ini') +
+      ' menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.');
+  }
+  return lines.concat(['', 'Urus setia Majlis Anugerah Gemilang 2026', 'PKPD Batang Padang']).join('\n');
 }
 
 function sendNotListedEmail(name, email) {
