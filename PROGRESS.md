@@ -239,7 +239,7 @@ Every Friday:
 - [ ] Print QR to the live URL for the registration desk.
 
 **Waiting on owner:**
-- Approve the form questions before they go to staff.
+- Approve the form questions before they go to staff (draft in docs/forms.md).
 
 ---
 
