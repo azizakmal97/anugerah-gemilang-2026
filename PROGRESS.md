@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** _none_ (⏸ P04 waiting on the owner's live test, A1 and A3)
+**Active phase:** _none_ (⏸ P04: live test passed, /done-check re-run left)
 **Last update:** 2026-11-17, Opus 5.5 · medium (P06 done)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -306,7 +306,7 @@ Every Friday:
 
 ### ⏸ P04 — e-sijil only for people who really came
 
-**Status:** waiting on owner: end-to-end test on the live page (A1, A3)
+**Status:** live test A1 and A3 passed 2026-11-17; only the /done-check re-run (Opus 5.5 · medium) and marking done are left
 **Started:** 2026-11-17
 **Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
@@ -323,7 +323,7 @@ Every Friday:
 - [x] (76d2e00 → 2573d52, run 2026-11-17) Owner 2026-11-17: no email on attendance. Emel dropped from `forms.js`, `buildAttendanceForm`, `docs/forms.md`; `removeAttendanceEmail` run in Apps Script; `findAttendee` matches IC digits only; spec A2 removed (Model: Opus 5.5 · medium, owner override)
 - [x] A7: urus setia template built from the P05 background, A4 by hand, fitted; `sendTestUrusetia` PDF checked (Model: Opus 5.5 · medium, owner override)
 - [x] (e396d8f, run 2026-11-17) A8: owner block list added. `onFeedbackSubmit` skips any IC listed in the Script property `BLOCKED_ICS` (no sijil, no email). The list lives only in Apps Script settings, never in this repo. Dry run in Apps Script: listed IC true, other IC false; temporary function removed (Model: Opus 5.5 · low)
-- [ ] A1, A3: owner test on the live page: confirm attendance with IC (`?mod=hadir`), send feedback with the same IC (`?mod=selepas`), sijil arrives; feedback with an unknown IC gets the "tiada dalam senarai kehadiran" email. Delete the test rows after (Model: Sonnet 5.5 · low)
+- [x] A1, A3 (run 2026-11-17 19:17, owner said "ujian tu la tasknya"): on the live page, attendance with a synthetic IC typed as bare digits (page added the dashes), then feedback with the same IC → sijil PDF arrived in azizakmal@moh.gov.my; feedback with another IC → "kehadiran tidak ditemui" email, no sijil. All three test rows deleted from both response tabs; the owner's own rows left alone (Model: Sonnet 5.5 · low)
 
 **Resume note (2026-11-17, later):** code, live site, Apps Script and both templates are done; attendance has no email, matching is by IC only. Only the owner's live test (A1, A3) is left, then re-run /done-check and mark P04 done.
 Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate forms + sheet; all three trashed (Drive trash, created 13:18), live forms untouched. Finders now skip trashed files.
@@ -335,7 +335,6 @@ Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate 
 - Someone on the owner's block list gets no sijil and no email; their IC is kept in Apps Script settings only, so it never appears in this public repo.
 
 **Waiting on owner:**
-- Test A1 and A3 on the live page (links in the bullet above), then tell Claude the result.
 - Gemini proofread owed for the new Malay lines (attendance IC help, urus setia email, "tiada dalam senarai" email, now "No. Kad Pengenalan anda tidak ditemui"); quota out until about 2026-11-23.
 
 ### ✅ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
