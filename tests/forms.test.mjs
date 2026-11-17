@@ -1,0 +1,160 @@
+// Tests for forms.js: what counts as a valid answer, what gets sent to Google,
+// and that a send can neither run twice nor pretend to succeed when it failed.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+const FORMS_SOURCE = readFileSync(new URL("../forms.js", import.meta.url), "utf8");
+
+function loadForms({ fetch = async () => {} } = {}) {
+  const context = {
+    SETTINGS: { attendanceFormUrl: "https://docs.google.com/forms/d/e/ABC/viewform", feedbackFormUrl: "" },
+    document: { createElement: fakeNode },
+    URLSearchParams,
+    AbortController,
+    setTimeout,
+    clearTimeout,
+    console: { error() {} },
+    fetch,
+  };
+  vm.createContext(context);
+  // `const` declarations stay in the script scope, so expose what the tests need.
+  vm.runInContext(
+    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
+    context,
+  );
+  return context.__forms;
+}
+
+function fakeNode() {
+  const attributes = {};
+  return {
+    textContent: "",
+    hidden: false,
+    disabled: false,
+    children: [],
+    classes: [],
+    classList: { add(name) { this.owner.classes.push(name); } },
+    setAttribute(name, value) { attributes[name] = String(value); },
+    getAttribute(name) { return name in attributes ? attributes[name] : null; },
+    removeAttribute(name) { delete attributes[name]; },
+    append(...nodes) { this.children.push(...nodes); },
+    replaceChildren(...nodes) { this.children = nodes; },
+    addEventListener() {},
+    focus() {},
+  };
+}
+
+function node() {
+  const created = fakeNode();
+  created.classList.owner = created;
+  return created;
+}
+
+// A form with one text field, enough to drive submitForm without a browser.
+function fakeForm(value) {
+  const control = Object.assign(node(), { value });
+  const errorNode = node();
+  const wrapper = { querySelector: () => errorNode, querySelectorAll: () => [control] };
+  const form = {
+    replacedWith: null,
+    querySelector(selector) {
+      if (selector.includes(":checked")) return null;
+      if (selector.startsWith("[name=")) return control;
+      if (selector.startsWith("[data-entry=")) return wrapper;
+      return control.getAttribute("aria-invalid") ? control : null;
+    },
+    replaceWith(replacement) { this.replacedWith = replacement; },
+  };
+  return { form, errorNode };
+}
+
+const ONE_FIELD = { settingsKey: "attendanceFormUrl", thanks: "Terima kasih.", fields: [{ entry: "1", kind: "text", label: "Nama penuh" }] };
+
+test("required fields must be filled, the comment may stay empty", () => {
+  const { validateField } = loadForms();
+  assert.equal(validateField({ kind: "text" }, "   "), "Sila isi ruangan ini.");
+  assert.equal(validateField({ kind: "select" }, ""), "Sila pilih klinik atau unit.");
+  assert.equal(validateField({ kind: "rating" }, ""), "Sila pilih satu nilai, 1 hingga 5.");
+  assert.equal(validateField({ kind: "comment", optional: true }, ""), "");
+});
+
+test("email must look like an email", () => {
+  const { validateField } = loadForms();
+  assert.equal(validateField({ kind: "email" }, "nama@moh.gov.my"), "");
+  assert.match(validateField({ kind: "email" }, "nama.moh.gov.my"), /tidak sah/);
+  assert.match(validateField({ kind: "email" }, "nama @moh.gov.my"), /tidak sah/);
+});
+
+test("IC follows the Google Form rule: 12 digits, dashes optional", () => {
+  const { validateField } = loadForms();
+  assert.equal(validateField({ kind: "ic" }, "900101-08-1234"), "");
+  assert.equal(validateField({ kind: "ic" }, "900101081234"), "");
+  assert.match(validateField({ kind: "ic" }, "90010108123"), /900101-08-1234/);
+  assert.match(validateField({ kind: "ic" }, "900101 08 1234"), /900101-08-1234/);
+});
+
+test("every field of both forms is checked, and a complete answer has no errors", () => {
+  const { FORMS, findErrors } = loadForms();
+  const empty = findErrors(FORMS.feedback, {});
+  assert.equal(Object.keys(empty).length, FORMS.feedback.fields.length - 1); // all but the comment
+  const filled = { 562932983: "Siti Aminah", 1345289916: "KP Tapah", 1638971287: "siti@moh.gov.my" };
+  assert.deepEqual({ ...findErrors(FORMS.attendance, filled) }, {});
+});
+
+test("answers go to Google as entry.<id> fields on the formResponse address", () => {
+  const { FORMS, toFormBody, formResponseUrl } = loadForms();
+  const body = toFormBody(FORMS.attendance, { 562932983: "  Siti Aminah ", 1345289916: "KP Bidor", 1638971287: "siti@moh.gov.my" });
+  assert.equal(body.get("entry.562932983"), "Siti Aminah");
+  assert.equal(body.get("entry.1345289916"), "KP Bidor");
+  assert.equal(formResponseUrl("https://docs.google.com/forms/d/e/ABC/viewform?usp=sf_link"), "https://docs.google.com/forms/d/e/ABC/formResponse");
+});
+
+test("a double tap while sending sends only once", async () => {
+  const { oneAtATime } = loadForms();
+  let sends = 0;
+  let finish;
+  const send = oneAtATime(() => { sends += 1; return new Promise((resolve) => { finish = resolve; }); });
+  const first = send();
+  assert.equal(await send(), "busy");
+  finish("sent");
+  assert.equal(await first, "sent");
+  assert.equal(sends, 1);
+});
+
+test("an invalid answer is never sent and the field shows why", async () => {
+  let fetched = false;
+  const { submitForm } = loadForms({ fetch: async () => { fetched = true; } });
+  const { form, errorNode } = fakeForm("");
+  const result = await submitForm(ONE_FIELD, form, node(), node(), () => {});
+  assert.equal(result, "invalid");
+  assert.equal(fetched, false);
+  assert.equal(errorNode.hidden, false);
+  assert.equal(errorNode.textContent, "Sila isi ruangan ini.");
+});
+
+test("the button is disabled while sending, then the thanks replace the form", async () => {
+  let finish;
+  const { submitForm } = loadForms({ fetch: () => new Promise((resolve) => { finish = resolve; }) });
+  const { form } = fakeForm("Siti Aminah");
+  const button = node();
+  const sending = submitForm(ONE_FIELD, form, button, node(), () => {});
+  assert.equal(button.disabled, true);
+  finish();
+  assert.equal(await sending, "sent");
+  assert.ok(form.replacedWith, "form was replaced by the thank-you block");
+});
+
+test("a failed send says so, offers the Google Form and lets the guest retry", async () => {
+  const { submitForm } = loadForms({ fetch: async () => { throw new TypeError("Failed to fetch"); } });
+  const { form } = fakeForm("Siti Aminah");
+  const button = node();
+  const status = node();
+  assert.equal(await submitForm(ONE_FIELD, form, button, status, () => {}), "failed");
+  assert.equal(button.disabled, false);
+  assert.equal(button.textContent, "Cuba hantar semula");
+  assert.equal(status.hidden, false);
+  assert.deepEqual(status.classes, ["is-error"]);
+  assert.equal(form.replacedWith, null, "nothing says sent");
+});

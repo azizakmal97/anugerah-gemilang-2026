@@ -1,4 +1,4 @@
-// Characterization tests for app.js: the clock-driven page modes and the form button.
+// Characterization tests for app.js: the clock-driven page modes and which form each shows.
 // app.js is a plain browser script, so it runs here inside a vm with a tiny fake DOM.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -6,16 +6,13 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const APP_SOURCE = readFileSync(new URL("../app.js", import.meta.url), "utf8");
-const ELEMENT_IDS = ["action-kicker", "action-text", "action-btn", "action-note", "countdown", "cd-hari", "cd-jam", "cd-minit"];
+const ELEMENT_IDS = ["action-kicker", "action-text", "action-note", "countdown", "cd-hari", "cd-jam", "cd-minit"];
 
 function fakeElement() {
   const attributes = {};
   return {
     textContent: "",
     hidden: false,
-    href: "",
-    target: "",
-    rel: "",
     offsetWidth: 0,
     classList: { add() {}, remove() {} },
     setAttribute(name, value) { attributes[name] = String(value); },
@@ -26,7 +23,9 @@ function fakeElement() {
 
 function loadApp({ search = "" } = {}) {
   const elements = Object.fromEntries(ELEMENT_IDS.map((id) => [id, fakeElement()]));
+  const formCalls = [];
   const context = {
+    renderForm: (formName) => formCalls.push(formName), // forms.js has its own tests
     document: { getElementById: (id) => elements[id] },
     location: { search },
     URLSearchParams,
@@ -36,7 +35,7 @@ function loadApp({ search = "" } = {}) {
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
   vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, renderAction };`, context);
-  return { app: context.__app, elements };
+  return { app: context.__app, elements, formCalls };
 }
 
 const myt = (hour, minute = 0) => Date.UTC(2026, 11, 5, hour - 8, minute); // 5 Dec 2026, Malaysia time
@@ -64,29 +63,18 @@ test("?mod= previews a mode, and an unknown value falls back to the clock", () =
   assert.equal(loadApp({ search: "?mod=salah" }).app.pickMode(myt(9)), "sebelum");
 });
 
-test("with no form link the button is shown as not ready, never as a dead link", () => {
-  const { app, elements } = loadApp();
-  app.SETTINGS.attendanceFormUrl = "";
+test("attendance time shows the attendance form, feedback time the feedback form", () => {
+  const { app, formCalls } = loadApp();
+  formCalls.length = 0; // loading the page already rendered the current mode once
   app.renderAction("hadir");
-  const button = elements["action-btn"];
-  assert.equal(button.hidden, false);
-  assert.equal(button.getAttribute("aria-disabled"), "true");
-  assert.equal(button.textContent, "Pautan borang belum disediakan");
-});
-
-test("with a form link the button opens it in a new tab", () => {
-  const { app, elements } = loadApp();
-  app.SETTINGS.feedbackFormUrl = "https://forms.gle/example";
   app.renderAction("selepas");
-  const button = elements["action-btn"];
-  assert.equal(button.href, "https://forms.gle/example");
-  assert.equal(button.target, "_blank");
-  assert.equal(button.getAttribute("aria-disabled"), null);
+  assert.deepEqual(formCalls, ["attendance", "feedback"]);
 });
 
-test("the countdown mode hides the button", () => {
-  const { app, elements } = loadApp();
+test("the countdown mode shows the countdown and no form", () => {
+  const { app, elements, formCalls } = loadApp();
+  formCalls.length = 0;
   app.renderAction("sebelum");
-  assert.equal(elements["action-btn"].hidden, true);
+  assert.deepEqual(formCalls, [null]);
   assert.equal(elements.countdown.hidden, false);
 });
