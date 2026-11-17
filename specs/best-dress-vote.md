@@ -33,11 +33,11 @@ Why P1: the owner announces the winners at the event; results must not be public
 - Voting from outside the attendance list.
 
 ## Assumptions
+- Owner 2026-11-17 ("nama boleh muncul lepas type huruf"): names show only after 3 typed letters, loaded live from Google while voting is open, never stored in this repo, never a full list.
 - The voter's IC is the same IC rule and auto-format as the other forms.
 - No gender is stored: the guest decides who goes under Lelaki and who under Perempuan.
 - Votes land in a Google Form response sheet like the other forms, and an Apps Script on the owner's account counts them.
 
 ## Open questions
-- [NEEDS CLARIFICATION: the name search puts attendee names on the public page during voting, which the project rules forbid today. Allow names to show only after 3 typed letters, loaded live from Google while voting is open (never stored in this repo)?]
 - [NEEDS CLARIFICATION: when does voting open and close (the winner is announced during the event)?]
 - [NEEDS CLARIFICATION: how does the owner get the top 5: an email when voting closes, or a private sheet?]

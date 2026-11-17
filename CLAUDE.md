@@ -81,6 +81,8 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
 - Never commit the meeting minutes, the sample certificate or any signature image. They live
   one folder up (`hi-tea/`), outside this public repo, and must stay there.
 - Never put the attendance list or any name list on the page.
+  One exception (owner 2026-11-17): the Best Dress vote may show matching names after 3 typed
+  letters, fetched live from Google while voting is open. Never a full list, never in this repo.
 
 ## 10. Current Focus / Known Issues
 
