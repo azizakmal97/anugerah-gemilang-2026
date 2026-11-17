@@ -37,7 +37,8 @@ Why P1: the owner announces the winners at the event; results must not be public
 ## Assumptions
 - Owner 2026-11-17 ("memang jawatankuasa je yang ada akses ke sheet tu", then chose option 2): the top 5 for each category live in a tab of the committee's response sheet "Anugerah Gemilang 2026 - Respons" that updates by itself, so the committee can see results before the announcement. This replaces the earlier private sheet. No email.
 - Owner 2026-11-17 ("sorang boleh undi seorang laki dan seorang perempuan sahaja"): one vote per IC, exactly one man and one woman, both required. First vote counts, so nobody can change it later.
-- Owner 2026-11-17 ("undian dibuka sepanjang program berlangsung. 5.30 dah start sampaikan hadiah"): voting opens with attendance at 12.00 pm on 5 Dec and closes at 5.30 pm sharp, when the Best Dress prizes start. A vote sent after 5.30 pm is not counted.
+- Owner 2026-11-17 ("undian dibuka sepanjang program berlangsung. 5.30 dah start sampaikan hadiah"): voting opens with attendance at 12.00 pm on 5 Dec. Changed the same day ("boleh tak undian tu lajak ke pukul 6. sebab kita tak pasti kita ikut tentatif 100% ke tak"): it closes at 6.00 pm, with attendance. A vote sent after 6.00 pm is not counted.
+- Owner 2026-11-17: only votes sent on 5 Dec between 12.00 pm and 6.00 pm count, so a test vote left over from November can never count or use up an IC.
 - Owner 2026-11-17 ("nama boleh muncul lepas type huruf"): names show only after 3 typed letters, loaded live from Google while voting is open, never stored in this repo, never a full list.
 - The voter's IC is the same IC rule and auto-format as the other forms.
 - No gender is stored: the guest decides who goes under Lelaki and who under Perempuan.

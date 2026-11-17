@@ -14,6 +14,8 @@ Acceptance:
 - A2. Removed (owner 2026-11-17: no email on the attendance form, so the match is by IC only). Numbers are kept so A3 onwards do not move.
 - A3. Given the IC is not in the attendance answers, when they send feedback, then no sijil is sent, and a short email says their name is not in the attendance list and to contact the urus setia.
 - A4. Given the IC is typed with or without dashes on either form, then it still matches.
+- A9. Only attendance answers sent on 5 Dec between 12.00 pm and 6.00 pm count, for the e-sijil, the vote and the name search (audit 2026-11-17: the forms are public, so anyone could add themselves from home). The attendance form stops taking answers at 6.00 pm by itself.
+- A10. Given the IC is not on the list, the "tidak ditemui" email goes at most once per IC and once per email address, and at most 30 such emails a day, so strangers cannot use up the owner's daily mail quota (about 1,500) that real guests need. Every such answer is listed in a tab "Tiada dalam Senarai" so the urus setia can follow up.
 - A8. Given a guest's IC is on the owner's block list (kept in Apps Script settings, never in this repo), when they send feedback, then no sijil and no email are sent.
 
 ### S2 (P1): Attendance asks for IC and role
@@ -25,11 +27,17 @@ Why P1: the match and the sijil type both come from the attendance answer.
 ### S3 (P2): Urus setia get their own sijil
 Why P2: the peserta sijil already works; the urus setia sijil needs its own design (P05).
 
-- A7. Given the matched attendance answer says Urus setia, then the sijil sent is the urus setia one (SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia"); Peserta gets the peserta sijil.
+- A7. Given the matched attendance answer says Urus setia, then they get two sijil in one email: the peserta one (penyertaan) and the urus setia one (SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia"). Owner 2026-11-17: "urusetia patut dapat 2 sijil". Peserta gets the peserta sijil only.
+
+### S4 (P1): One set of sijil per guest, fixable when the name was misspelled
+Why P1: a guest who sends feedback twice must not collect extra sijil, but a guest who misspelled their name must be able to get a corrected one (owner 2026-11-17).
+
+- A11. Given an IC already got its sijil, when feedback comes again with the same IC and the same name, then nothing new is sent.
+- A12. Given an IC already got its sijil, when feedback comes again with the same IC and a different name, then a new sijil with the new name is sent, and the email says it replaces the earlier one. Every sijil sent is listed (time, IC last 4 digits, name, email, role) in a tab "Sijil Dihantar".
 
 ## Edge cases
 - Guest confirmed attendance twice (two rows): the newest matching row decides the role.
-- Feedback sent twice: two emails, as today. No dedup.
+- Feedback sent twice: see A11 and A12.
 - Urus setia template not built yet: the script stops with a clear error for that guest, and Google mails the owner the failure, rather than sending the wrong sijil.
 - Mail quota out: unchanged from today (error, owner notified).
 

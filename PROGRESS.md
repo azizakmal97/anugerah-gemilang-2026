@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** _none_ (P01 to P06 done; nothing in flight)
+**Active phase:** _none_ (P01 to P06 done; P07 planned, not started)
 **Last update:** 2026-11-17, Sonnet 5.5 (P04 done; results look, name capitals and IC hand-over shipped; /close run)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -400,6 +400,30 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - Look at the vote card on your phone (`?mod=hadir`): wording and feel.
 
 ---
+
+### ⬜ P07 — Apps Script fixes from the 2026-11-17 audit, two sijil for urus setia, sheet look
+
+**Status:** pending
+**Specs:** specs/attendee-only-sijil.md (A7 changed, A9 to A12 new), specs/best-dress-vote.md (closes 6.00 pm), specs/sheet-look.md (new)
+**Model:** Opus 5.5 · medium (owner's setting for this site; vote counts and sijil are expensive to get wrong; sheet look is design work), Sonnet 5.5 · low for the paste-and-deploy steps in Chrome
+**Why (audit 2026-11-17, owner answers the same day):** the forms are public, so anyone could register from home and then vote or get a sijil; the "tidak ditemui" email could be sent to any address; leftover test votes could count; a second feedback gave a second sijil.
+
+**Plan for this phase:**
+- [ ] Voting closes at 6.00 pm: `SETTINGS.voteClosesAt` in `app.js` (Date.UTC(2026, 11, 5, 10, 0)), `VOTE_CLOSES_AT` in `scripts/best-dress.gs`, comments and the vote state test in `tests/app.test.mjs`
+- [ ] One shared "is this answer from 5 Dec, 12.00 to 6.00 pm" rule in the Apps Script project; use it for attendance rows in `findAttendee` (e-sijil.gs), `attendeeNames` (best-dress.gs) and the voter list in best-dress-results.gs, and for votes in `tallyVotes` (drop the VOTE_TEST_UNTIL path there). Tests in `tests/best-dress-results.test.mjs`
+- [ ] Attendance form closes itself at 6.00 pm on 5 Dec: a one-off timed trigger (`setAcceptingResponses(false)`), installed by a setup function that is safe to run twice. The page already stops showing it at 6.00 pm
+- [ ] "Tidak ditemui" email: at most once per IC digits and per email, at most 30 a day (count kept in Script properties per date); every case logged to tab "Tiada dalam Senarai"
+- [ ] Urus setia gets two PDFs (peserta + urus setia) in one email; update `buildEmailBody` copy (Opus · medium; Gemini proofread owed)
+- [ ] One sijil set per IC: tab "Sijil Dihantar" (time, IC last 4, name, email, role). Same IC + same name again → skip; same IC + new name → resend with the new name, email says it replaces the earlier sijil. Use LockService so two quick submits do not both send
+- [ ] Results recount by itself at 6.01 pm on 5 Dec (timed trigger), so a lock timeout during the rush cannot leave stale numbers
+- [ ] Sheet look (`specs/sheet-look.md`): one function styles Kehadiran, Maklum Balas, Tiada dalam Senarai, Sijil Dihantar in the results tab's navy and gold (header, freeze, widths, banding, tab colour). Preview with a screenshot for the owner (Opus · medium, design)
+- [ ] Paste into Apps Script (Claude in Chrome, /u/1, memory `apps-script-editor-save-patience.md`), redeploy the name search web app as a new version of the same deployment (URL must not change), run the setup functions, approve any new permission with the owner
+- [ ] Live test with synthetic ICs before the day is no longer possible for attendance matching (rows must be from 5 Dec). Test instead with the test functions in Apps Script and a dry run that passes a fake 5 Dec timestamp; then clean up every test response (memory `test-cleanup-form-responses.md`)
+- [ ] /done-check for the three specs
+
+**Waiting on owner:**
+- Gemini proofread for new copy (quota out until about 2026-11-23).
+- Note for the owner: their own November attendance row (IC 970718...) will not count on the day. They register again on 5 Dec like everyone else.
 
 ## Resume note (2026-11-17, /close)
 
