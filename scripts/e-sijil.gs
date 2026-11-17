@@ -21,6 +21,11 @@
  * Only guests found in the attendance form (by IC) get a sijil,
  * for the role they chose there. Anyone else gets a short "not in the
  * attendance list" email instead.
+ *
+ * Block list: to stop one person getting a sijil, open Project Settings >
+ * Script properties and set BLOCKED_ICS to their IC digits (no dashes),
+ * comma-separated for more than one. They get no sijil and no email.
+ * Never put a blocked IC in this repo: it is public.
  */
 
 var FEEDBACK_TITLE = 'Maklum Balas Majlis Anugerah Gemilang 2026';
@@ -33,6 +38,7 @@ var URUSETIA_BACKGROUND_NAME = 'sijil-urusetia-latar-A4.png';
 var URUSETIA_TEMPLATE_TITLE = 'Templat e-Sijil Urus Setia Anugerah Gemilang 2026';
 var URUSETIA_TEMPLATE_KEY = 'URUSETIA_TEMPLATE_ID';
 var HANDLER_NAME = 'onFeedbackSubmit';
+var BLOCKED_ICS_KEY = 'BLOCKED_ICS';
 
 var PAGE_WIDTH = 595.28;
 var PAGE_HEIGHT = 841.89;
@@ -171,6 +177,10 @@ function onFeedbackSubmit(e) {
     throw new Error('Kuota emel harian habis. Sijil untuk ' + email + ' belum dihantar.');
   }
   var ic = answers['No. Kad Pengenalan'] || '';
+  if (isBlocked(ic)) {
+    Logger.log('Disekat: sijil tidak dihantar.');
+    return;
+  }
   var attendee = findAttendee(ic);
   if (!attendee) {
     Logger.log('Tiada dalam senarai kehadiran: ' + email + '. Sijil tidak dihantar.');
@@ -178,6 +188,16 @@ function onFeedbackSubmit(e) {
     return;
   }
   sendSijil(name, ic, email, attendee.role);
+}
+
+// BLOCKED_ICS lives only in Script properties, so no blocked IC ever reaches the public repo.
+function isBlocked(ic) {
+  var icDigits = String(ic).replace(/\D/g, '');
+  if (!icDigits) return false;
+  var list = PropertiesService.getScriptProperties().getProperty(BLOCKED_ICS_KEY) || '';
+  return list.split(',').some(function (entry) {
+    return entry.replace(/\D/g, '') === icDigits;
+  });
 }
 
 // Newest matching attendance answer wins, so a guest who confirmed twice gets their last role.

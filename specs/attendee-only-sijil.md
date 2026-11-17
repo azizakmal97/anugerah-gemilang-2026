@@ -1,7 +1,7 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role; later the same day: no email on attendance, match by IC only)
-Done-check: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A7 met; re-checked after hiding the form instruction once sent and the feedback thank-you now saying the sijil needs the IC on the attendance list, which touch no spec item)
+Done-check: pending for A8 (owner block list, added 2026-11-17). Before that: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A7 met; re-checked after hiding the form instruction once sent and the feedback thank-you now saying the sijil needs the IC on the attendance list, which touch no spec item)
 
 ## Stories
 
@@ -13,6 +13,7 @@ Acceptance:
 - A2. Removed (owner 2026-11-17: no email on the attendance form, so the match is by IC only). Numbers are kept so A3 onwards do not move.
 - A3. Given the IC is not in the attendance answers, when they send feedback, then no sijil is sent, and a short email says their name is not in the attendance list and to contact the urus setia.
 - A4. Given the IC is typed with or without dashes on either form, then it still matches.
+- A8. Given a guest's IC is on the owner's block list (kept in Apps Script settings, never in this repo), when they send feedback, then no sijil and no email are sent.
 
 ### S2 (P1): Attendance asks for IC and role
 Why P1: the match and the sijil type both come from the attendance answer.
