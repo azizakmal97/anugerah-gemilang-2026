@@ -14,6 +14,12 @@
  * setupBestDressResults and press Run, allow the permissions, then read the
  * sheet link in the Execution log. Safe to run twice. To recount by hand, pick
  * refreshBestDressResults.
+ *
+ * End of the day: pick setupEventDayTriggers and press Run once (safe to run
+ * again). At 6.00 pm on 5 Dec the attendance form stops taking answers, and at
+ * 6.01 pm the results recount once more, in case a vote in the last rush found
+ * the recount busy. Google may run a timed job a few minutes late; that is
+ * fine, because answers after 6.00 pm never count (isEventTime).
  */
 
 var RESULTS_TAB_NAME = 'Keputusan Best Dress';
@@ -21,6 +27,11 @@ var RESULTS_HANDLER = 'onVoteSubmit';
 var RESULTS_TOP_COUNT = 5;
 var RESULTS_CATEGORIES = ['Lelaki', 'Perempuan'];
 var RESULTS_TIME_ZONE = 'Asia/Kuala_Lumpur';
+var RESULTS_LOCK_WAIT_MS = 30000;
+var CLOSE_ATTENDANCE_HANDLER = 'closeAttendanceForm';
+var FINAL_RECOUNT_HANDLER = 'recountAfterVoting';
+var FINAL_RECOUNT_DELAY_MS = 60 * 1000; // 6.01 pm, read at run time so file order in Code.gs never matters
+var ATTENDANCE_CLOSED_MESSAGE = 'Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.';
 
 // Look of the tab (owner 2026-11-17: "cantikkan"): the event page's own night navy and batik gold.
 // Two blocks side by side, Lelaki then Perempuan, each: rank, name, votes, a bar of votes.
@@ -57,24 +68,56 @@ function setupBestDressResults() {
 
 // Owner 2026-11-17: results sit with the committee, in the sheet the attendance form already feeds.
 function openResultsTab() {
-  var destinationId = findFormNamed(ATTENDANCE_FORM_TITLE).getDestinationId();
-  var spreadsheet = SpreadsheetApp.openById(destinationId);
+  var spreadsheet = committeeSpreadsheet();
   return spreadsheet.getSheetByName(RESULTS_TAB_NAME) || spreadsheet.insertSheet(RESULTS_TAB_NAME);
 }
 
+// In a rush a recount may still be busy after 30 s. Skipping is safe: the busy recount or the
+// next vote counts this one too, and recountAfterVoting at 6.01 pm catches the very last.
 function onVoteSubmit() {
-  refreshBestDressResults();
-}
-
-// Two votes landing together run two recounts; the lock stops the older one writing last.
-function refreshBestDressResults() {
   var lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  if (!lock.tryLock(RESULTS_LOCK_WAIT_MS)) {
+    Logger.log('Kiraan undi sedang berjalan. Undi ini akan dikira pada kiraan seterusnya.');
+    return;
+  }
   try {
     writeCurrentResults();
   } finally {
     lock.releaseLock();
   }
+}
+
+// Two votes landing together run two recounts; the lock stops the older one writing last.
+function refreshBestDressResults() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(RESULTS_LOCK_WAIT_MS);
+  try {
+    writeCurrentResults();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function setupEventDayTriggers() {
+  var handlers = [CLOSE_ATTENDANCE_HANDLER, FINAL_RECOUNT_HANDLER];
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    if (handlers.indexOf(trigger.getHandlerFunction()) !== -1) ScriptApp.deleteTrigger(trigger);
+  });
+  ScriptApp.newTrigger(CLOSE_ATTENDANCE_HANDLER).timeBased().at(new Date(EVENT_CLOSES_AT)).create();
+  ScriptApp.newTrigger(FINAL_RECOUNT_HANDLER).timeBased().at(new Date(EVENT_CLOSES_AT + FINAL_RECOUNT_DELAY_MS)).create();
+  Logger.log('Dipasang: borang kehadiran akan ditutup pada 6.00 petang, 5 Dis. Kiraan akhir Best Dress pada 6.01 petang.');
+}
+
+// Spec A9: the page stops showing the form at 6.00 pm, and the form itself stops too.
+function closeAttendanceForm() {
+  var form = findFormNamed(ATTENDANCE_FORM_TITLE);
+  form.setCustomClosedFormMessage(ATTENDANCE_CLOSED_MESSAGE);
+  form.setAcceptingResponses(false);
+  Logger.log('Borang kehadiran ditutup.');
+}
+
+function recountAfterVoting() {
+  refreshBestDressResults();
 }
 
 function writeCurrentResults() {
