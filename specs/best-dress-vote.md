@@ -1,7 +1,7 @@
 # Best Dress vote
 
 Date: 2026-11-17 · Status: agreed (owner answers 2026-11-17)
-Done-check: PASS 2026-11-17
+Done-check: PASS 2026-11-17 (re-checked after the results moved to the committee sheet tab: A6 met by scripts/best-dress-results.gs openResultsTab, tab live with 0 votes; A1 to A5, A7 and edges unchanged)
 
 ## Stories
 
