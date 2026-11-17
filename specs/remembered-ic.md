@@ -1,6 +1,7 @@
 # No. K/P remembered from attendance
 
 Date: 2026-11-17 · Status: agreed (owner 2026-11-17: "nombor kad pengenalan di maklum balas pun boleh tak buat tak perlu isi (diambil dari pendaftaran sahaja)", then chose "Dalam telefon")
+Done-check: PASS 2026-11-17 (A1: forms.js renderForm fillsIcEntry, tests/remembered-ic.test.mjs "the feedback form starts filled...", checked at 375 px in a real browser with ?mod=selepas: field hidden, line "berakhir 1234", Tukar shows the field. A2: vote.js buildVoteForm, rememberIc fills an open vote card, test "after attendance is sent...". A3: one storage key, test "the line shows only the last 4 digits". A4: forgetIc on feedback sent (test), on both "untuk orang lain" buttons (forms.js showThanks restart, vote.js submitVote), expiry (test). A5: submitVote no longer forgets. Edges: blocked storage and a non-IC value tested. Not done: Gemini proofread of the new line, quota out until about 23 Nov.)
 Replaces the "page memory only, never browser storage" line of `best-dress-vote.md` A8.
 
 ## Stories
