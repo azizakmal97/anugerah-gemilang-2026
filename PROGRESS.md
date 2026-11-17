@@ -366,3 +366,24 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - Old previews in `hi-tea/sijil/` (`_sijil-contoh-nama.png`, `_pilihan-*.png`) are only for choosing; delete them if you like (Claude's recycle script cannot reach J:).
 
 **Verified:** lint, 18 tests, build, file sizes green; full-size crops of frame, plate and band checked; both emailed PDFs viewed.
+
+### ⬜ P06 — Best Dress vote (one man + one woman, private top 5)
+
+**Status:** pending
+**Spec:** specs/best-dress-vote.md (agreed 2026-11-17)
+**Model:** Opus 5.5 · medium (UI and the name-privacy parts), Sonnet 5.5 · medium for the scripts and tests
+
+**Plan for this phase:**
+- [ ] Google Form "Undian Best Dress 2026": No. K/P, Lelaki, Perempuan (all required), built by Apps Script in `scripts/create-forms.gs`; read the entry ids from its public page (Model: Sonnet 5.5 · medium)
+- [ ] Apps Script web app for the name search: returns at most 10 attendee names matching 3+ typed letters, only from 12.00 pm to 5.30 pm on 5 Dec, never a full list, no IC or email in the reply (Model: Opus 5.5 · medium, privacy-critical)
+- [ ] Page: vote card during `hadir`, two search boxes (Lelaki, Perempuan), IC with auto-format, the one-vote notice, closed message after 5.30 pm; same batik form look; tests in `tests/` (Model: Opus 5.5 · medium for UI, Sonnet 5.5 · medium for tests)
+- [ ] Private sheet "Keputusan Best Dress" on the owner's account: counts only the first vote per IC, only ICs on the attendance list, drops self-votes and votes after 5.30 pm, top 5 per category with ties shown; updates by itself (Model: Sonnet 5.5 · medium)
+- [ ] Test end to end with the owner's IC, then delete the test rows (Model: Sonnet 5.5 · low)
+- [ ] /done-check against the spec (Model: Opus 5.5 · medium)
+
+**Safeguards to add (plain words):**
+- Names only appear after 3 letters, at most 10 at a time, and only during voting hours, so nobody can pull the whole guest list.
+- One vote per IC, and only guests who confirmed attendance count.
+
+**Waiting on owner:**
+- Gemini proofread of the vote copy (quota out until about 2026-11-23).

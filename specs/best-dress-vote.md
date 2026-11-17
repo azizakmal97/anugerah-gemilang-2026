@@ -1,6 +1,6 @@
 # Best Dress vote
 
-Date: 2026-11-17 · Status: draft
+Date: 2026-11-17 · Status: agreed (owner answers 2026-11-17)
 
 ## Stories
 
@@ -33,6 +33,7 @@ Why P1: the owner announces the winners at the event; results must not be public
 - Voting from outside the attendance list.
 
 ## Assumptions
+- Owner 2026-11-17 ("ya sheet peribadi"): the top 5 for each category live in a private Google Sheet on the owner's account that updates by itself; the owner opens it on the phone at 5.30 pm. No email.
 - Owner 2026-11-17 ("sorang boleh undi seorang laki dan seorang perempuan sahaja"): one vote per IC, exactly one man and one woman, both required. First vote counts, so nobody can change it later.
 - Owner 2026-11-17 ("undian dibuka sepanjang program berlangsung. 5.30 dah start sampaikan hadiah"): voting opens with attendance at 12.00 pm on 5 Dec and closes at 5.30 pm sharp, when the Best Dress prizes start. A vote sent after 5.30 pm is not counted.
 - Owner 2026-11-17 ("nama boleh muncul lepas type huruf"): names show only after 3 typed letters, loaded live from Google while voting is open, never stored in this repo, never a full list.
@@ -41,4 +42,4 @@ Why P1: the owner announces the winners at the event; results must not be public
 - Votes land in a Google Form response sheet like the other forms, and an Apps Script on the owner's account counts them.
 
 ## Open questions
-- [NEEDS CLARIFICATION: how does the owner get the top 5: an email when voting closes, or a private sheet?]
+- None.
