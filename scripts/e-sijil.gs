@@ -202,11 +202,13 @@ function isBlocked(ic) {
 
 // Newest matching attendance answer wins, so a guest who confirmed twice gets their last role.
 // IC is compared by digits only. Attendance has no email question (owner 2026-11-17).
+// Only answers sent in the hall count (isEventTime in best-dress.gs, spec A9).
 function findAttendee(ic) {
   var icDigits = String(ic).replace(/\D/g, '');
   if (!icDigits) return null;
   var responses = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses();
   for (var i = responses.length - 1; i >= 0; i--) {
+    if (!isEventTime(responses[i].getTimestamp().getTime())) continue;
     var answers = readAnswers(responses[i]);
     var rowIc = String(answers['No. Kad Pengenalan'] || '').replace(/\D/g, '');
     if (rowIc === icDigits) return { role: answers['Peranan'] || 'Peserta' };

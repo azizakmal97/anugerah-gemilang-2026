@@ -151,7 +151,7 @@ test("if the open-check fails the form still shows, and a late answer to an old 
   const fetch = async () => { throw new Error("offline"); };
   const { renderVote, card } = loadVote({ fetch });
   renderVote("open");
-  renderVote("closed"); // the 5.30 pm tick lands before the check answers
+  renderVote("closed"); // the 6.00 pm tick lands before the check answers
   await settle();
   assert.deepEqual(shown(card), ["Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi."]);
 

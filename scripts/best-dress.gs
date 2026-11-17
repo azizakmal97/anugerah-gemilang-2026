@@ -3,7 +3,7 @@
  *
  * A web app the event page calls while a guest types a name. It answers with
  * at most 10 names of people who confirmed attendance, only after 3 letters,
- * and only while voting is open (12.00 pm to 5.30 pm, 5 Dec 2026). The reply
+ * and only while voting is open (12.00 pm to 6.00 pm, 5 Dec 2026). The reply
  * holds names only: never an IC, never an email, never the full list.
  *
  * Lives in the same Apps Script project as create-forms.gs and e-sijil.gs
@@ -17,11 +17,22 @@
  *
  * Testing before the event: open Project Settings > Script properties and set
  * VOTE_TEST_UNTIL to an end time, for example 2026-11-20T23:00:00+08:00.
- * Search answers until then, then closes again by itself.
+ * The search then answers "open" until that time, so the vote card can be
+ * previewed. It finds no names before 5 Dec (see isEventTime) and no test
+ * vote ever counts.
  */
 
-var VOTE_OPENS_AT = Date.UTC(2026, 11, 5, 4, 0);   // 12.00 pm, 5 Dec 2026, Malaysia time
-var VOTE_CLOSES_AT = Date.UTC(2026, 11, 5, 9, 30); // 5.30 pm, when the Best Dress prizes start
+// The one rule for which answers count (owner 2026-11-17, audit: the forms are public, so anyone
+// could fill them in from home): sent on 5 Dec between 12.00 pm and 6.00 pm, Malaysia time.
+// Used for attendance rows by findAttendee (e-sijil.gs), attendeeNames here and the voter list in
+// best-dress-results.gs, and for votes by tallyVotes.
+var EVENT_OPENS_AT = Date.UTC(2026, 11, 5, 4, 0);   // 12.00 pm, 5 Dec 2026
+var EVENT_CLOSES_AT = Date.UTC(2026, 11, 5, 10, 0); // 6.00 pm: attendance and voting close (was 5.30 for votes)
+
+function isEventTime(ms) {
+  return ms >= EVENT_OPENS_AT && ms < EVENT_CLOSES_AT;
+}
+
 var VOTE_TEST_KEY = 'VOTE_TEST_UNTIL';
 var SEARCH_MIN_LETTERS = 3;
 var SEARCH_MAX_RESULTS = 10;
@@ -42,7 +53,7 @@ function searchReply(query, nowMs) {
 }
 
 function isVoteOpen(nowMs) {
-  if (nowMs >= VOTE_OPENS_AT && nowMs < VOTE_CLOSES_AT) return true;
+  if (isEventTime(nowMs)) return true;
   var testUntil = Date.parse(PropertiesService.getScriptProperties().getProperty(VOTE_TEST_KEY) || '');
   return !isNaN(testUntil) && nowMs < testUntil;
 }
@@ -60,7 +71,7 @@ function matchNames(names, key) {
   return found;
 }
 
-// Distinct attendance names, sorted, cached so 125 phones typing at once do not reread the form.
+// Distinct names from attendance sent on the day, sorted, cached so 125 phones typing at once do not reread the form.
 function attendeeNames() {
   var cache = CacheService.getScriptCache();
   var cached = cache.get(NAMES_CACHE_KEY);
@@ -68,6 +79,7 @@ function attendeeNames() {
 
   var byKey = {};
   findFormNamed(ATTENDANCE_FORM_TITLE).getResponses().forEach(function (response) {
+    if (!isEventTime(response.getTimestamp().getTime())) return;
     var name = String(readAnswers(response)['Nama penuh'] || '').replace(/\s+/g, ' ').trim();
     var key = nameKey(name);
     if (key && !byKey[key]) byKey[key] = name;

@@ -81,12 +81,12 @@ test("the countdown mode shows the countdown and no form", () => {
   assert.equal(elements.countdown.hidden, false);
 });
 
-test("the Best Dress vote is open from 12.00 pm, closed from 5.30 pm, hidden on other days", () => {
+test("the Best Dress vote is open from 12.00 pm, closed from 6.00 pm, hidden on other days", () => {
   const { app } = loadApp();
   assert.equal(app.pickVoteState("sebelum", myt(11, 59)), "hidden");
   assert.equal(app.pickVoteState("hadir", myt(12)), "open");
-  assert.equal(app.pickVoteState("hadir", myt(17, 29)), "open");
-  assert.equal(app.pickVoteState("hadir", myt(17, 30)), "closed");
+  assert.equal(app.pickVoteState("hadir", myt(17, 59)), "open");
+  assert.equal(app.pickVoteState("hadir", myt(18)), "closed");
   assert.equal(app.pickVoteState("selepas", myt(18)), "hidden");
 });
 

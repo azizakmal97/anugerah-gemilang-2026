@@ -8,7 +8,7 @@ import vm from "node:vm";
 
 const SOURCE = readFileSync(new URL("../scripts/best-dress.gs", import.meta.url), "utf8");
 const OPEN = Date.UTC(2026, 11, 5, 4, 0); // 12.00 pm, 5 Dec, Malaysia time
-const CLOSE = Date.UTC(2026, 11, 5, 9, 30); // 5.30 pm
+const CLOSE = Date.UTC(2026, 11, 5, 10, 0); // 6.00 pm
 
 function loadSearch({ attendees = [], properties = {} } = {}) {
   let formReads = 0;
@@ -37,9 +37,15 @@ function loadSearch({ attendees = [], properties = {} } = {}) {
   return { searchReply, formReads: () => formReads };
 }
 
-const guest = (name, ic = "900101081234") => ({ "Nama penuh": name, "No. Kad Pengenalan": ic, Peranan: "Peserta" });
+// readAnswers is faked as identity, so one object is both the response and its answers.
+const guest = (name, ic = "900101081234", sentAt = OPEN + 60 * 1000) => ({
+  "Nama penuh": name,
+  "No. Kad Pengenalan": ic,
+  Peranan: "Peserta",
+  getTimestamp: () => new Date(sentAt),
+});
 
-test("search is closed before 12.00 pm and from 5.30 pm on 5 Dec", () => {
+test("search is closed before 12.00 pm and from 6.00 pm on 5 Dec", () => {
   const { searchReply } = loadSearch({ attendees: [guest("Siti Aminah")] });
   assert.deepEqual(searchReply("siti", OPEN - 1), { open: false, names: [] });
   assert.deepEqual(searchReply("siti", CLOSE), { open: false, names: [] });
@@ -54,6 +60,16 @@ test("VOTE_TEST_UNTIL opens search early and closes it by itself", () => {
   assert.equal(searchReply("siti", testUntil - 1).open, true);
   assert.equal(searchReply("siti", testUntil).open, false);
   assert.equal(loadSearch({ properties: { VOTE_TEST_UNTIL: "bukan tarikh" } }).searchReply("siti", OPEN - 1).open, false);
+});
+
+test("only attendance sent on 5 Dec, 12.00 to 6.00 pm, is searchable", () => {
+  const attendees = [
+    guest("Siti Awal", "900101081111", Date.parse("2026-11-17T20:00:00+08:00")),
+    guest("Siti Lewat", "900101082222", CLOSE),
+    guest("Siti Hadir", "900101083333", OPEN),
+  ];
+  const { searchReply } = loadSearch({ attendees });
+  assert.deepEqual(searchReply("siti", OPEN + 1).names, ["Siti Hadir"]);
 });
 
 test("fewer than 3 letters returns no names, even with spaces or symbols", () => {

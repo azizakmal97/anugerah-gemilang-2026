@@ -89,21 +89,24 @@ function writeCurrentResults() {
   });
   var attendees = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses().map(function (response) {
     var answers = readAnswers(response);
-    return { ic: answers['No. Kad Pengenalan'], name: answers['Nama penuh'] };
+    return { timestamp: response.getTimestamp().getTime(), ic: answers['No. Kad Pengenalan'], name: answers['Nama penuh'] };
   });
-  var tally = tallyVotes(votes, attendees, isVoteOpen);
+  // isEventTime, not isVoteOpen: VOTE_TEST_UNTIL only opens the search for a preview, it never counts.
+  var tally = tallyVotes(votes, attendees, isEventTime);
   writeResults(openResultsTab(), tally, new Date());
 }
 
 /**
  * Pure counting rules. votes: [{timestamp, ic, Lelaki, Perempuan}],
- * attendees: [{ic, name}], isCountedTime(ms) says when a vote may count.
+ * attendees: [{timestamp, ic, name}], isCountedTime(ms) says when a vote or an
+ * attendance answer may count (isEventTime: 5 Dec, 12.00 to 6.00 pm).
  * Returns {voters, Lelaki: [{rank, name, votes}], Perempuan: [...]}.
  */
 function tallyVotes(votes, attendees, isCountedTime) {
   var attendeeByIc = {};
   var displayNameByKey = {};
   attendees.forEach(function (attendee) {
+    if (!isCountedTime(attendee.timestamp)) return; // added from home in November: not a voter, not a pick
     var icDigits = digitsOf(attendee.ic);
     var key = nameKey(attendee.name || '');
     if (!icDigits || !key) return;

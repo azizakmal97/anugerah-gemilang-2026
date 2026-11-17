@@ -6,7 +6,7 @@ import vm from "node:vm";
 
 const read = (name) => readFileSync(new URL(`../scripts/${name}`, import.meta.url), "utf8");
 const OPEN = Date.UTC(2026, 11, 5, 4, 0); // 12.00 pm, 5 Dec, Malaysia time
-const CLOSE = Date.UTC(2026, 11, 5, 9, 30); // 5.30 pm
+const CLOSE = Date.UTC(2026, 11, 5, 10, 0); // 6.00 pm
 const MINUTE = 60 * 1000;
 
 function loadTally(properties = {}) {
@@ -19,11 +19,11 @@ function loadTally(properties = {}) {
   vm.runInContext(read("best-dress.gs"), context);
   vm.runInContext(read("best-dress-results.gs"), context);
   // JSON round trip: vm arrays fail deepEqual across realms.
-  return (votes, attendees, isCountedTime = context.isVoteOpen) =>
+  return (votes, attendees, isCountedTime = context.isEventTime) =>
     JSON.parse(JSON.stringify(context.tallyVotes(votes, attendees, isCountedTime)));
 }
 
-const attendee = (name, ic) => ({ name, ic });
+const attendee = (name, ic, timestamp = OPEN + MINUTE) => ({ name, ic, timestamp });
 const vote = (ic, Lelaki, Perempuan, timestamp = OPEN + MINUTE) => ({ ic, Lelaki, Perempuan, timestamp });
 
 const ATTENDEES = [
@@ -70,7 +70,7 @@ test("a pick who did not confirm attendance is ignored", () => {
   assert.equal(result.Perempuan.length, 1);
 });
 
-test("votes before 12.00 pm or from 5.30 pm are not counted, and an early vote does not use up the IC", () => {
+test("votes before 12.00 pm or from 6.00 pm are not counted, and an early vote does not use up the IC", () => {
   const result = loadTally()(
     [
       vote("900101-08-5555", "Ahmad Zaki", "Siti Aminah", OPEN - 1),
@@ -84,11 +84,25 @@ test("votes before 12.00 pm or from 5.30 pm are not counted, and an early vote d
   assert.deepEqual(result.Perempuan, [{ rank: 1, name: "Nur Aini", votes: 1 }]);
 });
 
-test("VOTE_TEST_UNTIL lets test votes count until it ends", () => {
+test("a test vote never counts, even while VOTE_TEST_UNTIL opens the search", () => {
   const properties = { VOTE_TEST_UNTIL: "2026-11-20T23:00:00+08:00" };
   const early = Date.parse("2026-11-18T10:00:00+08:00");
   const result = loadTally(properties)([vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah", early)], ATTENDEES);
-  assert.equal(result.voters, 1);
+  assert.equal(result.voters, 0);
+});
+
+test("attendance sent outside 5 Dec, 12.00 to 6.00 pm, makes neither a voter nor a pick", () => {
+  const fromHome = Date.parse("2026-11-17T21:00:00+08:00");
+  const people = [
+    attendee("Ali Bin Abu", "900101-08-1111"),
+    attendee("Orang Rumah", "900101-08-6666", fromHome),
+    attendee("Siti Lewat", "900101-08-7777", CLOSE),
+  ];
+  const result = loadTally()(
+    [vote("900101-08-6666", "Ali Bin Abu", ""), vote("900101-08-1111", "", "Siti Lewat", OPEN + 2 * MINUTE)],
+    people,
+  );
+  assert.deepEqual(result, { voters: 1, Lelaki: [], Perempuan: [] });
 });
 
 test("a tie at 5th place lists every tied name, and tied names share the rank", () => {
