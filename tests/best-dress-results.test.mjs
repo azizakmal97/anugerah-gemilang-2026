@@ -1,0 +1,125 @@
+// Tests for scripts/best-dress-results.gs: the counting rules behind the private Best Dress results.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+const read = (name) => readFileSync(new URL(`../scripts/${name}`, import.meta.url), "utf8");
+const OPEN = Date.UTC(2026, 11, 5, 4, 0); // 12.00 pm, 5 Dec, Malaysia time
+const CLOSE = Date.UTC(2026, 11, 5, 9, 30); // 5.30 pm
+const MINUTE = 60 * 1000;
+
+function loadTally(properties = {}) {
+  const context = {
+    VOTE_FORM_TITLE: "Undian Best Dress 2026",
+    ATTENDANCE_FORM_TITLE: "Kehadiran Majlis Anugerah Gemilang 2026",
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (key) => properties[key] ?? null }) },
+  };
+  vm.createContext(context);
+  vm.runInContext(read("best-dress.gs"), context);
+  vm.runInContext(read("best-dress-results.gs"), context);
+  // JSON round trip: vm arrays fail deepEqual across realms.
+  return (votes, attendees, isCountedTime = context.isVoteOpen) =>
+    JSON.parse(JSON.stringify(context.tallyVotes(votes, attendees, isCountedTime)));
+}
+
+const attendee = (name, ic) => ({ name, ic });
+const vote = (ic, Lelaki, Perempuan, timestamp = OPEN + MINUTE) => ({ ic, Lelaki, Perempuan, timestamp });
+
+const ATTENDEES = [
+  attendee("Ali Bin Abu", "900101-08-1111"),
+  attendee("Ahmad Zaki", "900101-08-2222"),
+  attendee("Siti Aminah", "900101-08-3333"),
+  attendee("Nur Aini", "900101-08-4444"),
+  attendee("Mira Sofea", "900101-08-5555"),
+];
+
+test("the first vote per IC counts, even when a later vote sits earlier in the array", () => {
+  const tally = loadTally();
+  const result = tally(
+    [vote("900101-08-5555", "Ahmad Zaki", "Siti Aminah", OPEN + 10 * MINUTE), vote("900101-08-5555", "Ali Bin Abu", "Nur Aini", OPEN + MINUTE)],
+    ATTENDEES,
+  );
+  assert.equal(result.voters, 1);
+  assert.deepEqual(result.Lelaki, [{ rank: 1, name: "Ali Bin Abu", votes: 1 }]);
+  assert.deepEqual(result.Perempuan, [{ rank: 1, name: "Nur Aini", votes: 1 }]);
+});
+
+test("IC matches by digits, with or without dashes", () => {
+  const tally = loadTally();
+  const result = tally([vote("900101081111", "Ahmad Zaki", "Siti Aminah"), vote("900101-08-1111", "Ali Bin Abu", "Nur Aini", OPEN + 2 * MINUTE)], ATTENDEES);
+  assert.equal(result.voters, 1);
+  assert.equal(result.Lelaki[0].name, "Ahmad Zaki");
+});
+
+test("a voter who is not on the attendance list is ignored", () => {
+  const result = loadTally()([vote("800808-08-9999", "Ahmad Zaki", "Siti Aminah")], ATTENDEES);
+  assert.deepEqual(result, { voters: 0, Lelaki: [], Perempuan: [] });
+});
+
+test("a self-vote pick is dropped but the other pick still counts", () => {
+  const result = loadTally()([vote("900101-08-1111", "ali  bin abu", "Siti Aminah")], ATTENDEES);
+  assert.equal(result.voters, 1);
+  assert.deepEqual(result.Lelaki, []);
+  assert.deepEqual(result.Perempuan, [{ rank: 1, name: "Siti Aminah", votes: 1 }]);
+});
+
+test("a pick who did not confirm attendance is ignored", () => {
+  const result = loadTally()([vote("900101-08-1111", "Orang Luar", "Siti Aminah")], ATTENDEES);
+  assert.deepEqual(result.Lelaki, []);
+  assert.equal(result.Perempuan.length, 1);
+});
+
+test("votes before 12.00 pm or from 5.30 pm are not counted, and an early vote does not use up the IC", () => {
+  const result = loadTally()(
+    [
+      vote("900101-08-5555", "Ahmad Zaki", "Siti Aminah", OPEN - 1),
+      vote("900101-08-4444", "Ali Bin Abu", "Siti Aminah", CLOSE),
+      vote("900101-08-5555", "Ali Bin Abu", "Nur Aini", OPEN),
+    ],
+    ATTENDEES,
+  );
+  assert.equal(result.voters, 1);
+  assert.deepEqual(result.Lelaki, [{ rank: 1, name: "Ali Bin Abu", votes: 1 }]);
+  assert.deepEqual(result.Perempuan, [{ rank: 1, name: "Nur Aini", votes: 1 }]);
+});
+
+test("VOTE_TEST_UNTIL lets test votes count until it ends", () => {
+  const properties = { VOTE_TEST_UNTIL: "2026-11-20T23:00:00+08:00" };
+  const early = Date.parse("2026-11-18T10:00:00+08:00");
+  const result = loadTally(properties)([vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah", early)], ATTENDEES);
+  assert.equal(result.voters, 1);
+});
+
+test("a tie at 5th place lists every tied name, and tied names share the rank", () => {
+  const people = Array.from({ length: 7 }, (_, i) => attendee(`Calon ${"ABCDEFG"[i]}`, `91010108${1000 + i}`));
+  const voters = Array.from({ length: 8 }, (_, i) => attendee(`Pengundi ${i}`, `92010108${2000 + i}`));
+  // Calon A gets 2 votes; B to G get 1 each, so 5th place (1 vote) is shared by B to G.
+  const picks = ["Calon A", "Calon A", "Calon B", "Calon C", "Calon D", "Calon E", "Calon F", "Calon G"];
+  const votes = voters.map((voter, i) => vote(voter.ic, picks[i], ""));
+  const result = loadTally()(votes, [...people, ...voters]);
+  assert.equal(result.Lelaki.length, 7);
+  assert.deepEqual(result.Lelaki[0], { rank: 1, name: "Calon A", votes: 2 });
+  assert.deepEqual(result.Lelaki.slice(1).map((row) => row.rank), [2, 2, 2, 2, 2, 2]);
+});
+
+test("only the top 5 show when 5th place is not tied", () => {
+  const people = Array.from({ length: 6 }, (_, i) => attendee(`Calon ${"ABCDEF"[i]}`, `91010108${1000 + i}`));
+  const voters = Array.from({ length: 21 }, (_, i) => attendee(`Pengundi ${i}`, `92010108${2000 + i}`));
+  const wanted = { "Calon A": 6, "Calon B": 5, "Calon C": 4, "Calon D": 3, "Calon E": 2, "Calon F": 1 };
+  const picks = Object.entries(wanted).flatMap(([name, n]) => Array(n).fill(name));
+  const votes = voters.map((voter, i) => vote(voter.ic, picks[i], ""));
+  const result = loadTally()(votes, [...people, ...voters]);
+  assert.deepEqual(result.Lelaki.map((row) => row.name), ["Calon A", "Calon B", "Calon C", "Calon D", "Calon E"]);
+});
+
+test("names match ignoring case and spacing, and show the attendee's own spelling", () => {
+  const result = loadTally()([vote("900101-08-1111", "  AHMAD   zaki ", "siti AMINAH")], ATTENDEES);
+  assert.deepEqual(result.Lelaki, [{ rank: 1, name: "Ahmad Zaki", votes: 1 }]);
+  assert.deepEqual(result.Perempuan, [{ rank: 1, name: "Siti Aminah", votes: 1 }]);
+});
+
+test("the tally never carries an IC", () => {
+  const result = loadTally()([vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah")], ATTENDEES);
+  assert.doesNotMatch(JSON.stringify(result), /\d{6}/);
+});

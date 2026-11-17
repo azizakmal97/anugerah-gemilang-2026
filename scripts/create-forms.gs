@@ -17,6 +17,10 @@
  *
  * Attendance form still asks for Emel? Pick removeAttendanceEmail and press
  * Run. Safe to run twice.
+ *
+ * Best Dress vote form (no spreadsheet, so votes stay private)? Pick
+ * createVoteForm and press Run. Safe to run twice: it makes nothing if the
+ * form already exists.
  */
 
 var CLINICS = [
@@ -40,6 +44,7 @@ var IC_PATTERN = '^\\d{6}-?\\d{2}-?\\d{4}$';
 var IC_PATTERN_HELP = 'Format: 900101-08-1234';
 var ATTENDANCE_TITLE = 'Kehadiran Majlis Anugerah Gemilang 2026';
 var FEEDBACK_TITLE = 'Maklum Balas Majlis Anugerah Gemilang 2026';
+var VOTE_FORM_TITLE = 'Undian Best Dress 2026';
 var RATING_LOW = 'Kurang memuaskan';
 var RATING_HIGH = 'Sangat memuaskan';
 
@@ -57,6 +62,37 @@ function createForms() {
   Logger.log('Pautan sunting borang kehadiran: ' + attendanceForm.getEditUrl());
   Logger.log('Pautan sunting borang maklum balas: ' + feedbackForm.getEditUrl());
   Logger.log('Pautan hamparan respons: ' + spreadsheet.getUrl());
+}
+
+// No destination spreadsheet on purpose: the committee's shared response sheet must not hold the votes.
+function createVoteForm() {
+  var existing = null;
+  try {
+    existing = findFormByTitle(VOTE_FORM_TITLE);
+  } catch (error) {
+    existing = null; // findFormByTitle throws when the form is missing, which is the normal first run
+  }
+  if (existing) {
+    Logger.log('Borang "' + VOTE_FORM_TITLE + '" sudah ada. Tiada apa dibuat.');
+    logVoteLinks(existing);
+    return;
+  }
+
+  var form = createBaseForm(
+    VOTE_FORM_TITLE,
+    'Undi seorang lelaki dan seorang perempuan untuk Best Dress. Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dikira.',
+    'Terima kasih. Undian anda sudah diterima.'
+  );
+  addIcItem(form, 'Untuk semakan satu undi bagi setiap orang. Contoh: 900101-08-1234');
+  addShortText(form, 'Lelaki', '');
+  addShortText(form, 'Perempuan', '');
+  moveToEventFolder([form.getId()]);
+  logVoteLinks(form);
+}
+
+function logVoteLinks(form) {
+  Logger.log('Pautan borang undian (hantar kepada Claude): ' + form.getPublishedUrl());
+  Logger.log('Pautan sunting borang undian: ' + form.getEditUrl());
 }
 
 // Files land in My Drive root; move them to the event folder (My Drive/PKPD BP/hi-tea) if this account has it.
