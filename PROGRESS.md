@@ -334,11 +334,14 @@ Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate 
 **Waiting on owner:**
 - Gemini proofread owed for the new Malay lines (attendance IC help, urus setia email, "tiada dalam senarai" email); quota out until about 2026-11-23.
 
-### ⬜ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
+### 🟡 P05 — Redesign the e-sijil in real batik (peserta + urus setia)
 
-**Model:** Opus 5.5 · **Effort:** medium (edit to a settled design)
-**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd, AND the whole sijil "doesn't look like batik theme". So this is a redesign, not a nudge: real batik on the certificate (kawung field, parang border bands, pucuk rebung edges, sogan brown with the gold), matching the website's motifs; theme name placed as part of the design or removed. Two versions: peserta and urus setia. Model: Opus 5.5 · high (new look).
+**Status:** in-progress
+**Started:** 2026-11-17
+**Model:** Opus 5.5 · **Effort:** medium (owner override: owner said "guna medium", 2026-11-17, for the new look normally tagged high)
+**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd, AND the whole sijil "doesn't look like batik theme". So this is a redesign, not a nudge: real batik on the certificate (kawung field, parang border bands, pucuk rebung edges, sogan brown with the gold), matching the website's motifs; theme name placed as part of the design or removed. Two versions: peserta and urus setia.
 
 **Plan:**
-- [ ] Rework or remove that line in `print/make_sijil.py` (e.g. move the theme into the event block, or drop it), re-render `hi-tea/sijil/sijil-latar-A4.png`, show the owner (Model: Opus 5.5 · medium)
-- [ ] Copy the new PNG into the Drive folder, re-run `fitTemplate` is not needed: replace the image in the template via a small `replaceBackground` step, then `sendTestSijil` (Model: Sonnet 5.5 · low)
+- [ ] Redesign `print/make_sijil.py`: prominent batik, name box (top 279 pt, h 57) and IC box (top 334.5 pt) kept clear, signature kept; render `hi-tea/sijil/sijil-latar-A4.png` (Model: Opus 5.5 · medium, owner override)
+- [ ] Urus setia version `hi-tea/sijil/sijil-urusetia-latar-A4.png`: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia" (Model: Opus 5.5 · medium, owner override)
+- [ ] Copy both PNGs to `hi-tea/`; Apps Script: paste code, `removeAttendanceEmail`, refresh peserta background + `fitTemplate`, `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestSijil`, `sendTestUrusetia` (Model: Opus 5.5 · medium, owner override)
