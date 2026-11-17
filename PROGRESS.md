@@ -267,3 +267,23 @@ Every Friday:
 
 **Waiting on owner:**
 - (done 2026-11-17) Signer: Dr. Mohamad Noor bin Sairi, Pegawai Pergigian Daerah. Owner confirmed he agreed to his signature from `hi-tea/contoh sijil.jpeg` being used. The signature file stays in `hi-tea/sijil/`, never in this repo.
+
+---
+
+### ⬜ P03 — Forms inside the site, in the batik design
+
+**Model:** Opus 5.5 · **Effort:** medium (design on a settled look), Sonnet 5.5 · medium for the tests
+**Owner choice (2026-11-17):** guests fill attendance and feedback ON the website, styled like the page, not in a Google tab. Answers must still land in the same Google Forms response sheet, so the e-sijil script is unchanged.
+
+**Plan for this phase:**
+- [ ] Read each form's `entry.<id>` field ids (Apps Script `form.getItems()` ids, or the form's prefilled link) and the `formResponse` URL; put them in `SETTINGS` in `app.js` (Model: Sonnet 5.5 · low).
+- [ ] Attendance form on the page during `hadir`: nama penuh, klinik dropdown (7 clinics), emel; feedback form during `selepas`: three 1–5 ratings, comments, nama penuh, No. K/P, emel. Same labels and help text as `docs/forms.md` (Model: Opus 5.5 · medium).
+- [ ] Submit with `fetch(..., { method: "POST", mode: "no-cors" })` to `formResponse`; the response is unreadable, so validate on the page first (required fields, email, IC `^\d{6}-?\d{2}-?\d{4}$`), disable the button while sending, then show the thank-you text from the form. On a network error show a clear retry message and a link to the Google Form as the fallback (Model: Opus 5.5 · medium).
+- [ ] Tests in `tests/app.test.mjs`: validation rules, mode decides which form shows, button disabled while sending (Model: Sonnet 5.5 · medium).
+- [ ] Check at 375 px and desktop, then send one real test answer and see it in the response sheet (Model: Sonnet 5.5 · low).
+
+**Depends on:** P02 bullet "Add No. Kad Pengenalan question" (the IC field id must exist first).
+
+**Safeguards to add (plain words):**
+- If a guest double-taps Hantar, only one answer is sent (button disabled while sending).
+- If the phone has no signal, the guest is told and nothing looks "sent" when it was not.
