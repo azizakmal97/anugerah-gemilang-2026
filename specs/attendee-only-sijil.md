@@ -1,8 +1,8 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role; later the same day: no email on attendance, match by IC only)
-Live test 2026-11-17 19:17: A1 and A3 passed on the live page (sijil arrived for a matched IC; unmatched IC got only the "kehadiran tidak ditemui" email); test rows deleted. Only the done-check line below is still to be refreshed.
-Done-check: 2 GAPS 2026-11-17 (re-checked after P06 and the results-tab move: e-sijil.gs, forms.js and the attendance part of create-forms.gs unchanged; A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A8 met; A8 checked by a dry run in Apps Script, listed IC true and other IC false, no automated test since Apps Script code has none)
+Live test 2026-11-17 19:17: A1 and A3 passed on the live page (sijil arrived for a matched IC; unmatched IC got only the "kehadiran tidak ditemui" email); test rows deleted.
+Done-check: PASS 2026-11-17 (re-run after the results-tab look change: e-sijil.gs, forms.js and the attendance part of create-forms.gs unchanged. A1 and A3 passed on the live page: e-sijil.gs onFeedbackSubmit:166, findAttendee:205, unmatched email :367. A4: findAttendee compares digits, tests/forms.test.mjs:91. A5: forms.js:24, create-forms.gs addAttendanceQuestions:221, tests/forms.test.mjs:120 and :130. A6: tests/forms.test.mjs:99. A7: ROLES create-forms.gs:42, sendSijil:234, urus setia PDF checked in Gmail during P05. A8: isBlocked:194, checked by a dry run in Apps Script, no automated test since Apps Script code has none. A2 removed by owner. Nothing from Out of scope built.)
 
 ## Stories
 
