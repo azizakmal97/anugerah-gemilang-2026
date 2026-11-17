@@ -10,7 +10,7 @@ const SETTINGS = {
   attendanceClosesAt: Date.UTC(2026, 11, 5, 10, 0), // 5 Dec 2026, 6.00 pm
   // Best Dress vote (vote.js): the vote form's "Send" link and the name-search web app URL
   // (scripts/best-dress.gs). Voting opens with attendance and closes when the prizes start.
-  voteFormUrl: "",
+  voteFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSegopqOizhGqnmYCD3mqQ4dLvWvSzXXl0f4GbyO9ZQbgExziA/viewform",
   voteSearchUrl: "",
   voteClosesAt: Date.UTC(2026, 11, 5, 9, 30), // 5 Dec 2026, 5.30 pm
 };

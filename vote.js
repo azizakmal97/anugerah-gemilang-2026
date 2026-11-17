@@ -12,13 +12,13 @@ const VOTE_NOTICE = "Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dik
 const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian pilih daripada senarai.";
 
 // Entry ids come from the vote form's public page (FB_PUBLIC_LOAD_DATA_), like FORMS in forms.js.
-// An empty id keeps the vote card on "belum disediakan", so a half-set form never loses votes.
+// An empty id or link keeps the vote card on "belum disediakan", so a half-set form never loses votes.
 const VOTE = {
   thanks: "Terima kasih. Undian anda sudah diterima.",
   fields: [
-    { key: "lelaki", entry: "", kind: "pick", label: "Lelaki", help: PICK_HELP },
-    { key: "perempuan", entry: "", kind: "pick", label: "Perempuan", help: PICK_HELP },
-    { key: "ic", entry: "", kind: "ic", label: "No. Kad Pengenalan anda", help: "Untuk semakan satu undi bagi setiap orang. Contoh: 900101-08-1234" },
+    { key: "lelaki", entry: "1108392799", kind: "pick", label: "Lelaki", help: PICK_HELP },
+    { key: "perempuan", entry: "2135311797", kind: "pick", label: "Perempuan", help: PICK_HELP },
+    { key: "ic", entry: "1013454233", kind: "ic", label: "No. Kad Pengenalan anda", help: "Untuk semakan satu undi bagi setiap orang. Contoh: 900101-08-1234" },
   ],
 };
 
