@@ -1,7 +1,7 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role; later the same day: no email on attendance, match by IC only)
-Done-check: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed; A7 met, both test sijil sent; re-checked after the sijil colour options incl. the gold theme option, which touch no spec item; same after the final colours and the long-name font fix)
+Done-check: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A7 met; re-checked after the attendance intro copy fix, which touches no spec item)
 
 ## Stories
 
