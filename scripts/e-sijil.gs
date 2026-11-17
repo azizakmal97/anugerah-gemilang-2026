@@ -118,6 +118,16 @@ function fitUrusetiaTemplate() {
   fitTemplateFor(URUSETIA_TEMPLATE_KEY);
 }
 
+// After a new sijil-latar-A4.png lands in the Drive folder (P05 redesign): swaps the picture
+// in the existing peserta template, keeping its id, trigger and page size, then fits it.
+function refreshBackground() {
+  var presentation = SlidesApp.openById(templateIdFor(TEMPLATE_KEY));
+  var image = presentation.getSlides()[0].getImages()[0];
+  image.replace(findBackground(findEventFolder(), BACKGROUND_NAME).getBlob());
+  presentation.saveAndClose();
+  fitTemplate();
+}
+
 function fitTemplateFor(propertyKey) {
   var presentation = SlidesApp.openById(templateIdFor(propertyKey));
   var width = presentation.getPageWidth();
