@@ -18,8 +18,9 @@
     --gold-light: #f2d796;
     --gold-ink: #9a6d22;
     --sogan: #7a3f1d;
-    --paper: #fbf6ea;
-    --paper-edge: #efe3c8;
+    --navy-raised: #142a5a;
+    --cream: #f6eedb;
+    --cream-muted: #d9cfb8;
     --font-display: "Cinzel", "Times New Roman", serif;
     --font-script: "Great Vibes", cursive;
     --font-body: "Source Sans 3", system-ui, sans-serif;
@@ -30,8 +31,8 @@
   body {
     position: relative;
     overflow: hidden;
-    background: var(--navy);
-    color: var(--navy);
+    background: #040a1c;
+    color: var(--cream);
     font-family: var(--font-body);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -42,17 +43,19 @@
   .paper {
     position: absolute;
     inset: 34px;
-    background: radial-gradient(75% 60% at 50% 45%, #fffdf6, var(--paper) 60%, var(--paper-edge));
-    box-shadow: 0 0 0 2px var(--gold), 0 0 0 6px var(--navy), 0 0 0 7px var(--gold-light);
+    background:
+      radial-gradient(55% 40% at 50% 42%, rgba(214, 168, 78, 0.16), transparent 70%),
+      radial-gradient(120% 70% at 50% 0%, var(--navy-raised), var(--navy) 55%, var(--navy-deep));
+    box-shadow: 0 0 0 2px var(--gold), 0 0 0 6px #040a1c, 0 0 0 7px var(--gold-light);
   }
-  .paper::after { content: ""; position: absolute; inset: 10px; border: 1px solid rgba(154, 109, 34, 0.55); }
-  .paper-kawung { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--gold-ink); opacity: 0.05; }
+  .paper::after { content: ""; position: absolute; inset: 10px; border: 1px solid rgba(214, 168, 78, 0.5); }
+  .paper-kawung { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--gold); opacity: 0.06; }
 
-  .watermark { position: absolute; left: 50%; top: 520px; width: 560px; height: 560px; transform: translate(-50%, -50%); opacity: 0.1; }
-  .watermark g { fill: none; stroke: var(--gold-ink); stroke-width: 1.3; }
-  .watermark .fill { fill: var(--gold-ink); stroke: none; }
+  .watermark { position: absolute; left: 50%; top: 520px; width: 560px; height: 560px; transform: translate(-50%, -50%); opacity: 0.14; }
+  .watermark g { fill: none; stroke: var(--gold); stroke-width: 1.3; }
+  .watermark .fill { fill: var(--gold-light); stroke: none; }
 
-  .corner { position: absolute; width: 120px; height: 120px; color: var(--gold-ink); }
+  .corner { position: absolute; width: 120px; height: 120px; color: var(--gold); }
   .corner.tl { top: 44px; left: 44px; }
   .corner.tr { top: 44px; right: 44px; transform: scaleX(-1); }
   .corner.bl { bottom: 44px; left: 44px; transform: scaleY(-1); }
@@ -67,7 +70,7 @@
     border-radius: 50%;
     object-fit: cover;
     background: #fff;
-    box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--paper), 0 0 0 5px var(--gold-ink), 0 3px 8px rgba(11, 23, 54, 0.25);
+    box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px var(--navy-deep), 0 0 0 5px var(--gold-light), 0 3px 10px rgba(0, 0, 0, 0.5);
   }
   .office {
     margin-top: 14px;
@@ -76,7 +79,7 @@
     font-size: 11.5px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--gold-ink);
+    color: var(--gold);
   }
 
   .title {
@@ -87,12 +90,16 @@
     letter-spacing: 0.06em;
     line-height: 1;
     text-transform: uppercase;
-    color: var(--navy);
+    background: linear-gradient(180deg, #fff6dc 0%, var(--gold-light) 40%, var(--gold) 75%, #b9852f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
   }
-  .ornament { width: 300px; height: 34px; margin-top: 10px; color: var(--gold-ink); }
+  .ornament { width: 300px; height: 34px; margin-top: 10px; color: var(--gold); }
   .ornament g { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
 
-  .lead { margin-top: 26px; font-size: 18px; font-style: italic; color: #3a3f55; }
+  .lead { margin-top: 26px; font-size: 18px; font-style: italic; color: var(--cream-muted); }
 
   .name-slot {
     position: absolute;
@@ -106,13 +113,13 @@
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 30px;
-    color: var(--navy);
+    color: var(--gold-light);
     text-transform: uppercase;
   }
-  .name-rule { position: absolute; left: 50%; top: 468px; width: 540px; height: 14px; transform: translateX(-50%); color: var(--gold-ink); }
+  .name-rule { position: absolute; left: 50%; top: 468px; width: 540px; height: 14px; transform: translateX(-50%); color: var(--gold); }
 
   .lower { position: absolute; left: 0; right: 0; top: 505px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-  .joined { font-size: 18px; font-style: italic; color: #3a3f55; }
+  .joined { font-size: 18px; font-style: italic; color: var(--cream-muted); }
   .event {
     margin-top: 12px;
     font-family: var(--font-display);
@@ -121,18 +128,19 @@
     line-height: 1.25;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--navy);
+    color: var(--cream);
   }
-  .event .year { display: block; font-size: 19px; color: var(--sogan); letter-spacing: 0.12em; margin-top: 2px; }
-  .details { margin-top: 14px; font-size: 16.5px; color: #3a3f55; line-height: 1.5; }
-  .details strong { color: var(--navy); font-weight: 700; }
-  .theme { margin-top: 6px; font-family: var(--font-script); font-size: 34px; color: var(--sogan); }
+  .event .year { display: block; font-size: 19px; color: var(--gold); letter-spacing: 0.12em; margin-top: 2px; }
+  .details { margin-top: 14px; font-size: 16.5px; color: var(--cream-muted); line-height: 1.5; }
+  .details strong { color: var(--cream); font-weight: 700; }
+  .theme { margin-top: 6px; font-family: var(--font-script); font-size: 34px; color: var(--gold-light); }
 
   .sign { position: absolute; left: 0; right: 0; top: 820px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-  .sign img { width: 270px; height: auto; margin-bottom: -6px; }
-  .sign .line { width: 300px; border-top: 1px solid var(--gold-ink); }
-  .sign .who { margin-top: 8px; font-weight: 700; font-size: 14.5px; letter-spacing: 0.02em; color: var(--navy); }
-  .sign .post { font-size: 13px; color: #3a3f55; line-height: 1.4; }
+  /* The signature file is dark ink; turn it warm cream so it reads on navy. */
+  .sign img { width: 270px; height: auto; margin-bottom: -6px; filter: brightness(0) invert(1) sepia(0.35); }
+  .sign .line { width: 300px; border-top: 1px solid var(--gold); }
+  .sign .who { margin-top: 8px; font-weight: 700; font-size: 14.5px; letter-spacing: 0.02em; color: var(--cream); }
+  .sign .post { font-size: 13px; color: var(--cream-muted); line-height: 1.4; }
 </style>
 </head>
 <body>
