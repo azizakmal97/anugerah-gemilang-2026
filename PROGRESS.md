@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** _none_ (next: ⬜ P05 sijil redesign on Opus 5.5 · high, then ⬜ P04)
-**Last update:** 2026-11-17, Opus 5.5 (P03 done; forms live on the page)
+**Active phase:** P04 (⬜ P05 waits for Opus 5.5 · high)
+**Last update:** 2026-11-17, Opus 5.5 · medium (P04 started by /autonomous; P05 deferred, needs high effort)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -304,20 +304,28 @@ Every Friday:
 
 ---
 
-### ⬜ P04 — e-sijil only for people who really came
+### 🟡 P04 — e-sijil only for people who really came
 
+**Status:** in-progress
+**Started:** 2026-11-17
+**Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
 **Why (owner 2026-11-17):** a shared QR would let someone who did not come fill feedback and get a sijil.
 **Owner choice (2026-11-17): A only** (a hall code can be passed on too). Send the sijil only when the feedback email or IC is also in the attendance tab. No approval step (owner 2026-11-17: "I don't have time to approve, just trust them"): an unmatched answer gets no sijil, only a short email saying their name is not in the attendance list and to contact the urus setia.
 **Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Decided (owner 2026-11-17: "just make a choice", then "just trust them"): a required "Peranan" choice (Peserta / Urus setia) on the attendance form, trusted as given. Whoever is in the attendance tab gets the sijil for the role they chose there, sent automatically. Urus setia sijil: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia", own background.
 
-**Plan (after the choice):**
-- [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
-- [ ] Add a required "No. Kad Pengenalan" to the attendance form (Google Form via Apps Script + `forms.js`, new entry id), same rule as feedback (Model: Sonnet 5.5 · medium)
-- [ ] IC auto-format while typing on both forms: digits only, dashes added after 6 and 8 digits (871212080879 → 871212-08-0879), max 14 characters; test in `tests/forms.test.mjs` (Model: Sonnet 5.5 · medium)
-- [ ] Apps Script check in `onFeedbackSubmit` (match by IC digits, email as fallback): matched → sijil for the chosen role; unmatched → short "tiada dalam senarai kehadiran" email (Model: Sonnet 5.5 · medium)
-- [ ] Urusetia sijil: design the second background + template, pick template by the Urusetia list (Model: Opus 5.5 · medium for design, Sonnet 5.5 · medium for script)
-- [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
+**Plan for this phase:**
+- [ ] Spec with the owner's choice, `specs/attendee-only-sijil.md` (Model: Opus 5.5 · medium)
+- [ ] IC auto-format while typing on both forms: digits only, dashes added after 6 and 8 digits (871212080879 → 871212-08-0879), max 14 characters; test in `tests/forms.test.mjs` (Model: Sonnet 5.5 · medium, tiny, run here)
+- [ ] `scripts/create-forms.gs`: one-off `addAttendanceQuestions` adds required "No. Kad Pengenalan" (same rule as feedback) and "Peranan" (Peserta / Urus setia) to the attendance form, safe to run twice; update `docs/forms.md` (Model: Sonnet 5.5 · medium)
+- [ ] `scripts/e-sijil.gs`: in `onFeedbackSubmit`, look up the attendance answers (IC digits first, email as fallback); matched → sijil for the role chosen there; unmatched → short "tiada dalam senarai kehadiran" email, no sijil (Model: Sonnet 5.5 · medium; email copy Opus 5.5 · medium)
+- [ ] Run `addAttendanceQuestions` in Apps Script (Claude in Chrome, /u/1), read the two new entry ids, add both fields to `FORMS.attendance` in `forms.js` + tests (Model: Sonnet 5.5 · low)
+- [ ] Urus setia sijil background + template: moved into P05 (needs Opus 5.5 · high for the new look); the script picks the template by role (Model: Opus 5.5 · high)
+- [ ] Test with the owner's email, matched peserta, matched urus setia, unmatched (Model: Sonnet 5.5 · low)
+
+**Safeguards added (plain words):**
+
+**Waiting on owner:**
 
 ### ⬜ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
 
