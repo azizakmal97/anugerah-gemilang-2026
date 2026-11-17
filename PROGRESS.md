@@ -308,15 +308,13 @@ Every Friday:
 
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
 **Why (owner 2026-11-17):** a shared QR would let someone who did not come fill feedback and get a sijil.
-**Needs a spec (`/spec`) and the owner's choice first** `<requires user input>`:
-- A. Match: send the sijil only when the feedback email (or IC) is also in the attendance tab. Unmatched answers wait in a list for the committee to approve.
-- B. Hall code: a short code shown only at the registration desk; the attendance form needs it, so a shared QR alone is not enough.
-- Recommended: A + B together.
+**Owner choice (2026-11-17): A only** (a hall code can be passed on too). Send the sijil only when the feedback email or IC is also in the attendance tab; unmatched answers wait in a list for the committee to approve.
+**Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Open question for the spec: how a person is marked urusetia. Recommended: a "Urusetia" tab in the response sheet where the committee lists emails (not a choice on the form, which anyone could tick). Urusetia sijil needs its own wording (e.g. SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia") and its own background, designed on Opus.
 
 **Plan (after the choice):**
 - [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
 - [ ] Apps Script check in `onFeedbackSubmit` + an "approve and send" step for unmatched answers (Model: Sonnet 5.5 · medium)
-- [ ] If B: code field on the attendance form (Google Form + `forms.js`), code on the desk QR poster (Model: Sonnet 5.5 · medium; poster Opus)
+- [ ] Urusetia sijil: design the second background + template, pick template by the Urusetia list (Model: Opus 5.5 · medium for design, Sonnet 5.5 · medium for script)
 - [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
 
 ### ⬜ P05 — Fix "Nusantara Batik" line on the e-sijil
