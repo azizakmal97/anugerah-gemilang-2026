@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** P03
-**Last update:** 2026-11-17, Opus 5.5 (P02 done; e-sijil live)
+**Active phase:** _none_
+**Last update:** 2026-11-17, Opus 5.5 (P03 done; forms live on the page)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -274,9 +274,10 @@ Every Friday:
 
 ---
 
-### 🟡 P03 — Forms inside the site, in the batik design
+### ✅ P03 — Forms inside the site, in the batik design
 
-**Status:** in-progress
+**Status:** done
+**Completed:** 2026-11-17
 **Started:** 2026-11-17
 **Spec:** specs/in-site-forms.md
 
@@ -284,14 +285,19 @@ Every Friday:
 **Owner choice (2026-11-17):** guests fill attendance and feedback ON the website, styled like the page, not in a Google tab. Answers must still land in the same Google Forms response sheet, so the e-sijil script is unchanged.
 
 **Plan for this phase:**
-- [ ] Read each form's `entry.<id>` field ids (Apps Script `form.getItems()` ids, or the form's prefilled link) and the `formResponse` URL; put them in `SETTINGS` in `app.js` (Model: Sonnet 5.5 · low).
-- [ ] Attendance form on the page during `hadir`: nama penuh, klinik dropdown (7 clinics), emel; feedback form during `selepas`: three 1–5 ratings, comments, nama penuh, No. K/P, emel. Same labels and help text as `docs/forms.md` (Model: Opus 5.5 · medium).
-- [ ] Submit with `fetch(..., { method: "POST", mode: "no-cors" })` to `formResponse`; the response is unreadable, so validate on the page first (required fields, email, IC `^\d{6}-?\d{2}-?\d{4}$`), disable the button while sending, then show the thank-you text from the form. On a network error show a clear retry message and a link to the Google Form as the fallback (Model: Opus 5.5 · medium).
-- [ ] Tests in `tests/app.test.mjs`: validation rules, mode decides which form shows, button disabled while sending (Model: Sonnet 5.5 · medium).
-- [ ] Check at 375 px and desktop, then send one real test answer and see it in the response sheet (Model: Sonnet 5.5 · low).
+- [x] Read each form's `entry.<id>` field ids (Apps Script `form.getItems()` ids, or the form's prefilled link) and the `formResponse` URL; put them in `SETTINGS` in `app.js` (Model: Sonnet 5.5 · low).
+- [x] Attendance form on the page during `hadir`: nama penuh, klinik dropdown (7 clinics), emel; feedback form during `selepas`: three 1–5 ratings, comments, nama penuh, No. K/P, emel. Same labels and help text as `docs/forms.md` (Model: Opus 5.5 · medium).
+- [x] Submit with `fetch(..., { method: "POST", mode: "no-cors" })` to `formResponse`; the response is unreadable, so validate on the page first (required fields, email, IC `^\d{6}-?\d{2}-?\d{4}$`), disable the button while sending, then show the thank-you text from the form. On a network error show a clear retry message and a link to the Google Form as the fallback (Model: Opus 5.5 · medium).
+- [x] Tests in `tests/app.test.mjs`: validation rules, mode decides which form shows, button disabled while sending (Model: Sonnet 5.5 · medium).
+- [x] Check at 375 px and desktop, then send one real test answer and see it in the response sheet (Model: Sonnet 5.5 · low).
 
 **Depends on:** P02 bullet "Add No. Kad Pengenalan question" (the IC field id must exist first).
 
-**Safeguards to add (plain words):**
+**Delivered:** `forms.js` + `forms.css`; the action card shows the attendance form 12 pm to 6 pm on 5 Dec and the feedback form after. Real test from the page: both rows reached the response sheet and the e-sijil email arrived. DONE-CHECK: PASS (A1 to A7). Gate: `anti-slop/gates/2026-11-17-in-site-forms.md`. Attendance help text no longer mentions the sijil (owner: the sijil name comes from the feedback form), on the page and in the Google Form.
+
+**Waiting on owner:**
+- Delete the two test rows ("UJIAN LAMAN") from both tabs of "Anugerah Gemilang 2026 - Respons" before 5 Dec.
+
+**Safeguards added (plain words):**
 - If a guest double-taps Hantar, only one answer is sent (button disabled while sending).
 - If the phone has no signal, the guest is told and nothing looks "sent" when it was not.
