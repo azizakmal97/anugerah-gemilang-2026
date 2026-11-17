@@ -8,9 +8,10 @@ import vm from "node:vm";
 const FORMS_SOURCE = readFileSync(new URL("../forms.js", import.meta.url), "utf8");
 
 function loadForms({ fetch = async () => {} } = {}) {
+  const page = { "action-text": Object.assign(fakeNode(), { textContent: "Isi borang ini." }) }; // the line above the form
   const context = {
     SETTINGS: { attendanceFormUrl: "https://docs.google.com/forms/d/e/ABC/viewform", feedbackFormUrl: "" },
-    document: { createElement: fakeNode },
+    document: { createElement: fakeNode, getElementById: (id) => page[id] || null },
     URLSearchParams,
     AbortController,
     setTimeout,
@@ -24,7 +25,7 @@ function loadForms({ fetch = async () => {} } = {}) {
     `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
     context,
   );
-  return context.__forms;
+  return { ...context.__forms, page };
 }
 
 function fakeNode() {
@@ -163,9 +164,9 @@ test("an invalid answer is never sent and the field shows why", async () => {
   assert.equal(errorNode.textContent, "Sila isi ruangan ini.");
 });
 
-test("the button is disabled while sending, then the thanks replace the form", async () => {
+test("the button is disabled while sending, then the thanks replace the form and its instruction", async () => {
   let finish;
-  const { submitForm } = loadForms({ fetch: () => new Promise((resolve) => { finish = resolve; }) });
+  const { submitForm, page } = loadForms({ fetch: () => new Promise((resolve) => { finish = resolve; }) });
   const { form } = fakeForm("Siti Aminah");
   const button = node();
   const sending = submitForm(ONE_FIELD, form, button, node(), () => {});
@@ -173,6 +174,7 @@ test("the button is disabled while sending, then the thanks replace the form", a
   finish();
   assert.equal(await sending, "sent");
   assert.ok(form.replacedWith, "form was replaced by the thank-you block");
+  assert.equal(page["action-text"].hidden, true, "the 'isi borang' line is gone once it is sent");
 });
 
 test("a failed send says so, offers the Google Form and lets the guest retry", async () => {

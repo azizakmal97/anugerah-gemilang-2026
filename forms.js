@@ -27,7 +27,7 @@ const FORMS = {
   feedback: {
     settingsKey: "feedbackFormUrl",
     submitLabel: "Hantar dan dapatkan sijil",
-    thanks: "Terima kasih atas maklum balas anda. Sijil penyertaan akan sampai ke emel anda dalam masa terdekat. Jika tidak nampak, semak folder spam.",
+    thanks: "Terima kasih atas maklum balas anda. Jika No. K/P anda ada dalam senarai kehadiran, sijil akan sampai ke emel anda dalam masa terdekat. Jika tidak nampak, semak folder spam.",
     fields: [
       { entry: "1530453899", kind: "rating", label: "Secara keseluruhan, bagaimana penilaian anda terhadap majlis ini?" },
       { entry: "1508823172", kind: "rating", label: "Bagaimana pengacaraan dan atur cara majlis?" },
@@ -126,6 +126,7 @@ function renderForm(formName) {
   holder.replaceChildren();
   holder.hidden = !formName;
   if (!formName) return;
+  showInstruction(true);
   const spec = FORMS[formName];
   if (!SETTINGS[spec.settingsKey]) {
     holder.append(el("p", { class: "form-status", text: "Pautan borang belum disediakan." }));
@@ -265,5 +266,12 @@ function showThanks(form, thanks, restart) {
   again.addEventListener("click", restart);
   const done = el("div", { class: "form-done", tabindex: "-1" }, [el("p", { text: thanks }), again]);
   form.replaceWith(done);
+  showInstruction(false);
   done.focus();
+}
+
+// The "isi borang ini" line above the form reads wrong once the form is sent.
+function showInstruction(visible) {
+  const line = document.getElementById("action-text");
+  if (line) line.hidden = !visible || !line.textContent;
 }

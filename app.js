@@ -25,7 +25,7 @@ const MODES = {
   },
   selepas: {
     kicker: "Terima kasih kerana hadir",
-    text: "Isi borang maklum balas ringkas ini. Sijil penyertaan anda akan dihantar ke emel sejurus selepas borang dihantar.",
+    text: "Isi borang maklum balas ringkas ini. Sijil anda akan dihantar ke emel selepas borang dihantar.",
     form: "feedback",
   },
 };
