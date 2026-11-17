@@ -5,6 +5,7 @@ and the renders go to that folder too. Apps Script lays each guest's name over t
 
     python print/make_sijil.py [output_dir]            # both background PNGs (no name)
     python print/make_sijil.py [output_dir] --preview  # also a sample of each with a name, for review
+    python print/make_sijil.py [output_dir] --options  # one small peserta sample per colour option, to pick from
 """
 import sys
 from pathlib import Path
@@ -18,6 +19,21 @@ TEMPLATE = HERE / "sijil.template.html"
 ASSETS = HERE.parent / "assets"
 PREVIEW_NAME = "Jama'atul Nadirah binti Ramli"
 PREVIEW_IC = "No. K/P: 000000-00-0000"
+
+# Colour options for the cloth (frame gradient a -> b, field gradient a -> b -> c, plate rgb).
+# Gold motifs stay the same in every option. The owner picks one; DEFAULT_THEME is used for the real PNGs.
+THEMES = {
+    "navy": {"cloth-a": "#1d3c86", "cloth-b": "#071334", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34"},
+    "maroon": {"cloth-a": "#8e1838", "cloth-b": "#3c0717", "field-a": "#5a0f28", "field-b": "#2c0613", "field-c": "#16030a", "plate": "26, 4, 12"},
+    "emerald": {"cloth-a": "#0f6b57", "cloth-b": "#05303a", "field-a": "#0d4f52", "field-b": "#062b30", "field-c": "#03161a", "plate": "3, 22, 26"},
+}
+DEFAULT_THEME = "navy"
+
+
+def theme_style(theme: str) -> str:
+    colours = "".join(f" --{key}: {value};" for key, value in THEMES[theme].items())
+    return f"<style>:root {{{colours} }}</style>"
+
 
 # file stem -> the words that differ between the two versions. Apps Script looks the PNGs up by name.
 VERSIONS = {
@@ -34,12 +50,13 @@ VERSIONS = {
 }
 
 
-def fill_page(out_dir: Path, words: dict, name: str, ic_line: str = "") -> Path:
+def fill_page(out_dir: Path, words: dict, name: str, ic_line: str = "", theme: str = DEFAULT_THEME) -> Path:
     signature = out_dir / "tandatangan.png"
     if not signature.exists():
         raise SystemExit(f"Signature missing: {signature}. It is kept outside the repo on purpose.")
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("../assets/", ASSETS.as_uri() + "/")
+    html = html.replace("{{THEME}}", theme_style(theme))
     for key, text in words.items():
         html = html.replace("{{" + key + "}}", text)
     html = html.replace("{{SIGNATURE}}", signature.as_uri())
@@ -50,11 +67,11 @@ def fill_page(out_dir: Path, words: dict, name: str, ic_line: str = "") -> Path:
     return page
 
 
-def render(page_path: Path, png_path: Path) -> None:
+def render(page_path: Path, png_path: Path, scale: float = SCALE_FOR_300_DPI) -> None:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         try:
-            page = browser.new_page(viewport={"width": A4_CSS_PX[0], "height": A4_CSS_PX[1]}, device_scale_factor=SCALE_FOR_300_DPI)
+            page = browser.new_page(viewport={"width": A4_CSS_PX[0], "height": A4_CSS_PX[1]}, device_scale_factor=scale)
             page.goto(page_path.as_uri())
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(400)
@@ -68,6 +85,11 @@ def render(page_path: Path, png_path: Path) -> None:
 if __name__ == "__main__":
     args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
     output = Path(args[0]) if args else HERE.parent.parent / "sijil"
+    if "--options" in sys.argv:
+        peserta = VERSIONS["sijil-latar-A4"]
+        for theme in THEMES:
+            render(fill_page(output, peserta, PREVIEW_NAME, PREVIEW_IC, theme), output / f"_pilihan-{theme}.png", scale=1)
+        sys.exit(0)
     for stem, words in VERSIONS.items():
         render(fill_page(output, words, ""), output / f"{stem}.png")
         if "--preview" in sys.argv:
