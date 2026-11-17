@@ -383,7 +383,7 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Links (owner account azizakmal@moh.gov.my):**
 - Vote form: https://docs.google.com/forms/d/e/1FAIpQLSegopqOizhGqnmYCD3mqQ4dLvWvSzXXl0f4GbyO9ZQbgExziA/viewform (edit: https://docs.google.com/forms/d/16n1YbKrf86x8OvyghE68e6WHd-coj9Pc64R54tcKfl4/edit)
-- Results sheet (private): https://docs.google.com/spreadsheets/d/1M_A3MPxiUDNe5StBv8Eflw4ME0vIWOTfd0vpxuKMFDg/edit
+- Results: tab "Keputusan Best Dress" in the committee sheet "Anugerah Gemilang 2026 - Respons": https://docs.google.com/spreadsheets/d/1pTWOk27VrQiLWIl26x_NyeP2A3jHYPgm1LAOQl3zB_4/edit#gid=1634518637 (owner 2026-11-17 moved it there from a private sheet, now in the Drive bin; script property `BEST_DRESS_SHEET_ID` is left over and unused)
 - Name search web app: deployment "Carian nama Best Dress", version 1. After editing `best-dress.gs`: Deploy > Manage deployments > edit > New version (keeps the URL).
 
 **Safeguards added:**
