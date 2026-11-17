@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** _none_ (P01 to P06 done; P07 planned, not started)
+**Active phase:** P07 🟡 in-progress
 **Last update:** 2026-11-17, Sonnet 5.5 (P04 done; results look, name capitals and IC hand-over shipped; /close run)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -401,9 +401,9 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 ---
 
-### ⬜ P07 — Apps Script fixes from the 2026-11-17 audit, two sijil for urus setia, sheet look
+### 🟡 P07 — Apps Script fixes from the 2026-11-17 audit, two sijil for urus setia, sheet look
 
-**Status:** pending
+**Status:** 🟡 in-progress (started 2026-11-17, Opus 5.5 · medium)
 **Specs:** specs/attendee-only-sijil.md (A7 changed, A9 to A12 new), specs/best-dress-vote.md (closes 6.00 pm), specs/sheet-look.md (new)
 **Model:** Opus 5.5 · medium (owner's setting for this site; vote counts and sijil are expensive to get wrong; sheet look is design work), Sonnet 5.5 · low for the paste-and-deploy steps in Chrome
 **Why (audit 2026-11-17, owner answers the same day):** the forms are public, so anyone could register from home and then vote or get a sijil; the "tidak ditemui" email could be sent to any address; leftover test votes could count; a second feedback gave a second sijil.
