@@ -315,7 +315,7 @@ Every Friday:
 **Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Decided (owner 2026-11-17: "just make a choice", then "just trust them"): a required "Peranan" choice (Peserta / Urus setia) on the attendance form, trusted as given. Whoever is in the attendance tab gets the sijil for the role they chose there, sent automatically. Urus setia sijil: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia", own background.
 
 **Plan for this phase:**
-- [ ] Spec with the owner's choice, `specs/attendee-only-sijil.md` (Model: Opus 5.5 · medium)
+- [x] Spec with the owner's choice, `specs/attendee-only-sijil.md` (Model: Opus 5.5 · medium)
 - [ ] IC auto-format while typing on both forms: digits only, dashes added after 6 and 8 digits (871212080879 → 871212-08-0879), max 14 characters; test in `tests/forms.test.mjs` (Model: Sonnet 5.5 · medium, tiny, run here)
 - [ ] `scripts/create-forms.gs`: one-off `addAttendanceQuestions` adds required "No. Kad Pengenalan" (same rule as feedback) and "Peranan" (Peserta / Urus setia) to the attendance form, safe to run twice; update `docs/forms.md` (Model: Sonnet 5.5 · medium)
 - [ ] `scripts/e-sijil.gs`: in `onFeedbackSubmit`, look up the attendance answers (IC digits first, email as fallback); matched → sijil for the role chosen there; unmatched → short "tiada dalam senarai kehadiran" email, no sijil (Model: Sonnet 5.5 · medium; email copy Opus 5.5 · medium)
