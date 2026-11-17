@@ -22,7 +22,6 @@ const FORMS = {
       { entry: "718418112", kind: "ic", label: "No. Kad Pengenalan", help: "Untuk semakan sijil anda. Contoh: 900101-08-1234" },
       { entry: "1345289916", kind: "select", label: "Klinik atau unit", options: CLINICS },
       { entry: "75149903", kind: "choice", label: "Peranan", options: ROLES },
-      { entry: "1638971287", kind: "email", label: "Emel", help: "Gunakan emel yang anda semak." },
     ],
   },
   feedback: {
