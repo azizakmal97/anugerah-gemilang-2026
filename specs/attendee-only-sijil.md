@@ -1,7 +1,7 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role; later the same day: no email on attendance, match by IC only)
-Done-check: 2 GAPS 2026-11-17 (re-checked after P06: e-sijil.gs and forms.js unchanged, create-forms.gs only gained createVoteForm; A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A8 met; A8 checked by a dry run in Apps Script, listed IC true and other IC false, no automated test since Apps Script code has none)
+Done-check: 2 GAPS 2026-11-17 (re-checked after P06 and the results-tab move: e-sijil.gs, forms.js and the attendance part of create-forms.gs unchanged; A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A8 met; A8 checked by a dry run in Apps Script, listed IC true and other IC false, no automated test since Apps Script code has none)
 
 ## Stories
 
