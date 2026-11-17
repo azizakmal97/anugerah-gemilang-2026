@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** none (next: `P02` e-sijil)
+**Active phase:** P02
 **Last update:** 2026-11-17 (closed; resume at P01 bullet 1)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -249,3 +249,18 @@ Every Friday:
 - (done 2026-11-17) Allow the Apps Script permissions.
 - Gemini proofread of the form copy is still owed (quota ran out 2026-11-17).
 
+---
+
+### 🟡 P02 — e-sijil by Apps Script
+
+**Status:** in-progress
+**Started:** 2026-11-17
+**Model:** Opus 5.5 · **Effort:** high for the certificate design, Sonnet 5.5 · medium for the script
+
+**Plan for this phase:**
+- [ ] Certificate background (A4 portrait, batik theme, signature) built by `print/make_sijil.py` into `hi-tea/sijil/` (Model: Opus 5.5 · high).
+- [ ] Apps Script: A4 Slides template with the background and a name box; on feedback submit fill the name, export PDF, email it; check the mail quota first (Model: Sonnet 5.5 · medium).
+- [ ] Test with the owner's own email first (Model: Sonnet 5.5 · low).
+
+**Waiting on owner:**
+- (done 2026-11-17) Signer: Dr. Mohamad Noor bin Sairi, Pegawai Pergigian Daerah. Owner confirmed he agreed to his signature from `hi-tea/contoh sijil.jpeg` being used. The signature file stays in `hi-tea/sijil/`, never in this repo.
