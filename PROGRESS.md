@@ -313,7 +313,9 @@ Every Friday:
 
 **Plan (after the choice):**
 - [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
-- [ ] Apps Script check in `onFeedbackSubmit`: matched → sijil for the chosen role; unmatched → short "tiada dalam senarai kehadiran" email (Model: Sonnet 5.5 · medium)
+- [ ] Add a required "No. Kad Pengenalan" to the attendance form (Google Form via Apps Script + `forms.js`, new entry id), same rule as feedback (Model: Sonnet 5.5 · medium)
+- [ ] IC auto-format while typing on both forms: digits only, dashes added after 6 and 8 digits (871212080879 → 871212-08-0879), max 14 characters; test in `tests/forms.test.mjs` (Model: Sonnet 5.5 · medium)
+- [ ] Apps Script check in `onFeedbackSubmit` (match by IC digits, email as fallback): matched → sijil for the chosen role; unmatched → short "tiada dalam senarai kehadiran" email (Model: Sonnet 5.5 · medium)
 - [ ] Urusetia sijil: design the second background + template, pick template by the Urusetia list (Model: Opus 5.5 · medium for design, Sonnet 5.5 · medium for script)
 - [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
 
