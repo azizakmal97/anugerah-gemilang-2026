@@ -123,3 +123,60 @@ test("the tally never carries an IC", () => {
   const result = loadTally()([vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah")], ATTENDEES);
   assert.doesNotMatch(JSON.stringify(result), /\d{6}/);
 });
+
+function loadGrid() {
+  const context = {
+    VOTE_FORM_TITLE: "Undian Best Dress 2026",
+    PropertiesService: { getScriptProperties: () => ({ getProperty: () => null }) },
+  };
+  vm.createContext(context);
+  vm.runInContext(read("best-dress.gs"), context);
+  vm.runInContext(read("best-dress-results.gs"), context);
+  return (tally) => JSON.parse(JSON.stringify(context.buildResultsGrid(tally, "17 Nov 2026, 7:45:12 PM")));
+}
+
+test("the tab grid puts Lelaki on the left, Perempuan on the right, with a bar per name", () => {
+  const grid = loadGrid()({
+    voters: 20,
+    Lelaki: [
+      { rank: 1, name: "Ali", votes: 10 },
+      { rank: 2, name: "Abu", votes: 5 },
+    ],
+    Perempuan: [{ rank: 1, name: "Siti", votes: 4 }],
+  });
+  const [title, updated, voters, gap, band, heading, first, second] = grid.values;
+  assert.equal(grid.entryCount, 2);
+  assert.equal(title[0], "Keputusan Best Dress 2026");
+  assert.equal(updated[0], "Dikemas kini: 17 Nov 2026, 7:45:12 PM");
+  assert.equal(voters[0], "Undi sah: 20");
+  assert.deepEqual(gap, Array(9).fill(""));
+  assert.deepEqual([band[0], band[5]], ["LELAKI", "PEREMPUAN"]);
+  assert.deepEqual(heading, ["Kedudukan", "Nama", "Undi", "", "", "Kedudukan", "Nama", "Undi", ""]);
+  assert.deepEqual(first.slice(0, 3), [1, "Ali", 10]);
+  assert.deepEqual(first.slice(5, 8), [1, "Siti", 4]);
+  assert.deepEqual(second.slice(0, 3), [2, "Abu", 5]);
+  assert.equal(second[5], "", "the shorter block leaves its cells empty");
+});
+
+test("the top name gets the full bar and others scale to it, never below one block", () => {
+  const grid = loadGrid()({
+    voters: 100,
+    Lelaki: [
+      { rank: 1, name: "Ali", votes: 40 },
+      { rank: 2, name: "Abu", votes: 20 },
+      { rank: 3, name: "Zaid", votes: 1 },
+    ],
+    Perempuan: [],
+  });
+  const bars = [grid.values[6][3], grid.values[7][3], grid.values[8][3]];
+  assert.equal(bars[0].length, 18);
+  assert.equal(bars[1].length, 9);
+  assert.equal(bars[2].length, 1);
+});
+
+test("a block with no votes says so instead of staying blank", () => {
+  const grid = loadGrid()({ voters: 0, Lelaki: [], Perempuan: [] });
+  assert.equal(grid.entryCount, 1);
+  assert.equal(grid.values[6][1], "Belum ada undi");
+  assert.equal(grid.values[6][6], "Belum ada undi");
+});
