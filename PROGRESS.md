@@ -240,6 +240,17 @@ Every Friday:
 
 **Waiting on owner:**
 - (done 2026-11-17) Approve the form questions: approved, clinic list added.
+- Create both forms with the script (about 3 minutes):
+  1. Open https://script.google.com while signed in to the Google account that should own the forms.
+  2. Click New project.
+  3. Delete the sample code in the editor.
+  4. Paste all of `scripts/create-forms.gs`.
+  5. Click Save (disk icon).
+  6. In the function menu at the top, pick `createForms`.
+  7. Click Run.
+  8. Google asks for permission: click Review permissions, choose your own account, then Allow (if it warns the app is unverified, click Advanced, then Go to the project). This is your own script on your own account.
+  9. Open Execution log (bottom of the screen).
+  10. Copy the two form links (attendance and feedback) and send them to Claude.
 
 ---
 
