@@ -11,7 +11,7 @@ const SETTINGS = {
   // Best Dress vote (vote.js): the vote form's "Send" link and the name-search web app URL
   // (scripts/best-dress.gs). Voting opens with attendance and closes when the prizes start.
   voteFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSegopqOizhGqnmYCD3mqQ4dLvWvSzXXl0f4GbyO9ZQbgExziA/viewform",
-  voteSearchUrl: "",
+  voteSearchUrl: "https://script.google.com/macros/s/AKfycbx_HYRODCfk-Ff0Ogf7zH4BSzQosu_OTy--uYuadhiM7Gw-P2XVfeDWvgiF_ewFfb9Xzw/exec",
   voteClosesAt: Date.UTC(2026, 11, 5, 9, 30), // 5 Dec 2026, 5.30 pm
 };
 
