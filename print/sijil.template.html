@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- A4 participant certificate background. make_sijil.py fills {{MEDALLION}}, {{SIGNATURE}} and
-     {{NAME}} ({{NAME}} is empty for the real background: Apps Script writes each name on top).
-     The name band (.name-slot) sits at top 380px, height 84px on a 794x1123 page; the script
-     places its text box there, so move both together. -->
+<!-- A4 participant certificate background. make_sijil.py fills {{MEDALLION}}, {{SIGNATURE}}, {{NAME}}
+     and {{IC}} (both empty for the real background: Apps Script writes them on top).
+     On a 794x1123 page the name band (.name-slot) is top 372px, height 76px, and the IC band
+     (.ic-slot) is top 446px, height 26px; the script places its text boxes there, so move both together. -->
 <html lang="ms">
 <head>
 <meta charset="utf-8">
@@ -105,8 +105,8 @@
     position: absolute;
     left: 90px;
     right: 90px;
-    top: 380px;
-    height: 84px;
+    top: 372px;
+    height: 76px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -116,9 +116,22 @@
     color: var(--gold-light);
     text-transform: uppercase;
   }
-  .name-rule { position: absolute; left: 50%; top: 468px; width: 540px; height: 14px; transform: translateX(-50%); color: var(--gold); }
+  .ic-slot {
+    position: absolute;
+    left: 90px;
+    right: 90px;
+    top: 446px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    color: var(--cream-muted);
+  }
+  .name-rule { position: absolute; left: 50%; top: 480px; width: 540px; height: 14px; transform: translateX(-50%); color: var(--gold); }
 
-  .lower { position: absolute; left: 0; right: 0; top: 505px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .lower { position: absolute; left: 0; right: 0; top: 512px; text-align: center; display: flex; flex-direction: column; align-items: center; }
   .joined { font-size: 18px; font-style: italic; color: var(--cream-muted); }
   .event {
     margin-top: 12px;
@@ -222,6 +235,7 @@
   </main>
 
   <div class="name-slot">{{NAME}}</div>
+  <div class="ic-slot">{{IC}}</div>
   <svg class="name-rule" viewBox="0 0 540 14" aria-hidden="true">
     <path d="M0 7 H250 M290 7 H540" stroke="currentColor" stroke-width="1"/>
     <path d="M270 1 L276 7 L270 13 L264 7 Z" fill="currentColor"/>

@@ -17,9 +17,10 @@ HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "sijil.template.html"
 ASSETS = HERE.parent / "assets"
 PREVIEW_NAME = "Jama'atul Nadirah binti Ramli"
+PREVIEW_IC = "No. K/P: 000000-00-0000"
 
 
-def fill_page(out_dir: Path, name: str) -> Path:
+def fill_page(out_dir: Path, name: str, ic_line: str = "") -> Path:
     signature = out_dir / "tandatangan.png"
     if not signature.exists():
         raise SystemExit(f"Signature missing: {signature}. It is kept outside the repo on purpose.")
@@ -28,6 +29,7 @@ def fill_page(out_dir: Path, name: str) -> Path:
     html = html.replace("{{MEDALLION}}", medallion_svg())
     html = html.replace("{{SIGNATURE}}", signature.as_uri())
     html = html.replace("{{NAME}}", name)
+    html = html.replace("{{IC}}", ic_line)
     page = out_dir / ("_sijil-preview.html" if name else "_sijil.html")
     page.write_text(html, encoding="utf-8")
     return page
@@ -53,4 +55,4 @@ if __name__ == "__main__":
     output = Path(args[0]) if args else HERE.parent.parent / "sijil"
     render(fill_page(output, ""), output / "sijil-latar-A4.png")
     if "--preview" in sys.argv:
-        render(fill_page(output, PREVIEW_NAME), output / "_sijil-contoh-nama.png")
+        render(fill_page(output, PREVIEW_NAME, PREVIEW_IC), output / "_sijil-contoh-nama.png")
