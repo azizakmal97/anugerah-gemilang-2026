@@ -1,7 +1,7 @@
 # Best Dress vote
 
 Date: 2026-11-17 · Status: agreed (owner answers 2026-11-17)
-Done-check: PASS 2026-11-17 (re-checked after the results moved to the committee sheet tab: A6 met by scripts/best-dress-results.gs openResultsTab, tab live with 0 votes; A1 to A5, A7 and edges unchanged)
+Done-check: PASS 2026-11-17 (re-checked after the IC hand-over and the results tab restyle: A1 to A7 and the edges unchanged; A6 now also styled by scripts/best-dress-results.gs writeResults and styleResults, tests/best-dress-results.test.mjs, live tab checked. A8 met: forms.js:19, :266, :278, :285 and vote.js:103, :227; tests/forms.test.mjs "after attendance is sent...", "an IC the guest already typed...", "forgetting drops..."; checked on the live page by calling the functions in a real browser: card filled, typed IC kept, cleared after forget, re-render stays empty; no browser storage is used for it. Nothing from Out of scope built.)
 
 ## Stories
 
