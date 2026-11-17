@@ -40,6 +40,7 @@ var PAGE_HEIGHT = 841.89;
 var NAME_BOX = { left: 67.5, top: 279, width: 460, height: 57 };
 var IC_BOX = { left: 67.5, top: 334.5, width: 460, height: 19.5 };
 var NAME_MAX_SIZE = 22.5;
+var NAME_CLEAR_WIDTH = 380; // pt between the knots on the name plate, with a little air each side
 var NAME_COLOR = '#f2d796';
 var IC_COLOR = '#d9cfb8';
 var IC_SIZE = 11.25;
@@ -267,9 +268,11 @@ function addCenteredText(slide, box, text, style) {
   return shape;
 }
 
-// Shrinks long names so they stay on one line; 0.78 is the average capital width per point of size.
+// Shrinks long names so they stay on one line and clear of the kawung knots at both ends of the
+// name plate (P05 design): the text must fit NAME_CLEAR_WIDTH, not the whole box. 0.75 is Cinzel bold
+// capitals per point of size, measured on real long names (0.58 to 0.71) plus a margin.
 function nameFontSize(cleanName) {
-  var fitted = NAME_BOX.width / (Math.max(cleanName.length, 1) * 0.78);
+  var fitted = NAME_CLEAR_WIDTH / (Math.max(cleanName.length, 1) * 0.75);
   return Math.round(Math.min(NAME_MAX_SIZE, fitted) * 2) / 2;
 }
 
@@ -332,6 +335,12 @@ function sendTestSijil() {
 function sendTestUrusetia() {
   sendSijil('Nama Contoh Bin Abdullah', '900101-08-1234', Session.getActiveUser().getEmail(), URUSETIA_ROLE);
   Logger.log('Sijil urus setia ujian dihantar. Kuota emel berbaki: ' + MailApp.getRemainingDailyQuota());
+}
+
+// The longest name we expect, to check it stays on one line between the knots.
+function sendTestLongName() {
+  sendSijil('Wan Muhammad Nur Hakimi Bin Wan Mohamad Zainuddin', '900101-08-1234', Session.getActiveUser().getEmail(), 'Peserta');
+  Logger.log('Sijil nama panjang dihantar. Kuota emel berbaki: ' + MailApp.getRemainingDailyQuota());
 }
 
 // Dry run of the attendance check, no email: logs who would get which sijil.
