@@ -136,9 +136,22 @@ test("answers go to Google as entry.<id> fields on the formResponse address", ()
   const { FORMS, toFormBody, formResponseUrl } = loadForms();
   const body = toFormBody(FORMS.attendance, { 562932983: "  Siti Aminah ", 718418112: "871212-08-0879", 1345289916: "KP Bidor", 75149903: "Urus setia" });
   assert.equal(body.get("entry.75149903"), "Urus setia");
-  assert.equal(body.get("entry.562932983"), "Siti Aminah");
+  assert.equal(body.get("entry.562932983"), "SITI AMINAH", "names are sent in capitals");
   assert.equal(body.get("entry.1345289916"), "KP Bidor");
   assert.equal(formResponseUrl("https://docs.google.com/forms/d/e/ABC/viewform?usp=sf_link"), "https://docs.google.com/forms/d/e/ABC/formResponse");
+});
+
+test("both name fields are marked for capitals and nothing else is", () => {
+  const { FORMS } = loadForms();
+  const capitalFields = [...FORMS.attendance.fields, ...FORMS.feedback.fields].filter((field) => field.uppercase);
+  assert.deepEqual(capitalFields.map((field) => field.label), ["Nama penuh", "Nama penuh"]);
+});
+
+test("a comment keeps its own letter case when sent", () => {
+  const { FORMS, toFormBody } = loadForms();
+  const body = toFormBody(FORMS.feedback, { 300279887: "Terima kasih", 720915841: "ali" });
+  assert.equal(body.get("entry.300279887"), "Terima kasih");
+  assert.equal(body.get("entry.720915841"), "ALI");
 });
 
 test("a double tap while sending sends only once", async () => {

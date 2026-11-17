@@ -18,7 +18,7 @@ const FORMS = {
     submitLabel: "Sahkan Kehadiran",
     thanks: "Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!",
     fields: [
-      { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name" },
+      { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name", uppercase: true },
       { entry: "718418112", kind: "ic", label: "No. Kad Pengenalan", help: "Untuk semakan sijil anda. Contoh: 900101-08-1234" },
       { entry: "1345289916", kind: "select", label: "Klinik atau unit", options: CLINICS },
       { entry: "75149903", kind: "choice", label: "Peranan", options: ROLES },
@@ -33,7 +33,7 @@ const FORMS = {
       { entry: "1508823172", kind: "rating", label: "Bagaimana pengacaraan dan atur cara majlis?" },
       { entry: "1916321474", kind: "rating", label: "Bagaimana makanan dan tempat majlis?" },
       { entry: "300279887", kind: "comment", label: "Ada cadangan atau komen untuk majlis akan datang?", help: "Pilihan. Boleh dibiarkan kosong.", optional: true },
-      { entry: "720915841", kind: "text", label: "Nama penuh", help: NAME_HELP, autocomplete: "name" },
+      { entry: "720915841", kind: "text", label: "Nama penuh", help: NAME_HELP, autocomplete: "name", uppercase: true },
       { entry: "1284108868", kind: "ic", label: "No. Kad Pengenalan", help: "Untuk dicetak pada sijil. Contoh: 900101-08-1234" },
       { entry: "190592119", kind: "email", label: "Emel", help: "Sijil anda akan dihantar ke emel ini. Semak ejaan emel sebelum menghantar." },
     ],
@@ -75,7 +75,11 @@ function findErrors(spec, values) {
 
 function toFormBody(spec, values) {
   const body = new URLSearchParams();
-  spec.fields.forEach((field) => body.append(`entry.${field.entry}`, (values[field.entry] || "").trim()));
+  spec.fields.forEach((field) => {
+    const value = (values[field.entry] || "").trim();
+    // Names go out in capitals even when autofill or paste skipped the typing handler.
+    body.append(`entry.${field.entry}`, field.uppercase ? value.toUpperCase() : value);
+  });
   return body;
 }
 
@@ -175,13 +179,21 @@ function buildControl(field, id, describedBy) {
   }
   if (field.kind === "comment") return el("textarea", { ...shared, rows: "3" });
   const byKind = {
-    text: { type: "text", autocomplete: field.autocomplete || "off" },
+    text: { type: "text", autocomplete: field.autocomplete || "off", ...(field.uppercase && { autocapitalize: "characters" }) },
     email: { type: "email", autocomplete: "email", inputmode: "email" },
     ic: { type: "text", autocomplete: "off", inputmode: "numeric", maxlength: "14" },
   };
   const input = el("input", { ...shared, ...byKind[field.kind] });
   if (field.kind === "ic") input.addEventListener("input", () => { input.value = formatIcInput(input.value); });
+  if (field.uppercase) input.addEventListener("input", () => keepCaretWhile(input, () => { input.value = input.value.toUpperCase(); }));
   return input;
+}
+
+// Rewriting input.value moves the caret to the end, which breaks fixing a typo mid-name.
+function keepCaretWhile(input, rewrite) {
+  const caret = input.selectionStart;
+  rewrite();
+  input.setSelectionRange(caret, caret);
 }
 
 function buildRating(field, errorNode, describedBy) {
