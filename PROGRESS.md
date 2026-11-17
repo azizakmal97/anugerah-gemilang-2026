@@ -308,8 +308,8 @@ Every Friday:
 
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
 **Why (owner 2026-11-17):** a shared QR would let someone who did not come fill feedback and get a sijil.
-**Owner choice (2026-11-17): A only** (a hall code can be passed on too). Send the sijil only when the feedback email or IC is also in the attendance tab; unmatched answers wait in a list for the committee to approve.
-**Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Decided by Claude (owner 2026-11-17: "just make a choice", no name list): a required "Peranan" choice (Peserta / Urus setia) on the attendance form. Peserta matched in the attendance tab get the peserta sijil automatically. Anyone who chose Urus setia is held in an "Untuk kelulusan" list; the owner approves, then the urus setia sijil is sent. So ticking Urus setia alone gets nothing. Urus setia sijil: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia", own background.
+**Owner choice (2026-11-17): A only** (a hall code can be passed on too). Send the sijil only when the feedback email or IC is also in the attendance tab. No approval step (owner 2026-11-17: "I don't have time to approve, just trust them"): an unmatched answer gets no sijil, only a short email saying their name is not in the attendance list and to contact the urus setia.
+**Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Decided (owner 2026-11-17: "just make a choice", then "just trust them"): a required "Peranan" choice (Peserta / Urus setia) on the attendance form, trusted as given. Whoever is in the attendance tab gets the sijil for the role they chose there, sent automatically. Urus setia sijil: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia", own background.
 
 **Plan (after the choice):**
 - [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
