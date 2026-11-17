@@ -26,14 +26,20 @@ THEMES = {
     "navy": {"cloth-a": "#1d3c86", "cloth-b": "#071334", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34"},
     "maroon": {"cloth-a": "#8e1838", "cloth-b": "#3c0717", "field-a": "#5a0f28", "field-b": "#2c0613", "field-c": "#16030a", "plate": "26, 4, 12"},
     "tema": {"cloth-a": "#f2d796", "cloth-b": "#a87a2c", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34", "frame-ink": "#0b1736", "frame-dot": "#0b1736"},
+    # Gold and navy blended: a darker antique gold that steps down into navy, and gold light on the navy field.
+    "emas-nila": {"cloth-a": "#d4ad5c", "cloth-b": "#6b4c17", "field-a": "#1d2f5e", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34", "frame-ink": "#0b1736", "frame-dot": "#0b1736",
+                  "extra": "body { background: linear-gradient(160deg, #e6c574 0%, #a97d2e 35%, #3b3a45 70%, #0b1736 100%); } .field { background: radial-gradient(80% 30% at 50% 0%, rgba(214, 168, 78, 0.30), transparent 75%), radial-gradient(80% 30% at 50% 100%, rgba(214, 168, 78, 0.22), transparent 75%), radial-gradient(120% 75% at 50% 0%, var(--field-a), var(--field-b) 50%, var(--field-c)); }"},
+    # Navy cloth with one diagonal gold sheen across it: the gold lives inside the navy.
+    "nila-kilau": {"cloth-a": "#1d3c86", "cloth-b": "#071334", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34",
+                   "extra": "body { background: linear-gradient(135deg, #071334 0%, #1d3c86 28%, #b8913f 48%, #f2d796 50%, #b8913f 52%, #1d3c86 72%, #071334 100%); } .field { background: radial-gradient(70% 25% at 50% 0%, rgba(214, 168, 78, 0.22), transparent 75%), radial-gradient(120% 75% at 50% 0%, var(--field-a), var(--field-b) 50%, var(--field-c)); }"},
     "emerald": {"cloth-a": "#0f6b57", "cloth-b": "#05303a", "field-a": "#0d4f52", "field-b": "#062b30", "field-c": "#03161a", "plate": "3, 22, 26"},
 }
 DEFAULT_THEME = "navy"
 
 
 def theme_style(theme: str) -> str:
-    colours = "".join(f" --{key}: {value};" for key, value in THEMES[theme].items())
-    return f"<style>:root {{{colours} }}</style>"
+    colours = "".join(f" --{key}: {value};" for key, value in THEMES[theme].items() if key != "extra")
+    return f"<style>:root {{{colours} }} {THEMES[theme].get('extra', '')}</style>"
 
 
 # file stem -> the words that differ between the two versions. Apps Script looks the PNGs up by name.
