@@ -70,7 +70,8 @@ function findFeedbackForm() {
   throw new Error('Borang "' + FEEDBACK_TITLE + '" tiada dalam akaun ini.');
 }
 
-// SlidesApp cannot set the page size, so the Advanced service creates the A4 deck.
+// The Slides API ignores pageSize on create (seen 2026-11-17: the deck came out 16:9),
+// so after setupSijil set File > Page setup > Custom 21 x 29.7 cm by hand, then run fitTemplate.
 function createTemplate(background) {
   var created = Slides.Presentations.create({
     title: TEMPLATE_TITLE,
@@ -86,6 +87,22 @@ function createTemplate(background) {
   image.sendToBack();
   presentation.saveAndClose();
   return created.presentationId;
+}
+
+// Run after the template's page is set to A4 by hand: stretches the background to the full page.
+function fitTemplate() {
+  var templateId = PropertiesService.getScriptProperties().getProperty(TEMPLATE_KEY);
+  if (!templateId) throw new Error('Templat belum dibuat. Jalankan setupSijil dahulu.');
+  var presentation = SlidesApp.openById(templateId);
+  var width = presentation.getPageWidth();
+  var height = presentation.getPageHeight();
+  if (Math.abs(width - PAGE_WIDTH) > 1 || Math.abs(height - PAGE_HEIGHT) > 1) {
+    throw new Error('Saiz halaman templat ' + width + ' x ' + height + ' pt. Tukar ke File > Page setup > Custom 21 x 29.7 cm dahulu.');
+  }
+  var image = presentation.getSlides()[0].getImages()[0];
+  image.setLeft(0).setTop(0).setWidth(PAGE_WIDTH).setHeight(PAGE_HEIGHT);
+  presentation.saveAndClose();
+  Logger.log('Templat A4 siap: latar memenuhi halaman.');
 }
 
 function installTrigger(form) {
@@ -133,6 +150,8 @@ function sendSijil(name, ic, email) {
       to: email,
       subject: 'e-Sijil Majlis Anugerah Gemilang 2026',
       body: buildEmailBody(name.trim()),
+      // Plain text alone gets hard-wrapped near 76 characters, which leaves gaps on phones.
+      htmlBody: toHtmlBody(buildEmailBody(name.trim())),
       attachments: [pdf],
       name: 'PKPD Batang Padang'
     });
@@ -197,6 +216,13 @@ function buildEmailBody(name) {
     'Urus setia Majlis Anugerah Gemilang 2026',
     'PKPD Batang Padang'
   ].join('\n');
+}
+
+function toHtmlBody(text) {
+  var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return escaped.split('\n\n').map(function (paragraph) {
+    return '<p>' + paragraph.replace(/\n/g, '<br>') + '</p>';
+  }).join('');
 }
 
 function sendTestSijil() {
