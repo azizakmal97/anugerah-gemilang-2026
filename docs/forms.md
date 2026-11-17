@@ -1,6 +1,6 @@
 # Draf borang Google (P01)
 
-Draf soalan untuk dua borang. Belum dibuat di Google Forms. Menunggu kelulusan pemilik.
+Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Belum dibuat di Google Forms.
 
 ## 1. Borang Kehadiran
 
@@ -12,7 +12,7 @@ Draf soalan untuk dua borang. Belum dibuat di Google Forms. Menunggu kelulusan p
 | # | Soalan | Teks bantuan | Jenis | Wajib | Pilihan |
 |---|---|---|---|---|---|
 | 1 | Nama penuh | Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil. | Jawapan pendek | Ya | - |
-| 2 | Klinik atau unit | Contoh: Klinik Pergigian Kampar | Jawapan pendek | Ya | - |
+| 2 | Klinik atau unit | - | Dropdown | Ya | KP Tapah; KP Slim River; KP Sungkai; KP Bidor; KP Tanjung Malim; OMFS HSR; Paeds Dental HSR |
 | 3 | Emel | Gunakan emel yang anda semak. | Jawapan pendek (pengesahan: emel) | Ya | - |
 
 **Mesej selepas hantar:** Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!
@@ -26,7 +26,7 @@ Draf soalan untuk dua borang. Belum dibuat di Google Forms. Menunggu kelulusan p
 | # | Soalan | Teks bantuan | Jenis | Wajib | Pilihan |
 |---|---|---|---|---|---|
 | 1 | Secara keseluruhan, bagaimana penilaian anda terhadap majlis ini? | - | Skala linear 1 hingga 5 | Ya | 1 = Kurang memuaskan; 5 = Sangat memuaskan |
-| 2 | Bagaimana pengacaraan dan aturcara majlis? | - | Skala linear 1 hingga 5 | Ya | 1 = Kurang memuaskan; 5 = Sangat memuaskan |
+| 2 | Bagaimana pengacaraan dan atur cara majlis? | - | Skala linear 1 hingga 5 | Ya | 1 = Kurang memuaskan; 5 = Sangat memuaskan |
 | 3 | Bagaimana makanan dan tempat majlis? | - | Skala linear 1 hingga 5 | Ya | 1 = Kurang memuaskan; 5 = Sangat memuaskan |
 | 4 | Ada cadangan atau komen untuk majlis akan datang? | Pilihan. Boleh dibiarkan kosong. | Perenggan | Tidak | - |
 | 5 | Nama penuh | Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil. | Jawapan pendek | Ya | - |

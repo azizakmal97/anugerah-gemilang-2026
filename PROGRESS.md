@@ -233,13 +233,13 @@ Every Friday:
 **Model:** Sonnet 5.5 · **Effort:** medium
 
 **Plan for this phase:**
-- [ ] Attendance form: nama penuh (as on certificate), klinik, emel. Nothing else.
-- [ ] Feedback form: short rating + comments, plus emel for the e-sijil.
+- [x] Attendance form: nama penuh (as on certificate), klinik, emel. Nothing else.
+- [x] Feedback form: short rating + comments, plus emel for the e-sijil.
 - [ ] Paste both "Send" links into `SETTINGS` in `app.js`; update tests if behaviour changes.
 - [ ] Print QR to the live URL for the registration desk.
 
 **Waiting on owner:**
-- Approve the form questions before they go to staff (draft in docs/forms.md).
+- (done 2026-11-17) Approve the form questions: approved, clinic list added.
 
 ---
 
