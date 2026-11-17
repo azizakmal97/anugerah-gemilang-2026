@@ -426,11 +426,14 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - Done 2026-11-17 21:44 (owner: "ya padam"): every answer before 5 Dec deleted from the forms' Responses: Kehadiran 3 -> 0, Maklum Balas 4 -> 0 (the owner's own and the "Ujian Laman" tests), Undian 0. Sheet tabs were already empty. TIADA_COUNT_2026-11-17 removed, names cache cleared, results recounted. Temporary function removed from Code.gs.
 - New Malay lines owed a Gemini proofread: urus setia email line "Dua e-Sijil anda dilampirkan...", replacement line "...menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.", subject "(dikemas kini)", closed-form message "Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.", tab headers and notes in scripts/sijil-records.gs.
 
-## Resume note (2026-11-17, /close)
+## Resume note (2026-11-17, second /close)
 
-Nothing is in flight. Open items for the owner and later sessions:
-- Gemini proofread owed for all new Malay lines (forms, e-sijil emails, vote card, "No. K/P anda sudah disahkan semasa daftar."); quota out until about 2026-11-23.
-- Owner to look at the vote card on a phone once more at `?mod=hadir`.
-- Before 5 Dec: delete any rows from the owner's own manual tests, in the "Kehadiran" and "Maklum Balas" tabs and in the forms' Responses. Deleting a sheet row does not remove the form response that the matching reads.
-- Dead tabs and leftovers the owner may delete: "Sheet1" in the response sheet (not opened by Claude), the unused script property `BEST_DRESS_SHEET_ID`.
-- `/done-check` is PASS for attendee-only-sijil, best-dress-vote and in-site-forms.
+Nothing is in flight; P01 to P07 are done and live. Also shipped this session outside a phase: vote card waits for the web app before showing the form (c66edb1), hero title wider and medallion reaching the screen edges (1a12831, 2749ee9), attendance IC remembered on the phone for vote and feedback (99e8a70, spec remembered-ic.md), gold dust no longer doubles on tab return (ecdf89c), Malay comma test for the page scripts (77e59e0).
+Every form response and sheet row from before 5 Dec is deleted (owner's own and tests); forms and tabs are empty.
+
+Owner 2026-11-17 ("dismiss all"): the open items below were dismissed. Do not raise them again unless the owner asks:
+- Gemini proofread of the new Malay lines (quota was out until about 2026-11-23).
+- Phone look at `?mod=hadir` / `?mod=selepas`.
+- Deleting "Sheet1" and the unused script property `BEST_DRESS_SHEET_ID`.
+
+`/done-check` is PASS for attendee-only-sijil, best-dress-vote, in-site-forms, remembered-ic and sheet-look.
