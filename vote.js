@@ -118,12 +118,16 @@ function buildVoteForm() {
 
 // Shown only while the form has "ic-remembered"; "Tukar" brings the field back for a different IC.
 function buildIcNote(form, icInput) {
-  const change = el("button", { class: "btn-ghost", type: "button", text: "Tukar" });
+  const change = el("button", { class: "ic-change", type: "button", text: "Tukar" });
   change.addEventListener("click", () => {
     form.classList.remove("ic-remembered");
     icInput.focus();
   });
-  return el("p", { class: "vote-ic-note" }, ["Guna No. K/P yang anda sahkan semasa daftar tadi.", change]);
+  return el("div", { class: "vote-ic-note" }, [
+    el("span", { class: "ic-check", "aria-hidden": "true", text: "✓" }),
+    el("span", { class: "ic-text", text: "No. K/P anda sudah disahkan semasa daftar." }),
+    change,
+  ]);
 }
 
 function buildPickField(field) {

@@ -172,8 +172,35 @@ button.btn:disabled { filter: grayscale(0.35) brightness(0.85); cursor: progress
 
 .vote-notice { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--gold-light); }
 
-/* IC already given at attendance: the field hides behind one line, "Tukar" brings it back. */
-.vote-ic-note { display: none; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0; font-size: 0.95rem; line-height: 1.4; color: var(--cream-muted); }
-.vote-ic-note .btn-ghost { font: inherit; cursor: pointer; }
+/* IC already given at attendance: the field hides behind one calm line, "Tukar" brings it back. */
+.vote-ic-note {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.25rem 0.5rem 0.25rem 0.9rem;
+  border: 1px solid rgba(214, 168, 78, 0.4);
+  border-left: 3px solid var(--gold);
+  border-radius: 10px;
+  background: rgba(20, 42, 90, 0.45);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--cream);
+}
 .ic-remembered .vote-ic-note { display: flex; }
 .ic-remembered .field[data-entry="undi-ic"] { display: none; }
+.ic-check { color: var(--gold-light); font-weight: 700; }
+.ic-text { flex: 1; padding: 0.55rem 0; }
+.ic-change {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--gold-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ic-change:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; border-radius: 6px; }
