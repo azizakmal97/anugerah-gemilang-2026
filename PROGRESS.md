@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** P07 🟡 in-progress
-**Last update:** 2026-11-17, Sonnet 5.5 (P04 done; results look, name capitals and IC hand-over shipped; /close run)
+**Active phase:** _none_ (P01 to P07 done)
+**Last update:** 2026-11-17, Opus 5.5 (P07 done: audit fixes live in Apps Script, sheet look, urus setia two sijil)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -401,9 +401,9 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 ---
 
-### 🟡 P07 — Apps Script fixes from the 2026-11-17 audit, two sijil for urus setia, sheet look
+### ✅ P07 — Apps Script fixes from the 2026-11-17 audit, two sijil for urus setia, sheet look
 
-**Status:** 🟡 in-progress (started 2026-11-17, Opus 5.5 · medium)
+**Status:** done 2026-11-17 (Opus 5.5 · medium)
 **Specs:** specs/attendee-only-sijil.md (A7 changed, A9 to A12 new), specs/best-dress-vote.md (closes 6.00 pm), specs/sheet-look.md (new)
 **Model:** Opus 5.5 · medium (owner's setting for this site; vote counts and sijil are expensive to get wrong; sheet look is design work), Sonnet 5.5 · low for the paste-and-deploy steps in Chrome
 **Why (audit 2026-11-17, owner answers the same day):** the forms are public, so anyone could register from home and then vote or get a sijil; the "tidak ditemui" email could be sent to any address; leftover test votes could count; a second feedback gave a second sijil.
@@ -416,14 +416,15 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - [x] (47e135e) Urus setia gets two PDFs (peserta + urus setia) in one email; update `buildEmailBody` copy (Opus · medium; Gemini proofread owed)
 - [x] (47e135e, kept in Script properties SIJIL_IC_*) One sijil set per IC: tab "Sijil Dihantar" (time, IC last 4, name, email, role). Same IC + same name again → skip; same IC + new name → resend with the new name, email says it replaces the earlier sijil. Use LockService so two quick submits do not both send
 - [x] (1a03c67; a vote that finds the recount busy now skips, no error) Results recount by itself at 6.01 pm on 5 Dec (timed trigger), so a lock timeout during the rush cannot leave stale numbers
-- [ ] Sheet look (`specs/sheet-look.md`): one function styles Kehadiran, Maklum Balas, Tiada dalam Senarai, Sijil Dihantar in the results tab's navy and gold (header, freeze, widths, banding, tab colour). Preview with a screenshot for the owner (Opus · medium, design)
-- [ ] Paste into Apps Script (Claude in Chrome, /u/1, memory `apps-script-editor-save-patience.md`), redeploy the name search web app as a new version of the same deployment (URL must not change), run the setup functions, approve any new permission with the owner
-- [ ] Live test with synthetic ICs before the day is no longer possible for attendance matching (rows must be from 5 Dec). Test instead with the test functions in Apps Script and a dry run that passes a fake 5 Dec timestamp; then clean up every test response (memory `test-cleanup-form-responses.md`)
-- [ ] /done-check for the three specs
+- [x] (47e135e, widths fixed in 6b61d77; run live, screenshot sent to the owner) Sheet look (`specs/sheet-look.md`): one function styles Kehadiran, Maklum Balas, Tiada dalam Senarai, Sijil Dihantar in the results tab's navy and gold (header, freeze, widths, banding, tab colour). Preview with a screenshot for the owner (Opus · medium, design)
+- [x] (Code.gs = the five .gs files at 6b61d77; web app version 2 of the same deployment, URL unchanged; setupEventDayTriggers and styleCommitteeSheet run, no new permission asked) Paste into Apps Script (Claude in Chrome, /u/1, memory `apps-script-editor-save-patience.md`), redeploy the name search web app as a new version of the same deployment (URL must not change), run the setup functions, approve any new permission with the owner
+- [x] (testFeedbackFlow with ICs 000000-00-0001/0002: urus setia pair, skip, replacement, one "tidak ditemui", one suppressed; then cleanUpTestFeedback; tabs empty, test keys gone, only TIADA_COUNT_2026-11-17 = 0 left, inert) Live test with synthetic ICs before the day is no longer possible for attendance matching (rows must be from 5 Dec). Test instead with the test functions in Apps Script and a dry run that passes a fake 5 Dec timestamp; then clean up every test response (memory `test-cleanup-form-responses.md`)
+- [x] (a98a916, all PASS) /done-check for the three specs
 
 **Waiting on owner:**
 - Gemini proofread for new copy (quota out until about 2026-11-23).
-- Owner said 2026-11-17 they deleted their own November attendance record. Check the attendance form's Responses too (a deleted sheet row leaves the form response the matching reads; memory `test-cleanup-form-responses.md`) and tell the owner if one is left.
+- Owner's own answers are still in the forms' Responses (checked 2026-11-17 21:15, read only): Kehadiran 3 responses, 1 with the owner's IC (17 Nov 14:34); Maklum Balas 4 responses, 3 with the owner's IC; Undian 0. None can count any more (all before 5 Dec, isEventTime), but they should go before the day. Waiting for the owner's yes to delete them (forms' Responses and sheet rows).
+- New Malay lines owed a Gemini proofread: urus setia email line "Dua e-Sijil anda dilampirkan...", replacement line "...menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.", subject "(dikemas kini)", closed-form message "Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.", tab headers and notes in scripts/sijil-records.gs.
 
 ## Resume note (2026-11-17, /close)
 
