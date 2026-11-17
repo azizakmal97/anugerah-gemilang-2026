@@ -1,6 +1,7 @@
 # Forms inside the event page
 
 Date: 2026-11-17 · Status: agreed (owner choice 2026-11-17: guests fill the forms on the page, in the batik look)
+Done-check: PASS 2026-11-17
 
 ## Stories
 
