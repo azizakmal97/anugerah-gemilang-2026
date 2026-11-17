@@ -25,7 +25,7 @@ for (const script of scripts) {
 
 // The Apps Script files are pasted into Google by hand, where a syntax error blocks the save.
 // node --check refuses the .gs extension, so parse them as function bodies instead.
-const appsScripts = ["scripts/create-forms.gs", "scripts/e-sijil.gs"];
+const appsScripts = ["scripts/create-forms.gs", "scripts/e-sijil.gs", "scripts/best-dress.gs"];
 for (const file of appsScripts) {
   try {
     new Function(readFileSync(file, "utf8")); // parse only, never run
