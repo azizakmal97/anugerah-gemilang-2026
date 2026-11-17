@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** P01
+**Active phase:** none (next: `P02` e-sijil)
 **Last update:** 2026-11-17 (closed; resume at P01 bullet 1)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -225,9 +225,10 @@ Every Friday:
 
 ---
 
-### 🟡 P01 — Google Forms for attendance and feedback
+### ✅ P01 — Google Forms for attendance and feedback
 
-**Status:** in-progress
+**Status:** done
+**Completed:** 2026-11-17
 **Started:** 2026-11-17
 
 **Model:** Sonnet 5.5 · **Effort:** medium
@@ -236,11 +237,12 @@ Every Friday:
 - [x] Attendance form: nama penuh (as on certificate), klinik, emel. Nothing else.
 - [x] Feedback form: short rating + comments, plus emel for the e-sijil.
 - [x] Paste both "Send" links into `SETTINGS` in `app.js`; test now sets an empty link itself.
-- [ ] Print QR to the live URL for the registration desk.
+- [x] Print QR to the live URL for the registration desk: A4 poster in the batik theme, built by `print/make_qr_poster.py` into `hi-tea/qr/` (PNG 300 dpi + PDF), scan-checked at five sizes.
 
 **Delivered so far:**
 - Both forms built 2026-11-17 by `scripts/create-forms.gs` on azizakmal@moh.gov.my (Apps Script project "Untitled project"), saved in Drive folder PKPD BP/hi-tea with one response sheet "Anugerah Gemilang 2026 - Respons".
 - Both forms open without sign-in (checked logged-out with curl).
+- QR gotcha: rounded finder eyes or small round dots stop OpenCV reading the code; the poster keeps square eyes and 92% dots.
 
 **Waiting on owner:**
 - (done 2026-11-17) Approve the form questions: approved, clinic list added.
