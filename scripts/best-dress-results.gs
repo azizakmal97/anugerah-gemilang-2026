@@ -1,9 +1,10 @@
 /**
- * Best Dress vote, private results (spec: specs/best-dress-vote.md, S2).
+ * Best Dress vote results (spec: specs/best-dress-vote.md, S2).
  *
- * Counts the vote form's responses into a spreadsheet only the owner can open.
- * The sheet updates itself on every vote. It never holds an IC: only names and
- * counts.
+ * Counts the vote form's responses into the tab "Keputusan Best Dress" of the
+ * committee's response sheet (the attendance form's destination), so only the
+ * committee can see it. The tab updates itself on every vote. It never holds an
+ * IC: only names and counts.
  *
  * Lives in the same Apps Script project as create-forms.gs, e-sijil.gs and
  * best-dress.gs (one Code.gs), so it reuses their helpers and its names must
@@ -15,8 +16,7 @@
  * refreshBestDressResults.
  */
 
-var RESULTS_SHEET_TITLE = 'Keputusan Best Dress 2026';
-var RESULTS_SHEET_KEY = 'BEST_DRESS_SHEET_ID';
+var RESULTS_TAB_NAME = 'Keputusan Best Dress';
 var RESULTS_HANDLER = 'onVoteSubmit';
 var RESULTS_TOP_COUNT = 5;
 var RESULTS_CATEGORIES = ['Lelaki', 'Perempuan'];
@@ -24,25 +24,20 @@ var RESULTS_TIME_ZONE = 'Asia/Kuala_Lumpur';
 var RESULTS_COLUMNS = 3;
 
 function setupBestDressResults() {
-  var spreadsheet = openResultsSpreadsheet();
+  var tab = openResultsTab();
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
     if (trigger.getHandlerFunction() === RESULTS_HANDLER) ScriptApp.deleteTrigger(trigger);
   });
   ScriptApp.newTrigger(RESULTS_HANDLER).forForm(findFormNamed(VOTE_FORM_TITLE)).onFormSubmit().create();
   refreshBestDressResults();
-  Logger.log('Pautan keputusan Best Dress (peribadi): ' + spreadsheet.getUrl());
+  Logger.log('Tab keputusan Best Dress: ' + tab.getParent().getUrl() + '#gid=' + tab.getSheetId());
 }
 
-// Created in the event folder and shared with nobody; the id is kept so a second run reuses it.
-function openResultsSpreadsheet() {
-  var properties = PropertiesService.getScriptProperties();
-  var savedId = properties.getProperty(RESULTS_SHEET_KEY);
-  if (savedId) return SpreadsheetApp.openById(savedId);
-
-  var spreadsheet = SpreadsheetApp.create(RESULTS_SHEET_TITLE);
-  DriveApp.getFileById(spreadsheet.getId()).moveTo(findEventFolder());
-  properties.setProperty(RESULTS_SHEET_KEY, spreadsheet.getId());
-  return spreadsheet;
+// Owner 2026-11-17: results sit with the committee, in the sheet the attendance form already feeds.
+function openResultsTab() {
+  var destinationId = findFormNamed(ATTENDANCE_FORM_TITLE).getDestinationId();
+  var spreadsheet = SpreadsheetApp.openById(destinationId);
+  return spreadsheet.getSheetByName(RESULTS_TAB_NAME) || spreadsheet.insertSheet(RESULTS_TAB_NAME);
 }
 
 function onVoteSubmit() {
@@ -75,7 +70,7 @@ function writeCurrentResults() {
     return { ic: answers['No. Kad Pengenalan'], name: answers['Nama penuh'] };
   });
   var tally = tallyVotes(votes, attendees, isVoteOpen);
-  writeResults(openResultsSpreadsheet().getSheets()[0], tally, new Date());
+  writeResults(openResultsTab(), tally, new Date());
 }
 
 /**
