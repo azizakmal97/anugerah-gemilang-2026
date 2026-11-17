@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** _none_ (⏸ P04: live test passed, /done-check re-run left)
-**Last update:** 2026-11-17, Opus 5.5 · medium (P06 done)
+**Active phase:** _none_ (P01 to P06 done; nothing in flight)
+**Last update:** 2026-11-17, Sonnet 5.5 (P04 done; results look, name capitals and IC hand-over shipped; /close run)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -304,9 +304,9 @@ Every Friday:
 
 ---
 
-### ⏸ P04 — e-sijil only for people who really came
+### ✅ P04 — e-sijil only for people who really came
 
-**Status:** live test A1 and A3 passed and DONE-CHECK: PASS 2026-11-17; only marking P04 done is left
+**Status:** done 2026-11-17; live test A1 and A3 passed, DONE-CHECK: PASS (spec: specs/attendee-only-sijil.md)
 **Started:** 2026-11-17
 **Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
@@ -398,3 +398,14 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 **Waiting on owner:**
 - Gemini proofread of the vote copy (quota out until about 2026-11-23).
 - Look at the vote card on your phone (`?mod=hadir`): wording and feel.
+
+---
+
+## Resume note (2026-11-17, /close)
+
+Nothing is in flight. Open items for the owner and later sessions:
+- Gemini proofread owed for all new Malay lines (forms, e-sijil emails, vote card, "No. K/P anda sudah disahkan semasa daftar."); quota out until about 2026-11-23.
+- Owner to look at the vote card on a phone once more at `?mod=hadir`.
+- Before 5 Dec: delete any rows from the owner's own manual tests, in the "Kehadiran" and "Maklum Balas" tabs and in the forms' Responses. Deleting a sheet row does not remove the form response that the matching reads.
+- Dead tabs and leftovers the owner may delete: "Sheet1" in the response sheet (not opened by Claude), the unused script property `BEST_DRESS_SHEET_ID`.
+- `/done-check` is PASS for attendee-only-sijil, best-dress-vote and in-site-forms.
