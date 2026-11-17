@@ -8,8 +8,12 @@
 const VOTE_MIN_LETTERS = 3; // the web app answers nothing shorter, so the page does not ask
 const VOTE_SEARCH_DELAY_MS = 300;
 const VOTE_SEARCH_TIMEOUT_MS = 10000;
+const VOTE_CHECK_AGAIN_MS = 60000; // while the web app still says "not yet", ask again each minute
 const VOTE_NOTICE = "Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dikira.";
 const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian pilih daripada senarai.";
+const VOTE_LOADING_TEXT = "Memuatkan undian…";
+const VOTE_WAITING_TEXT = "Undian Best Dress dibuka pada 5 Disember, 12.00 tengah hari.";
+const VOTE_CLOSED_TEXT = "Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi.";
 
 // Entry ids come from the vote form's public page (FB_PUBLIC_LOAD_DATA_), like FORMS in forms.js.
 // An empty id or link keeps the vote card on "belum disediakan", so a half-set form never loses votes.
@@ -68,16 +72,27 @@ async function searchNames(query) {
   }
 }
 
+// The web app's clock decides whether voting is open; the phone's clock only picks the words.
+// A "not open" answer in the first half of the day's window means it has not started yet
+// (a phone clock running fast, or ?mod=hadir before the day); after that it has closed.
+function voteNotOpenReason(now) {
+  const halfway = (SETTINGS.attendanceOpensAt + SETTINGS.voteClosesAt) / 2;
+  return now < halfway ? "waiting" : "closed";
+}
+
 // ----- DOM -----
+
+let voteRenderId = 0; // each render bumps it, so an older check that answers late changes nothing
 
 // state: "hidden" | "open" | "closed", picked by pickVoteState in app.js.
 function renderVote(state) {
+  voteRenderId += 1;
   const section = document.getElementById("undian");
   const holder = document.getElementById("undian-isi");
   holder.replaceChildren();
   section.hidden = state === "hidden";
   if (state === "closed") {
-    holder.append(el("p", { class: "form-status", text: "Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi." }));
+    holder.append(el("p", { class: "form-status", text: VOTE_CLOSED_TEXT }));
     return;
   }
   if (state !== "open") return;
@@ -85,7 +100,37 @@ function renderVote(state) {
     holder.append(el("p", { class: "form-status", text: "Pautan undian belum disediakan." }));
     return;
   }
-  holder.append(buildVoteForm());
+  holder.append(el("p", { class: "form-status", text: VOTE_LOADING_TEXT }));
+  openWhenServerAgrees(voteRenderId);
+}
+
+// The form shows only once the web app says voting is open, so nobody fills in a vote it would refuse.
+async function openWhenServerAgrees(renderId) {
+  let open = true; // a failed check still shows the form: the name search then says what went wrong
+  try {
+    open = (await searchNames("")).open;
+  } catch (error) {
+    console.error("Vote check failed:", error);
+  }
+  if (renderId !== voteRenderId) return;
+  if (!open) {
+    showVoteNotOpen();
+    return;
+  }
+  document.getElementById("undian-isi").replaceChildren(buildVoteForm());
+}
+
+function showVoteNotOpen() {
+  if (voteNotOpenReason(Date.now()) === "closed") {
+    renderVote("closed");
+    return;
+  }
+  voteRenderId += 1;
+  const renderId = voteRenderId;
+  document.getElementById("undian-isi").replaceChildren(el("p", { class: "form-status", text: VOTE_WAITING_TEXT }));
+  setTimeout(() => {
+    if (renderId === voteRenderId) openWhenServerAgrees(renderId);
+  }, VOTE_CHECK_AGAIN_MS);
 }
 
 function buildVoteForm() {
@@ -166,7 +211,7 @@ function buildPickField(field) {
       const reply = await searchNames(query);
       if (ticket !== latest) return;
       if (!reply.open) {
-        renderVote("closed");
+        showVoteNotOpen();
         return;
       }
       showOptions(list, reply.names, choose);

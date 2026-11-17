@@ -7,19 +7,48 @@ import vm from "node:vm";
 
 const FORMS_SOURCE = readFileSync(new URL("../forms.js", import.meta.url), "utf8");
 const VOTE_SOURCE = readFileSync(new URL("../vote.js", import.meta.url), "utf8");
-const READY = { voteFormUrl: "https://docs.google.com/forms/d/e/VOTE/viewform", voteSearchUrl: "https://script.google.com/macros/s/X/exec" };
+const myt = (hour, minute = 0) => Date.UTC(2026, 11, 5, hour - 8, minute); // 5 Dec 2026, Malaysia time
+const READY = {
+  voteFormUrl: "https://docs.google.com/forms/d/e/VOTE/viewform",
+  voteSearchUrl: "https://script.google.com/macros/s/X/exec",
+  attendanceOpensAt: myt(12),
+  voteClosesAt: myt(17, 30),
+};
 
-function loadVote({ settings = READY, entries = ["11", "22", "33"], fetch = async () => ({}) } = {}) {
-  const context = { SETTINGS: settings, URLSearchParams, AbortController, setTimeout, clearTimeout, console: { error() {} }, fetch };
+// The vote card's section and holder, enough to read what renderVote put on the page.
+function fakeCard() {
+  const holder = {
+    children: [],
+    replaceChildren(...nodes) { this.children = nodes; },
+    append(...nodes) { this.children.push(...nodes); },
+  };
+  const card = { undian: { hidden: true }, "undian-isi": holder };
+  const createElement = (tag) => ({ tag, textContent: "", setAttribute() {}, append() {} });
+  return { card, document: { getElementById: (id) => card[id], createElement } };
+}
+
+function loadVote({ settings = READY, entries = ["11", "22", "33"], fetch = async () => ({}), now = Date.UTC(2026, 10, 17), timers = [] } = {}) {
+  const page = fakeCard();
+  const context = {
+    SETTINGS: settings, URLSearchParams, AbortController, clearTimeout, console: { error() {} }, fetch,
+    document: page.document,
+    Date: { now: () => now },
+    setTimeout: (run, ms) => { timers.push({ run, ms }); return timers.length; },
+  };
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
+  // buildVoteForm needs a real DOM, so here it only marks where the form would go.
   vm.runInContext(
     `${FORMS_SOURCE}\n${VOTE_SOURCE}\n;VOTE.fields.forEach((field, i) => { field.entry = ${JSON.stringify(entries)}[i]; });
-    globalThis.__vote = { isVoteReady, countLetters, findVoteErrors, toVoteBody, searchNames };`,
+    buildVoteForm = () => ({ tag: "vote-form" });
+    globalThis.__vote = { isVoteReady, countLetters, findVoteErrors, toVoteBody, searchNames, voteNotOpenReason, renderVote };`,
     context,
   );
-  return context.__vote;
+  return { ...context.__vote, card: page.card };
 }
+
+const settle = () => new Promise((resolve) => setImmediate(resolve)); // lets the open-check's fetch answer
+const shown = (card) => card["undian-isi"].children.map((node) => (node.tag === "vote-form" ? "FORM" : node.textContent));
 
 const plain = (value) => JSON.parse(JSON.stringify(value)); // vm objects fail deepEqual across realms
 
@@ -75,4 +104,59 @@ test("the search query is URL-encoded and a server error is a failure, not an em
   const fetch = async (url) => { asked = url; return { ok: false, status: 500 }; };
   await assert.rejects(loadVote({ fetch }).searchNames("nur aini&x"));
   assert.equal(asked, `${READY.voteSearchUrl}?q=nur%20aini%26x`);
+});
+
+test("a 'not open' answer reads as not yet open early in the day and as closed later", () => {
+  const { voteNotOpenReason } = loadVote();
+  assert.equal(voteNotOpenReason(Date.UTC(2026, 10, 17)), "waiting");
+  assert.equal(voteNotOpenReason(myt(11, 58)), "waiting");
+  assert.equal(voteNotOpenReason(myt(12, 5)), "waiting");
+  assert.equal(voteNotOpenReason(myt(17, 30)), "closed");
+  assert.equal(voteNotOpenReason(myt(18)), "closed");
+});
+
+test("before voting opens the card shows when it opens, never a form or 'ditutup'", async () => {
+  const timers = [];
+  const fetch = async () => ({ ok: true, json: async () => ({ open: false, names: [] }) });
+  const { renderVote, card } = loadVote({ fetch, timers });
+  renderVote("open");
+  assert.deepEqual(shown(card), ["Memuatkan undian…"]);
+  await settle();
+  assert.deepEqual(shown(card), ["Undian Best Dress dibuka pada 5 Disember, 12.00 tengah hari."]);
+  assert.equal(timers.at(-1).ms, 60000, "asks the web app again in a minute");
+});
+
+test("the form appears once the web app says voting is open, even on a re-check", async () => {
+  const timers = [];
+  let open = false;
+  const fetch = async () => ({ ok: true, json: async () => ({ open, names: [] }) });
+  const { renderVote, card } = loadVote({ fetch, timers });
+  renderVote("open");
+  await settle();
+  open = true;
+  timers.at(-1).run();
+  await settle();
+  assert.deepEqual(shown(card), ["FORM"]);
+});
+
+test("a 'not open' answer late in the day closes the card", async () => {
+  const fetch = async () => ({ ok: true, json: async () => ({ open: false, names: [] }) });
+  const { renderVote, card } = loadVote({ fetch, now: myt(17, 29) });
+  renderVote("open");
+  await settle();
+  assert.deepEqual(shown(card), ["Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi."]);
+});
+
+test("if the open-check fails the form still shows, and a late answer to an old render is ignored", async () => {
+  const fetch = async () => { throw new Error("offline"); };
+  const { renderVote, card } = loadVote({ fetch });
+  renderVote("open");
+  renderVote("closed"); // the 5.30 pm tick lands before the check answers
+  await settle();
+  assert.deepEqual(shown(card), ["Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi."]);
+
+  const again = loadVote({ fetch });
+  again.renderVote("open");
+  await settle();
+  assert.deepEqual(shown(again.card), ["FORM"]);
 });
