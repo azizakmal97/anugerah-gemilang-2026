@@ -301,3 +301,29 @@ Every Friday:
 **Safeguards added (plain words):**
 - If a guest double-taps Hantar, only one answer is sent (button disabled while sending).
 - If the phone has no signal, the guest is told and nothing looks "sent" when it was not.
+
+---
+
+### ⬜ P04 — e-sijil only for people who really came
+
+**Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
+**Why (owner 2026-11-17):** a shared QR would let someone who did not come fill feedback and get a sijil.
+**Needs a spec (`/spec`) and the owner's choice first** `<requires user input>`:
+- A. Match: send the sijil only when the feedback email (or IC) is also in the attendance tab. Unmatched answers wait in a list for the committee to approve.
+- B. Hall code: a short code shown only at the registration desk; the attendance form needs it, so a shared QR alone is not enough.
+- Recommended: A + B together.
+
+**Plan (after the choice):**
+- [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
+- [ ] Apps Script check in `onFeedbackSubmit` + an "approve and send" step for unmatched answers (Model: Sonnet 5.5 · medium)
+- [ ] If B: code field on the attendance form (Google Form + `forms.js`), code on the desk QR poster (Model: Sonnet 5.5 · medium; poster Opus)
+- [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
+
+### ⬜ P05 — Fix "Nusantara Batik" line on the e-sijil
+
+**Model:** Opus 5.5 · **Effort:** medium (edit to a settled design)
+**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd.
+
+**Plan:**
+- [ ] Rework or remove that line in `print/make_sijil.py` (e.g. move the theme into the event block, or drop it), re-render `hi-tea/sijil/sijil-latar-A4.png`, show the owner (Model: Opus 5.5 · medium)
+- [ ] Copy the new PNG into the Drive folder, re-run `fitTemplate` is not needed: replace the image in the template via a small `replaceBackground` step, then `sendTestSijil` (Model: Sonnet 5.5 · low)
