@@ -83,8 +83,9 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
 
 ## 10. Current Focus / Known Issues
 
-- Form links in `SETTINGS` (`app.js`) are empty until the Google Forms exist. Until then the
-  button reads "Pautan borang belum disediakan".
+- Both Google Forms exist (owner azizakmal@moh.gov.my, Drive folder PKPD BP/hi-tea, built by
+  `scripts/create-forms.gs`) and their links are in `SETTINGS` (`app.js`). An empty link makes
+  the button read "Pautan borang belum disediakan".
 - Gotcha: anything wider than the screen (the medallion is 120%+ of a phone) makes phones widen
   the layout viewport and the whole page looks off-centre. `overflow-x: hidden` on `body` is not
   enough; `html`, `body` and `.hero` use `overflow-x: clip`.

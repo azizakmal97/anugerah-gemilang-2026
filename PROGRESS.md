@@ -235,32 +235,15 @@ Every Friday:
 **Plan for this phase:**
 - [x] Attendance form: nama penuh (as on certificate), klinik, emel. Nothing else.
 - [x] Feedback form: short rating + comments, plus emel for the e-sijil.
-- [ ] Paste both "Send" links into `SETTINGS` in `app.js`; update tests if behaviour changes.
+- [x] Paste both "Send" links into  in ; test now sets an empty link itself.
 - [ ] Print QR to the live URL for the registration desk.
+
+**Delivered so far:**
+- Both forms built 2026-11-17 by  on azizakmal@moh.gov.my (Apps Script project "Untitled project"), saved in Drive folder PKPD BP/hi-tea with one response sheet "Anugerah Gemilang 2026 - Respons".
+- Both forms open without sign-in (checked logged-out with curl).
 
 **Waiting on owner:**
 - (done 2026-11-17) Approve the form questions: approved, clinic list added.
-- Create both forms with the script (about 3 minutes):
-  1. Open https://script.google.com while signed in to the Google account that should own the forms.
-  2. Click New project.
-  3. Delete the sample code in the editor.
-  4. Paste all of `scripts/create-forms.gs`.
-  5. Click Save (disk icon).
-  6. In the function menu at the top, pick `createForms`.
-  7. Click Run.
-  8. Google asks for permission: click Review permissions, choose your own account, then Allow (if it warns the app is unverified, click Advanced, then Go to the project). This is your own script on your own account.
-  9. Open Execution log (bottom of the screen).
-  10. Copy the two form links (attendance and feedback) and send them to Claude.
+- (done 2026-11-17) Allow the Apps Script permissions.
+- Gemini proofread of the form copy is still owed (quota ran out 2026-11-17).
 
----
-
-### ⬜ P02 — e-sijil by Apps Script
-
-**Model:** Opus 5.5 · **Effort:** high for the certificate design, Sonnet 5.5 · medium for the script
-
-**Plan for this phase:**
-- [ ] Certificate template (Google Slides) in the event look, signature from the sample certificate (kept out of this repo).
-- [ ] On feedback submit: fill name, export PDF, email it. Test with the owner's own email first.
-
-**Waiting on owner:**
-- Who signs the participant certificate, and confirm the signature image may be used.

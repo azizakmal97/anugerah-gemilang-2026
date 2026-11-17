@@ -66,6 +66,7 @@ test("?mod= previews a mode, and an unknown value falls back to the clock", () =
 
 test("with no form link the button is shown as not ready, never as a dead link", () => {
   const { app, elements } = loadApp();
+  app.SETTINGS.attendanceFormUrl = "";
   app.renderAction("hadir");
   const button = elements["action-btn"];
   assert.equal(button.hidden, false);
