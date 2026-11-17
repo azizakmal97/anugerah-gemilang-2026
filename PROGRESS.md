@@ -306,7 +306,7 @@ Every Friday:
 
 ### ⏸ P04 — e-sijil only for people who really came
 
-**Status:** live test A1 and A3 passed 2026-11-17; only the /done-check re-run (Opus 5.5 · medium) and marking done are left
+**Status:** live test A1 and A3 passed and DONE-CHECK: PASS 2026-11-17; only marking P04 done is left
 **Started:** 2026-11-17
 **Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
