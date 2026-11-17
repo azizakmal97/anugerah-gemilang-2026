@@ -1,0 +1,43 @@
+# Best Dress vote
+
+Date: 2026-11-17 · Status: draft
+
+## Stories
+
+### S1 (P1): A guest at the event votes for one man and one woman for Best Dress
+Why P1: the owner wants the winners chosen by the guests, not a panel.
+
+Acceptance:
+- A1. Given voting is open, when a guest opens the page, then a Best Dress vote shows with two picks: Lelaki and Perempuan.
+- A2. Given the guest types at least 3 letters of a name, then matching names of people who confirmed attendance appear, and the guest picks one for each category.
+- A3. Given the guest enters their own No. K/P and sends the vote, then the vote is counted only if that IC is on the attendance list.
+- A4. Given the same IC votes again, then only the latest vote counts.
+- A5. Given a guest picks their own name, then that pick is not counted.
+
+### S2 (P1): Only the owner sees the results
+Why P1: the owner announces the winners at the event; results must not be public.
+
+- A6. Given votes are in, when the owner asks for the results, then they get the top 5 for Lelaki and the top 5 for Perempuan with vote counts, privately (email to the owner, or a sheet only the owner can open).
+- A7. The page never shows any count, ranking or "who is leading".
+
+## Edge cases
+- No match for the typed letters: "Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran."
+- Voting closed: the vote section says so and accepts nothing.
+- Double tap on Hantar: one vote is sent.
+- No signal: clear retry message, nothing says "sent".
+- Tie at 5th place: all tied names are listed.
+
+## Out of scope
+- Photos of the candidates.
+- Showing results on the page or on a screen.
+- Voting from outside the attendance list.
+
+## Assumptions
+- The voter's IC is the same IC rule and auto-format as the other forms.
+- No gender is stored: the guest decides who goes under Lelaki and who under Perempuan.
+- Votes land in a Google Form response sheet like the other forms, and an Apps Script on the owner's account counts them.
+
+## Open questions
+- [NEEDS CLARIFICATION: the name search puts attendee names on the public page during voting, which the project rules forbid today. Allow names to show only after 3 typed letters, loaded live from Google while voting is open (never stored in this repo)?]
+- [NEEDS CLARIFICATION: when does voting open and close (the winner is announced during the event)?]
+- [NEEDS CLARIFICATION: how does the owner get the top 5: an email when voting closes, or a private sheet?]
