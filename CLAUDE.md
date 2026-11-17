@@ -16,9 +16,9 @@ Owner: Dr Aziz (OMFS unit), who runs attendance, certificates and feedback for t
 |---|---|
 | Markup | `index.html`, one page, Malay copy |
 | Styling | `style.css`, CSS custom properties, no framework |
-| Logic | `app.js`: page mode by clock (countdown, attendance, feedback) and the form button |
+| Logic | `app.js`: page mode by clock (countdown, attendance, feedback). `forms.js`: the in-page forms, posted to Google Forms |
 | Motion | `effects.js`: curtain, medallion, gold dust, scroll-linked details. Decoration only |
-| Data | None stored here. Attendance and feedback go to Google Forms (links in `SETTINGS`, `app.js`) |
+| Data | None stored here. The page posts answers straight to the Google Forms (links in `SETTINGS`, field ids in `forms.js`); nothing is kept in the browser |
 | Testing | `node:test` characterization tests in `tests/` (app.js runs in a vm with a fake DOM) |
 | Auth | None. Public page, no personal data on it |
 | Deployment | GitHub Pages from `main`, root folder. Push = live in about a minute |
@@ -38,7 +38,8 @@ No dependencies. `package-lock.json` exists only because CI runs `npm ci`.
 
 ## 4. Conventions
 
-- Plain browser JS, classic scripts, no modules, no bundler. Globals live in `app.js` only.
+- Plain browser JS, classic scripts, no modules, no bundler. Globals live in `app.js` and `forms.js` only
+  (`forms.js` loads first; `app.js` calls its `renderForm`).
 - `app.js` = behaviour that matters (tested). `effects.js` = motion; the page must work if it fails.
 - Every motion respects `prefers-reduced-motion`.
 - Malay copy: never a comma before "dan", "atau", "serta", "untuk", "oleh". No em dash.
@@ -47,7 +48,7 @@ No dependencies. `package-lock.json` exists only because CI runs `npm ci`.
 
 ## 5. Testing
 
-- Change page modes or the button? Update `tests/app.test.mjs` first (red, then green).
+- Change page modes? Update `tests/app.test.mjs` first. Change a form rule? `tests/forms.test.mjs`.
 - Visual changes: open it at 375 px and at desktop width before calling it done, and check
   `document.documentElement.scrollWidth === innerWidth` on mobile (see §10).
 - Preview a mode without waiting for the clock: `?mod=sebelum`, `?mod=hadir`, `?mod=selepas`.
@@ -85,7 +86,10 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
 
 - Both Google Forms exist (owner azizakmal@moh.gov.my, Drive folder PKPD BP/hi-tea, built by
   `scripts/create-forms.gs`) and their links are in `SETTINGS` (`app.js`). An empty link makes
-  the button read "Pautan borang belum disediakan".
+  the form area read "Pautan borang belum disediakan".
+- Gotcha: a form question added or changed in Google gets a new `entry` id. Re-read the ids from
+  the form's public page (`FB_PUBLIC_LOAD_DATA_`) into `FORMS` in `forms.js`, or answers vanish:
+  the send is `no-cors`, so Google's refusal is invisible to the page.
 - Gotcha: anything wider than the screen (the medallion is 120%+ of a phone) makes phones widen
   the layout viewport and the whole page looks off-centre. `overflow-x: hidden` on `body` is not
   enough; `html`, `body` and `.hero` use `overflow-x: clip`.

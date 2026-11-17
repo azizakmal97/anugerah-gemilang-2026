@@ -24,6 +24,7 @@ var CLINICS = [
 ];
 
 var NAME_HELP = 'Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil.';
+var ATTENDANCE_NAME_HELP = 'Tulis nama penuh anda.'; // the e-sijil name comes from the feedback form only
 var IC_TITLE = 'No. Kad Pengenalan';
 var IC_HELP = 'Untuk dicetak pada sijil. Contoh: 900101-08-1234';
 var IC_PATTERN = '^\\d{6}-?\\d{2}-?\\d{4}$';
@@ -70,7 +71,7 @@ function buildAttendanceForm() {
     'Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!'
   );
 
-  addShortText(form, 'Nama penuh', NAME_HELP);
+  addShortText(form, 'Nama penuh', ATTENDANCE_NAME_HELP);
   form.addListItem()
     .setTitle('Klinik atau unit')
     .setChoiceValues(CLINICS)

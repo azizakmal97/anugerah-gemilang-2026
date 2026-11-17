@@ -11,7 +11,7 @@ Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Dibuat pada 2026-11
 
 | # | Soalan | Teks bantuan | Jenis | Wajib | Pilihan |
 |---|---|---|---|---|---|
-| 1 | Nama penuh | Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil. | Jawapan pendek | Ya | - |
+| 1 | Nama penuh | Tulis nama penuh anda. | Jawapan pendek | Ya | - |
 | 2 | Klinik atau unit | - | Dropdown | Ya | KP Tapah; KP Slim River; KP Sungkai; KP Bidor; KP Tanjung Malim; OMFS HSR; Paeds Dental HSR |
 | 3 | Emel | Gunakan emel yang anda semak. | Jawapan pendek (pengesahan: emel) | Ya | - |
 
