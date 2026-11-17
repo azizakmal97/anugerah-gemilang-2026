@@ -350,11 +350,13 @@ Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate 
 - [x] Urus setia version `sijil-urusetia-latar-A4.png`: SIJIL PENGHARGAAN, "Setinggi-tinggi penghargaan kepada", "atas sumbangan sebagai urus setia" (Model: Opus 5.5 · medium, owner override)
 - [x] Both PNGs in `hi-tea/sijil/` and `hi-tea/` (Drive). Apps Script: code pasted at 1e0d647, `removeAttendanceEmail`, `refreshBackground` (new: swaps the peserta image in place, then fits), `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestSijil`, `sendTestUrusetia`. Both PDFs checked in Gmail: A4, new batik, name and IC inside the plate (Model: Opus 5.5 · medium, owner override)
 
+**Colour rework (owner 2026-11-17: colours not attractive, "especially the brown", wants gradients, then "gold and navy didn't match"):** sijil colours are now options in `THEMES` (`print/make_sijil.py --options` renders one small sample each). Owner picked **A, `emas-nila`**: gold frame flowing into navy, navy batik lines on the gold, gold glow on the navy field. Both PNGs re-rendered, `refreshBackground` + new `refreshUrusetiaBackground` run, `sendTestSijil` + `sendTestUrusetia` PDFs checked in Gmail (Model: Opus 5.5 · medium, owner override).
+
 **Delivered:** urus setia template "Templat e-Sijil Urus Setia Anugerah Gemilang 2026" in PKPD BP/hi-tea. Previews: `hi-tea/sijil/_sijil-latar-A4-contoh-nama.png`, `_sijil-urusetia-latar-A4-contoh-nama.png`.
 
 **Waiting on owner:**
 - Look at the two test sijil in your inbox. Say if you want any change.
 - Gemini proofread owed for "Setinggi-tinggi penghargaan kepada" and "atas sumbangan sebagai urus setia" (quota out until about 2026-11-23).
-- Old preview `hi-tea/sijil/_sijil-contoh-nama.png` is stale; delete it if you like (Claude's recycle script cannot reach J:).
+- Old previews in `hi-tea/sijil/` (`_sijil-contoh-nama.png`, `_pilihan-*.png`) are only for choosing; delete them if you like (Claude's recycle script cannot reach J:).
 
 **Verified:** lint, 18 tests, build, file sizes green; full-size crops of frame, plate and band checked; both emailed PDFs viewed.
