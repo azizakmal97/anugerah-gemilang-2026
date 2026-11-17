@@ -296,7 +296,7 @@ Every Friday:
 **Delivered:** `forms.js` + `forms.css`; the action card shows the attendance form 12 pm to 6 pm on 5 Dec and the feedback form after. Real test from the page: both rows reached the response sheet and the e-sijil email arrived. DONE-CHECK: PASS (A1 to A7). Gate: `anti-slop/gates/2026-11-17-in-site-forms.md`. Attendance help text no longer mentions the sijil (owner: the sijil name comes from the feedback form), on the page and in the Google Form.
 
 **Waiting on owner:**
-- Delete the two test rows ("UJIAN LAMAN") from both tabs of "Anugerah Gemilang 2026 - Respons" before 5 Dec.
+- (done 2026-11-17) Claude deleted the two UJIAN LAMAN test rows. Delete any rows from your own manual test before 5 Dec.
 
 **Safeguards added (plain words):**
 - If a guest double-taps Hantar, only one answer is sent (button disabled while sending).
