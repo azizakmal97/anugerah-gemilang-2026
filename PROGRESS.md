@@ -423,7 +423,7 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Waiting on owner:**
 - Gemini proofread for new copy (quota out until about 2026-11-23).
-- Owner's own answers are still in the forms' Responses (checked 2026-11-17 21:15, read only): Kehadiran 3 responses, 1 with the owner's IC (17 Nov 14:34); Maklum Balas 4 responses, 3 with the owner's IC; Undian 0. None can count any more (all before 5 Dec, isEventTime), but they should go before the day. Waiting for the owner's yes to delete them (forms' Responses and sheet rows).
+- Done 2026-11-17 21:44 (owner: "ya padam"): every answer before 5 Dec deleted from the forms' Responses: Kehadiran 3 -> 0, Maklum Balas 4 -> 0 (the owner's own and the "Ujian Laman" tests), Undian 0. Sheet tabs were already empty. TIADA_COUNT_2026-11-17 removed, names cache cleared, results recounted. Temporary function removed from Code.gs.
 - New Malay lines owed a Gemini proofread: urus setia email line "Dua e-Sijil anda dilampirkan...", replacement line "...menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.", subject "(dikemas kini)", closed-form message "Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.", tab headers and notes in scripts/sijil-records.gs.
 
 ## Resume note (2026-11-17, /close)
