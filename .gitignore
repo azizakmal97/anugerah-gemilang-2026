@@ -31,3 +31,6 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Built by print/make_qr_poster.py from the template
+print/qr-poster.html
