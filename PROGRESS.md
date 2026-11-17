@@ -352,7 +352,8 @@ Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate 
 
 **Colour rework (owner 2026-11-17: colours not attractive, "especially the brown", wants gradients, then "gold and navy didn't match"):** sijil colours are now options in `THEMES` (`print/make_sijil.py --options` renders one small sample each). Owner picked **A, `emas-nila`**: gold frame flowing into navy, navy batik lines on the gold, gold glow on the navy field. Both PNGs re-rendered, `refreshBackground` + new `refreshUrusetiaBackground` run, `sendTestSijil` + `sendTestUrusetia` PDFs checked in Gmail (Model: Opus 5.5 · medium, owner override).
 
-**Long names (owner 2026-11-17: "make sure kalau nama dia panjang still boleh muat"):** `nameFontSize` now fits the name into 380 pt between the kawung knots (Cinzel bold measured at 0.58 to 0.71 per letter; rule uses 0.75). `sendTestLongName` (49 letters) PDF checked: one line, clear of both knots, at 10.5 pt.
+**Long names (owner 2026-11-17: "make sure kalau nama dia panjang still boleh muat"):** `nameFontSize` now fits the name into 380 pt between the kawung knots (Cinzel bold measured at 0.58 to 0.71 per letter; rule uses 0.75). Then (owner: "kenapa tak jadi 2 baris?") names that would print under 17 pt go on two lines at up to 16 pt, broken before BIN / BINTI / A/L / A/P (else nearest the middle). `sendTestLongName` (49 letters) PDF checked: two lines at 16 pt, clear of both knots and the IC. Build now also parses both `.gs` files (a broken `
+` escape had blocked the Apps Script save).
 Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s; it made a Kehadiran form, Maklum Balas form and Respons sheet in My Drive root. All three moved to the Bin; the real ones in hi-tea untouched.
 
 **Delivered:** urus setia template "Templat e-Sijil Urus Setia Anugerah Gemilang 2026" in PKPD BP/hi-tea. Previews: `hi-tea/sijil/_sijil-latar-A4-contoh-nama.png`, `_sijil-urusetia-latar-A4-contoh-nama.png`.
