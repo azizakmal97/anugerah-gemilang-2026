@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** _none_ (⏸ P04 and ⏸ P06 waiting on the owner's live tests)
-**Last update:** 2026-11-17, Opus 5.5 · medium (P06 built and live, waiting on the owner's test)
+**Active phase:** _none_ (⏸ P04 waiting on the owner's live test, A1 and A3)
+**Last update:** 2026-11-17, Opus 5.5 · medium (P06 done)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -367,9 +367,9 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Verified:** lint, 18 tests, build, file sizes green; full-size crops of frame, plate and band checked; both emailed PDFs viewed.
 
-### ⏸ P06 — Best Dress vote (one man + one woman, private top 5)
+### ✅ P06 — Best Dress vote (one man + one woman, private top 5)
 
-**Status:** waiting on the owner's end-to-end test (bullet 5); code, form, sheet and web app are live
+**Status:** done 2026-11-17; live, tested end to end with synthetic ICs
 **Spec:** specs/best-dress-vote.md (agreed 2026-11-17)
 **Model:** Opus 5.5 · medium (UI and the name-privacy parts), Sonnet 5.5 · medium for the scripts and tests
 
@@ -378,7 +378,7 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - [x] Apps Script web app for the name search (`scripts/best-dress.gs`), deployed "Anyone", URL in `SETTINGS.voteSearchUrl`; answers `{"open":false}` outside 12.00 pm to 5.30 pm on 5 Dec (Model: Opus 5.5 · medium) dde6550, 313ca05
 - [x] Page: vote card in `hadir` (`vote.js`, `forms.css`), tests `tests/vote.test.mjs` + vote state in `tests/app.test.mjs`; gate `anti-slop/gates/2026-11-17-best-dress-vote.md` (Model: Opus 5.5 · medium) 42fd777
 - [x] Private sheet "Keputusan Best Dress 2026" (`scripts/best-dress-results.gs`) in PKPD BP/hi-tea, recount on every vote with a lock; tests `tests/best-dress-results.test.mjs` (Model: Sonnet 5.5 · medium, handed down) 3c83b0e
-- [ ] Test end to end with the owner's IC, then delete the test rows (Model: Sonnet 5.5 · low) <requires user input>: needs the owner's IC and a vote on the live page; see Waiting on owner
+- [x] Test end to end with synthetic ICs (owner 2026-11-17), test rows deleted (Model: Sonnet 5.5 · low, run on Opus as a small task): test window via `VOTE_TEST_UNTIL`; 3 synthetic attendees + 4 votes (valid, same IC again, self-vote, non-attendee) gave exactly voters 2, Lelaki 1, Perempuan 2; new names reached search after the 5-minute cache; then all 4 votes, the 3 attendance answers and their sheet rows deleted, the property removed (search answers closed again), results recounted to 0
 - [x] /done-check against the spec: PASS 2026-11-17 (Model: Opus 5.5 · medium)
 
 **Links (owner account azizakmal@moh.gov.my):**
@@ -393,5 +393,4 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Waiting on owner:**
 - Gemini proofread of the vote copy (quota out until about 2026-11-23).
-- End-to-end test (bullet 5), about 5 minutes: in the Apps Script project open Project Settings > Script properties, add `VOTE_TEST_UNTIL` = `2026-11-18T23:00:00+08:00`. Open the site with `?mod=hadir`, vote with your own IC, open the results sheet and see the vote. Then delete that response in the vote form (Responses tab) and run `refreshBestDressResults`. Tell Claude, or Claude can do the clicks once you give the go-ahead.
 - Look at the vote card on your phone (`?mod=hadir`): wording and feel.
