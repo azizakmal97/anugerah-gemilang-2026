@@ -25,6 +25,7 @@ PREVIEW_IC = "No. K/P: 000000-00-0000"
 THEMES = {
     "navy": {"cloth-a": "#1d3c86", "cloth-b": "#071334", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34"},
     "maroon": {"cloth-a": "#8e1838", "cloth-b": "#3c0717", "field-a": "#5a0f28", "field-b": "#2c0613", "field-c": "#16030a", "plate": "26, 4, 12"},
+    "tema": {"cloth-a": "#f2d796", "cloth-b": "#a87a2c", "field-a": "#1a3473", "field-b": "#0b1736", "field-c": "#040a1e", "plate": "5, 12, 34", "frame-ink": "#0b1736", "frame-dot": "#0b1736"},
     "emerald": {"cloth-a": "#0f6b57", "cloth-b": "#05303a", "field-a": "#0d4f52", "field-b": "#062b30", "field-c": "#03161a", "plate": "3, 22, 26"},
 }
 DEFAULT_THEME = "navy"
