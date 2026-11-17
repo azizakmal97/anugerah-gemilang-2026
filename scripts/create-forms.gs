@@ -14,6 +14,9 @@
  *
  * Attendance form already exists and still needs IC and Peranan? Pick
  * addAttendanceQuestions and press Run. Safe to run twice.
+ *
+ * Attendance form still asks for Emel? Pick removeAttendanceEmail and press
+ * Run. Safe to run twice.
  */
 
 var CLINICS = [
@@ -85,7 +88,6 @@ function buildAttendanceForm() {
     .setChoiceValues(CLINICS)
     .setRequired(true);
   addRoleItem(form);
-  addEmail(form, 'Emel', 'Gunakan emel yang anda semak.');
   return form;
 }
 
@@ -193,6 +195,19 @@ function addAttendanceQuestions() {
     Logger.log('Soalan "' + ROLE_TITLE + '" ditambah selepas "Klinik atau unit".');
   }
   Logger.log('Pautan sunting borang kehadiran: ' + form.getEditUrl());
+}
+
+// One-off (owner 2026-11-17): attendance no longer asks for email; the e-sijil is
+// matched by IC only. Old answers keep their email column in the sheet. Safe to run twice.
+function removeAttendanceEmail() {
+  var form = findFormByTitle(ATTENDANCE_TITLE);
+  var emailItem = findItem(form, 'Emel');
+  if (!emailItem) {
+    Logger.log('Soalan "Emel" sudah tiada dalam borang kehadiran. Tiada apa diubah.');
+    return;
+  }
+  form.deleteItem(emailItem);
+  Logger.log('Siap. Soalan "Emel" dibuang daripada borang kehadiran.');
 }
 
 function findItem(form, title) {
