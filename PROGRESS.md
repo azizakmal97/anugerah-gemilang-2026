@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** none (next: `P01` Google Forms)
+**Active phase:** P01
 **Last update:** 2026-11-17 (closed; resume at P01 bullet 1)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -225,7 +225,10 @@ Every Friday:
 
 ---
 
-### ⬜ P01 — Google Forms for attendance and feedback
+### 🟡 P01 — Google Forms for attendance and feedback
+
+**Status:** in-progress
+**Started:** 2026-11-17
 
 **Model:** Sonnet 5.5 · **Effort:** medium
 
