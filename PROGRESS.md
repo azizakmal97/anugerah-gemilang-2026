@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** P02
-**Last update:** 2026-11-17, Opus 5.5 (P02 scripts written; waiting on owner to run them)
+**Active phase:** _none_ (next: P03)
+**Last update:** 2026-11-17, Opus 5.5 (P02 done; e-sijil live)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -251,26 +251,24 @@ Every Friday:
 
 ---
 
-### 🟡 P02 — e-sijil by Apps Script
+### ✅ P02 — e-sijil by Apps Script
 
-**Status:** in-progress
+**Status:** done
+**Completed:** 2026-11-17
 **Started:** 2026-11-17
 **Model:** Opus 5.5 · **Effort:** high for the certificate design, Sonnet 5.5 · medium for the script
 
 **Plan for this phase:**
 - [x] Certificate background (A4 portrait, batik theme, signature) built by `print/make_sijil.py` into `hi-tea/sijil/sijil-latar-A4.png` (Model: Opus 5.5 · high). Sample with a name: `hi-tea/sijil/_sijil-contoh-nama.png`.
-- [x] (code b254f61, handed down to Sonnet; owner must run `addIcQuestion`) Add a required "No. Kad Pengenalan" short-answer question to the feedback form (after Nama penuh; validation regex `^\d{6}-?\d{2}-?\d{4}$`; help text: "Untuk dicetak pada sijil. Contoh: 900101-08-1234") through Apps Script on the existing form, and add it to `docs/forms.md`. The IC appears only on that guest's own PDF and in the response sheet, never on the site (Model: Sonnet 5.5 · medium).
-- [x] (code daf6775 `scripts/e-sijil.gs`, handed down to Sonnet; owner must run `setupSijil`) Apps Script: A4 Slides template with the background and a name box; on feedback submit fill the name, export PDF, email it; check the mail quota first (Model: Sonnet 5.5 · medium).
-- [ ] Test with the owner's own email first (Model: Sonnet 5.5 · low).
+- [x] (b254f61, run 2026-11-17) Add a required "No. Kad Pengenalan" short-answer question to the feedback form (after Nama penuh; validation regex `^\d{6}-?\d{2}-?\d{4}$`; help text: "Untuk dicetak pada sijil. Contoh: 900101-08-1234") through Apps Script on the existing form, and add it to `docs/forms.md`. The IC appears only on that guest's own PDF and in the response sheet, never on the site (Model: Sonnet 5.5 · medium).
+- [x] (daf6775 + 519b733 `scripts/e-sijil.gs`, set up 2026-11-17) Apps Script: A4 Slides template with the background and a name box; on feedback submit fill the name, export PDF, email it; check the mail quota first (Model: Sonnet 5.5 · medium).
+- [x] Test with the owner's own email first (Model: Sonnet 5.5 · low). Second test PDF checked: A4, name and IC placed right, email text flows on phones.
 
-**Resume note (2026-11-17):** continue from bullet 2 on Sonnet 5.5 · medium. Name box for the script: on an A4 portrait slide (595.28 x 841.89 pt) put the name text box at left 67.5 pt, top 279 pt, width 460 pt, height 57 pt, Cinzel bold, gold-light #f2d796 (dark-mode certificate, owner 2026-11-17), centred both ways, text = the guest's name in capitals; shrink the font from 22.5 pt for long names so it stays on one line. IC (owner 2026-11-17, "letak IC sekali"): a second text box at left 67.5 pt, top 334.5 pt, width 460 pt, height 19.5 pt, Source Sans 3 11.25 pt, #d9cfb8, centred, text "No. K/P: 000000-00-0000" (digits normalised to that dash format). Background = `hi-tea/sijil/sijil-latar-A4.png` uploaded to the Drive folder PKPD BP/hi-tea (it is NOT in this repo). Forms and the response sheet are on azizakmal@moh.gov.my; the Apps Script project that built them is "Untitled project" there. Mail quota: about 1,500 a day on that work account; read `MailApp.getRemainingDailyQuota()` before sending.
+**Setup done (2026-11-17):** all four scripts ran in Apps Script "Untitled project" (azizakmal@moh.gov.my, Claude in Chrome /u/1); feedback trigger installed. Template "Templat e-Sijil Anugerah Gemilang 2026" is in PKPD BP/hi-tea, page set to A4 by hand (the Slides API ignores pageSize).
+
+**Original spec:** Name box for the script: on an A4 portrait slide (595.28 x 841.89 pt) put the name text box at left 67.5 pt, top 279 pt, width 460 pt, height 57 pt, Cinzel bold, gold-light #f2d796 (dark-mode certificate, owner 2026-11-17), centred both ways, text = the guest's name in capitals; shrink the font from 22.5 pt for long names so it stays on one line. IC (owner 2026-11-17, "letak IC sekali"): a second text box at left 67.5 pt, top 334.5 pt, width 460 pt, height 19.5 pt, Source Sans 3 11.25 pt, #d9cfb8, centred, text "No. K/P: 000000-00-0000" (digits normalised to that dash format). Background = `hi-tea/sijil/sijil-latar-A4.png` uploaded to the Drive folder PKPD BP/hi-tea (it is NOT in this repo). Forms and the response sheet are on azizakmal@moh.gov.my; the Apps Script project that built them is "Untitled project" there. Mail quota: about 1,500 a day on that work account; read `MailApp.getRemainingDailyQuota()` before sending.
 
 **Waiting on owner:**
-- Run the two scripts on azizakmal@moh.gov.my (about 10 minutes, Claude can guide you click by click):
-  1. Upload `hi-tea/sijil/sijil-latar-A4.png` to Drive folder PKPD BP/hi-tea.
-  2. script.google.com, open "Untitled project", paste the new `scripts/create-forms.gs`, Save, pick `addIcQuestion`, Run.
-  3. New project, paste `scripts/e-sijil.gs`, Save, Services (+) add "Google Slides API", pick `setupSijil`, Run, Allow.
-  4. Pick `sendTestSijil`, Run, then check the PDF in your inbox (name, IC, fonts).
 - Gemini proofread of the e-sijil email and IC help text is owed (quota out until about 2026-11-23).
 - (done 2026-11-17) Signer: Dr. Mohamad Noor bin Sairi, Pegawai Pergigian Daerah. Owner confirmed he agreed to his signature from `hi-tea/contoh sijil.jpeg` being used. The signature file stays in `hi-tea/sijil/`, never in this repo.
 
