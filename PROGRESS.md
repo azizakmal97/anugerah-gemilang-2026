@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** _none_ (next: P03)
+**Active phase:** P03
 **Last update:** 2026-11-17, Opus 5.5 (P02 done; e-sijil live)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -274,7 +274,11 @@ Every Friday:
 
 ---
 
-### ⬜ P03 — Forms inside the site, in the batik design
+### 🟡 P03 — Forms inside the site, in the batik design
+
+**Status:** in-progress
+**Started:** 2026-11-17
+**Spec:** specs/in-site-forms.md
 
 **Model:** Opus 5.5 · **Effort:** medium (design on a settled look), Sonnet 5.5 · medium for the tests
 **Owner choice (2026-11-17):** guests fill attendance and feedback ON the website, styled like the page, not in a Google tab. Answers must still land in the same Google Forms response sheet, so the e-sijil script is unchanged.
