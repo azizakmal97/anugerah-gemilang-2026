@@ -374,16 +374,24 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 **Model:** Opus 5.5 · medium (UI and the name-privacy parts), Sonnet 5.5 · medium for the scripts and tests
 
 **Plan for this phase:**
-- [ ] Google Form "Undian Best Dress 2026": No. K/P, Lelaki, Perempuan (all required), built by Apps Script in `scripts/create-forms.gs`; read the entry ids from its public page (Model: Sonnet 5.5 · medium)
-- [ ] Apps Script web app for the name search: returns at most 10 attendee names matching 3+ typed letters, only from 12.00 pm to 5.30 pm on 5 Dec, never a full list, no IC or email in the reply (Model: Opus 5.5 · medium, privacy-critical)
-- [ ] Page: vote card during `hadir`, two search boxes (Lelaki, Perempuan), IC with auto-format, the one-vote notice, closed message after 5.30 pm; same batik form look; tests in `tests/` (Model: Opus 5.5 · medium for UI, Sonnet 5.5 · medium for tests)
-- [ ] Private sheet "Keputusan Best Dress" on the owner's account: counts only the first vote per IC, only ICs on the attendance list, drops self-votes and votes after 5.30 pm, top 5 per category with ties shown; updates by itself (Model: Sonnet 5.5 · medium)
-- [ ] Test end to end with the owner's IC, then delete the test rows (Model: Sonnet 5.5 · low)
-- [ ] /done-check against the spec (Model: Opus 5.5 · medium)
+- [x] Google Form "Undian Best Dress 2026": No. K/P, Lelaki, Perempuan (all required), built by `createVoteForm` in `scripts/create-forms.gs`, no response sheet; entry ids in `vote.js` (Model: Sonnet 5.5 · medium, handed down) 34a2dd5
+- [x] Apps Script web app for the name search (`scripts/best-dress.gs`), deployed "Anyone", URL in `SETTINGS.voteSearchUrl`; answers `{"open":false}` outside 12.00 pm to 5.30 pm on 5 Dec (Model: Opus 5.5 · medium) dde6550, 313ca05
+- [x] Page: vote card in `hadir` (`vote.js`, `forms.css`), tests `tests/vote.test.mjs` + vote state in `tests/app.test.mjs`; gate `anti-slop/gates/2026-11-17-best-dress-vote.md` (Model: Opus 5.5 · medium) 42fd777
+- [x] Private sheet "Keputusan Best Dress 2026" (`scripts/best-dress-results.gs`) in PKPD BP/hi-tea, recount on every vote with a lock; tests `tests/best-dress-results.test.mjs` (Model: Sonnet 5.5 · medium, handed down) 3c83b0e
+- [ ] Test end to end with the owner's IC, then delete the test rows (Model: Sonnet 5.5 · low) <requires user input>: needs the owner's IC and a vote on the live page; see Waiting on owner
+- [x] /done-check against the spec: PASS 2026-11-17 (Model: Opus 5.5 · medium)
 
-**Safeguards to add (plain words):**
-- Names only appear after 3 letters, at most 10 at a time, and only during voting hours, so nobody can pull the whole guest list.
-- One vote per IC, and only guests who confirmed attendance count.
+**Links (owner account azizakmal@moh.gov.my):**
+- Vote form: https://docs.google.com/forms/d/e/1FAIpQLSegopqOizhGqnmYCD3mqQ4dLvWvSzXXl0f4GbyO9ZQbgExziA/viewform (edit: https://docs.google.com/forms/d/16n1YbKrf86x8OvyghE68e6WHd-coj9Pc64R54tcKfl4/edit)
+- Results sheet (private): https://docs.google.com/spreadsheets/d/1M_A3MPxiUDNe5StBv8Eflw4ME0vIWOTfd0vpxuKMFDg/edit
+- Name search web app: deployment "Carian nama Best Dress", version 1. After editing `best-dress.gs`: Deploy > Manage deployments > edit > New version (keeps the URL).
+
+**Safeguards added:**
+- Names only appear after 3 letters, at most 10 at a time, only 12.00 pm to 5.30 pm on 5 Dec, and the reply never carries an IC (privacy by design).
+- One vote per IC (the first), only guests on the attendance list count, self-picks and late votes are dropped, and a double tap sends once (idempotency).
+- Two votes at the same moment cannot overwrite the results with an older count (lock).
 
 **Waiting on owner:**
 - Gemini proofread of the vote copy (quota out until about 2026-11-23).
+- End-to-end test (bullet 5), about 5 minutes: in the Apps Script project open Project Settings > Script properties, add `VOTE_TEST_UNTIL` = `2026-11-18T23:00:00+08:00`. Open the site with `?mod=hadir`, vote with your own IC, open the results sheet and see the vote. Then delete that response in the vote form (Responses tab) and run `refreshBestDressResults`. Tell Claude, or Claude can do the clicks once you give the go-ahead.
+- Look at the vote card on your phone (`?mod=hadir`): wording and feel.
