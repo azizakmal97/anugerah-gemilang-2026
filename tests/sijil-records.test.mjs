@@ -119,3 +119,11 @@ test("'tidak ditemui' stops at 30 a day", () => {
   assert.equal(notListedRows[30][3], "Tidak dihantar: had 30 emel sehari");
   assert.equal(properties["TIADA_COUNT_2026-12-05"], "30");
 });
+
+test("tab columns are wide enough for a date, and wider for names and emails", () => {
+  const { context } = loadSijil();
+  assert.equal(context.dataColumnWidth("Masa", 60), 150);
+  assert.equal(context.dataColumnWidth("Nama pada sijil", 120), 280);
+  assert.equal(context.dataColumnWidth("Emel makluman", 90), 280);
+  assert.equal(context.dataColumnWidth("Cadangan untuk majlis akan datang", 900), 320);
+});

@@ -43,8 +43,12 @@ var RECORD_TIME_ZONE = 'Asia/Kuala_Lumpur';
 // black text, which stays readable here but would vanish on navy.
 var DATA_ROW_COLOR = '#fbf7ee';
 var DATA_STRIPE_COLOR = '#f3e9d2';
-var DATA_COLUMN_MIN = 110;
+// Tabs are styled before the answers arrive, so widths cannot come from the data alone:
+// a date needs about 150 px, a full name or an email (or a note about one) about 280.
+var DATA_COLUMN_MIN = 150;
 var DATA_COLUMN_MAX = 320;
+var DATA_COLUMN_WIDE = 280;
+var DATA_WIDE_HEADER = /nama|emel/i;
 
 /** Pure. seen: {ic, email: already sent there?, countToday}. Returns a NOT_LISTED_NOTES key. */
 function notListedDecision(seen) {
@@ -183,11 +187,18 @@ function styleDataTab(sheet) {
     .setWrap(true);
   sheet.setRowHeight(1, 44);
 
+  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
   sheet.autoResizeColumns(1, lastColumn);
-  for (var column = 1; column <= lastColumn; column++) {
-    var width = sheet.getColumnWidth(column);
-    sheet.setColumnWidth(column, Math.min(DATA_COLUMN_MAX, Math.max(DATA_COLUMN_MIN, width)));
-  }
+  headers.forEach(function (header, index) {
+    var column = index + 1;
+    sheet.setColumnWidth(column, dataColumnWidth(String(header), sheet.getColumnWidth(column)));
+  });
+}
+
+/** Pure: a readable width for one column, from its header and the width its content asks for. */
+function dataColumnWidth(header, contentWidth) {
+  var floor = DATA_WIDE_HEADER.test(header) ? DATA_COLUMN_WIDE : DATA_COLUMN_MIN;
+  return Math.min(DATA_COLUMN_MAX, Math.max(floor, contentWidth));
 }
 
 // Try A10 to A12 before 5 Dec: no attendance row can match yet, so a stand-in decides the role.
