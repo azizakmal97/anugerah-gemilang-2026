@@ -11,6 +11,9 @@
  * Feedback form already exists and still needs the IC question? Pick
  * addIcQuestion instead and press Run. It adds "No. Kad Pengenalan" after
  * "Nama penuh" and skips itself if the question is already there.
+ *
+ * Attendance form already exists and still needs IC and Peranan? Pick
+ * addAttendanceQuestions and press Run. Safe to run twice.
  */
 
 var CLINICS = [
@@ -27,8 +30,12 @@ var NAME_HELP = 'Eja nama anda dengan betul kerana nama ini akan dicetak pada si
 var ATTENDANCE_NAME_HELP = 'Tulis nama penuh anda.'; // the e-sijil name comes from the feedback form only
 var IC_TITLE = 'No. Kad Pengenalan';
 var IC_HELP = 'Untuk dicetak pada sijil. Contoh: 900101-08-1234';
+var ATTENDANCE_IC_HELP = 'Untuk semakan sijil anda. Contoh: 900101-08-1234';
+var ROLE_TITLE = 'Peranan';
+var ROLES = ['Peserta', 'Urus setia'];
 var IC_PATTERN = '^\\d{6}-?\\d{2}-?\\d{4}$';
 var IC_PATTERN_HELP = 'Format: 900101-08-1234';
+var ATTENDANCE_TITLE = 'Kehadiran Majlis Anugerah Gemilang 2026';
 var FEEDBACK_TITLE = 'Maklum Balas Majlis Anugerah Gemilang 2026';
 var RATING_LOW = 'Kurang memuaskan';
 var RATING_HIGH = 'Sangat memuaskan';
@@ -66,16 +73,18 @@ function moveToEventFolder(fileIds) {
 
 function buildAttendanceForm() {
   var form = createBaseForm(
-    'Kehadiran Majlis Anugerah Gemilang 2026',
+    ATTENDANCE_TITLE,
     'Sahkan kehadiran anda di Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang. Ambil masa kurang seminit.',
     'Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!'
   );
 
   addShortText(form, 'Nama penuh', ATTENDANCE_NAME_HELP);
+  addIcItem(form, ATTENDANCE_IC_HELP);
   form.addListItem()
     .setTitle('Klinik atau unit')
     .setChoiceValues(CLINICS)
     .setRequired(true);
+  addRoleItem(form);
   addEmail(form, 'Emel', 'Gunakan emel yang anda semak.');
   return form;
 }
@@ -95,7 +104,7 @@ function buildFeedbackForm() {
     .setHelpText('Pilihan. Boleh dibiarkan kosong.')
     .setRequired(false);
   addShortText(form, 'Nama penuh', NAME_HELP);
-  addIcItem(form);
+  addIcItem(form, IC_HELP);
   addEmail(form, 'Emel', 'Sijil anda akan dihantar ke emel ini. Semak ejaan emel sebelum menghantar.');
   return form;
 }
@@ -132,8 +141,8 @@ function addRating(form, title) {
     .setRequired(true);
 }
 
-function addIcItem(form) {
-  var item = addShortText(form, IC_TITLE, IC_HELP);
+function addIcItem(form, helpText) {
+  var item = addShortText(form, IC_TITLE, helpText);
   item.setValidation(FormApp.createTextValidation()
     .requireTextMatchesPattern(IC_PATTERN)
     .setHelpText(IC_PATTERN_HELP)
@@ -141,9 +150,16 @@ function addIcItem(form) {
   return item;
 }
 
+function addRoleItem(form) {
+  return form.addMultipleChoiceItem()
+    .setTitle(ROLE_TITLE)
+    .setChoiceValues(ROLES)
+    .setRequired(true);
+}
+
 // One-off for the feedback form that already exists. Safe to run twice.
 function addIcQuestion() {
-  var form = findFeedbackFormByTitle(FEEDBACK_TITLE);
+  var form = findFormByTitle(FEEDBACK_TITLE);
   var items = form.getItems();
   var nameItem = null;
   for (var i = 0; i < items.length; i++) {
@@ -155,14 +171,46 @@ function addIcQuestion() {
   }
   if (!nameItem) throw new Error('Soalan "Nama penuh" tiada dalam borang maklum balas.');
 
-  var newItem = addIcItem(form);
+  var newItem = addIcItem(form, IC_HELP);
   form.moveItem(newItem.getIndex(), nameItem.getIndex() + 1);
   Logger.log('Siap. Soalan "' + IC_TITLE + '" ditambah selepas "Nama penuh".');
   Logger.log('Pautan sunting borang maklum balas: ' + form.getEditUrl());
 }
 
+// One-off for the attendance form that already exists (P04). The e-sijil goes only to
+// guests found here, so it needs the IC to match on and the role that picks the sijil.
+// Adds IC after "Nama penuh" and Peranan after "Klinik atau unit". Safe to run twice.
+function addAttendanceQuestions() {
+  var form = findFormByTitle(ATTENDANCE_TITLE);
+  if (!findItem(form, IC_TITLE)) {
+    var icItem = addIcItem(form, ATTENDANCE_IC_HELP);
+    form.moveItem(icItem.getIndex(), requireItem(form, 'Nama penuh').getIndex() + 1);
+    Logger.log('Soalan "' + IC_TITLE + '" ditambah selepas "Nama penuh".');
+  }
+  if (!findItem(form, ROLE_TITLE)) {
+    var roleItem = addRoleItem(form);
+    form.moveItem(roleItem.getIndex(), requireItem(form, 'Klinik atau unit').getIndex() + 1);
+    Logger.log('Soalan "' + ROLE_TITLE + '" ditambah selepas "Klinik atau unit".');
+  }
+  Logger.log('Pautan sunting borang kehadiran: ' + form.getEditUrl());
+}
+
+function findItem(form, title) {
+  var items = form.getItems();
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].getTitle() === title) return items[i];
+  }
+  return null;
+}
+
+function requireItem(form, title) {
+  var item = findItem(form, title);
+  if (!item) throw new Error('Soalan "' + title + '" tiada dalam borang "' + form.getTitle() + '".');
+  return item;
+}
+
 // The d/e/ id in the published link is not the form id, so find it by title in Drive.
-function findFeedbackFormByTitle(title) {
+function findFormByTitle(title) {
   var files = DriveApp.getFilesByType(MimeType.GOOGLE_FORMS);
   while (files.hasNext()) {
     var file = files.next();
