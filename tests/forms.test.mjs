@@ -21,7 +21,7 @@ function loadForms({ fetch = async () => {} } = {}) {
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
   vm.runInContext(
-    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
+    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
     context,
   );
   return context.__forms;
@@ -93,6 +93,19 @@ test("IC follows the Google Form rule: 12 digits, dashes optional", () => {
   assert.equal(validateField({ kind: "ic" }, "900101081234"), "");
   assert.match(validateField({ kind: "ic" }, "90010108123"), /900101-08-1234/);
   assert.match(validateField({ kind: "ic" }, "900101 08 1234"), /900101-08-1234/);
+});
+
+test("IC gets its dashes while typing, keeps digits only and stops at 12 digits", () => {
+  const { formatIcInput, validateField } = loadForms();
+  assert.equal(formatIcInput("871212080879"), "871212-08-0879");
+  assert.equal(formatIcInput("8712"), "8712");
+  assert.equal(formatIcInput("871212"), "871212"); // no trailing dash, so backspace still works
+  assert.equal(formatIcInput("8712120"), "871212-0");
+  assert.equal(formatIcInput("87121208"), "871212-08");
+  assert.equal(formatIcInput("871212 08 0879 99"), "871212-08-0879");
+  assert.equal(formatIcInput("a871212-08-0879"), "871212-08-0879");
+  assert.equal(formatIcInput(""), "");
+  assert.equal(validateField({ kind: "ic" }, formatIcInput("871212080879")), "");
 });
 
 test("every field of both forms is checked, and a complete answer has no errors", () => {

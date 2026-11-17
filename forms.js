@@ -53,6 +53,14 @@ function validateField(field, rawValue) {
   return "";
 }
 
+// Shapes an IC as it is typed: 871212080879 → 871212-08-0879. A dash is added only once
+// the next digit arrives, so backspace over a dash never fights the guest.
+function formatIcInput(rawValue) {
+  const digits = (rawValue || "").replace(/\D/g, "").slice(0, 12);
+  const parts = [digits.slice(0, 6), digits.slice(6, 8), digits.slice(8)].filter(Boolean);
+  return parts.join("-");
+}
+
 function findErrors(spec, values) {
   const errors = {};
   spec.fields.forEach((field) => {
@@ -166,7 +174,9 @@ function buildControl(field, id, describedBy) {
     email: { type: "email", autocomplete: "email", inputmode: "email" },
     ic: { type: "text", autocomplete: "off", inputmode: "numeric", maxlength: "14" },
   };
-  return el("input", { ...shared, ...byKind[field.kind] });
+  const input = el("input", { ...shared, ...byKind[field.kind] });
+  if (field.kind === "ic") input.addEventListener("input", () => { input.value = formatIcInput(input.value); });
+  return input;
 }
 
 function buildRating(field, errorNode, describedBy) {
