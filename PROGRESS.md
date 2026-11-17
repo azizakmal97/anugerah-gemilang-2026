@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Active phase:** P04 (⬜ P05 waits for Opus 5.5 · high)
+**Active phase:** _none_ (⏸ P04 waiting for Opus 5.5 · high via P05, then the email test)
 **Last update:** 2026-11-17, Opus 5.5 · medium (P04 started by /autonomous; P05 deferred, needs high effort)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
@@ -304,9 +304,9 @@ Every Friday:
 
 ---
 
-### 🟡 P04 — e-sijil only for people who really came
+### ⏸ P04 — e-sijil only for people who really came
 
-**Status:** in-progress
+**Status:** waiting for Opus 5.5 · high (urus setia design, in P05), then Sonnet 5.5 · low (email test)
 **Started:** 2026-11-17
 **Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
@@ -322,6 +322,9 @@ Every Friday:
 - [x] (run 2026-11-17; entry ids IC 718418112, Peranan 75149903) Run `addAttendanceQuestions` in Apps Script (Claude in Chrome, /u/1), read the two new entry ids, add both fields to `FORMS.attendance` in `forms.js` + tests (Model: Sonnet 5.5 · low)
 - [ ] Urus setia sijil background + template: moved into P05 (needs Opus 5.5 · high for the new look); the script picks the template by role (Model: Opus 5.5 · high)
 - [ ] Test with the owner's email, matched peserta, matched urus setia, unmatched (Model: Sonnet 5.5 · low)
+
+**Resume note (2026-11-17):** code, live site and Apps Script are all updated: the e-sijil now goes only to listed attendees. Left: (1) P05 makes `sijil-urusetia-latar-A4.png`, then run `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestUrusetia`. Until then an urus setia guest's feedback stops with "Templat urus setia belum dibuat" and Google mails the owner. (2) End-to-end test: confirm attendance on the live page with the owner's email and IC, send feedback, check the sijil arrives; send feedback with an unknown IC and email, check the "kehadiran tidak ditemui" email. Delete the test rows after.
+Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate forms + sheet; all three trashed (Drive trash, created 13:18), live forms untouched. Finders now skip trashed files.
 
 **Safeguards added (plain words):**
 - Someone who fills feedback without confirming attendance gets no sijil, only a polite email to contact the urus setia.
