@@ -1,7 +1,7 @@
 # Best Dress vote
 
 Date: 2026-11-17 · Status: agreed (owner answers 2026-11-17)
-Done-check: PASS 2026-11-17 (re-checked after the IC hand-over and the results tab restyle: A1 to A7 and the edges unchanged; A6 now also styled by scripts/best-dress-results.gs writeResults and styleResults, tests/best-dress-results.test.mjs, live tab checked. A8 met (field hidden behind a "Tukar" line, checked at 375 px on the live page): forms.js:19, :266, :278, :285, vote.js buildIcNote, forms.css .ic-remembered; tests/forms.test.mjs "after attendance is sent...", "an IC the guest already typed...", "forgetting drops..."; checked on the live page by calling the functions in a real browser: card filled, typed IC kept, cleared after forget, re-render stays empty; no browser storage is used for it. Nothing from Out of scope built.)
+Done-check: PASS 2026-11-17 (P07 re-run for the 6.00 pm close and the 5 Dec window. Voting closed: app.js:15, best-dress.gs:32, tests/app.test.mjs:84, tests/best-dress.test.mjs:48; web app redeployed as version 2 of the same deployment, live /exec answers {"open":false}. Only 5 Dec 12.00 to 6.00 pm votes count: tallyVotes best-dress-results.gs:168 via isEventTime :138, tests/best-dress-results.test.mjs:73 and :87. Results recount at 6.01 pm: recountAfterVoting best-dress-results.gs:119, trigger seen live. A1 to A8 otherwise unchanged. Nothing from Out of scope built.)
 
 ## Stories
 
