@@ -318,14 +318,18 @@ Every Friday:
 - [x] Spec with the owner's choice, `specs/attendee-only-sijil.md` (Model: Opus 5.5 · medium)
 - [x] IC auto-format while typing on both forms: digits only, dashes added after 6 and 8 digits (871212080879 → 871212-08-0879), max 14 characters; test in `tests/forms.test.mjs` (Model: Sonnet 5.5 · medium, tiny, run here)
 - [x] `scripts/create-forms.gs`: one-off `addAttendanceQuestions` adds required "No. Kad Pengenalan" (same rule as feedback) and "Peranan" (Peserta / Urus setia) to the attendance form, safe to run twice; update `docs/forms.md` (Model: Sonnet 5.5 · medium)
-- [ ] `scripts/e-sijil.gs`: in `onFeedbackSubmit`, look up the attendance answers (IC digits first, email as fallback); matched → sijil for the role chosen there; unmatched → short "tiada dalam senarai kehadiran" email, no sijil (Model: Sonnet 5.5 · medium; email copy Opus 5.5 · medium)
+- [x] `scripts/e-sijil.gs`: in `onFeedbackSubmit`, look up the attendance answers (IC digits first, email as fallback); matched → sijil for the role chosen there; unmatched → short "tiada dalam senarai kehadiran" email, no sijil (Model: Sonnet 5.5 · medium; email copy Opus 5.5 · medium)
 - [ ] Run `addAttendanceQuestions` in Apps Script (Claude in Chrome, /u/1), read the two new entry ids, add both fields to `FORMS.attendance` in `forms.js` + tests (Model: Sonnet 5.5 · low)
 - [ ] Urus setia sijil background + template: moved into P05 (needs Opus 5.5 · high for the new look); the script picks the template by role (Model: Opus 5.5 · high)
 - [ ] Test with the owner's email, matched peserta, matched urus setia, unmatched (Model: Sonnet 5.5 · low)
 
 **Safeguards added (plain words):**
+- Someone who fills feedback without confirming attendance gets no sijil, only a polite email to contact the urus setia.
+- A one-digit IC typo does not cost a real guest the sijil: the email is checked too.
+- If the urus setia template is missing, the script stops and Google emails the owner, instead of sending the wrong sijil.
 
 **Waiting on owner:**
+- Gemini proofread owed for the new Malay lines (attendance IC help, urus setia email, "tiada dalam senarai" email); quota out until about 2026-11-23.
 
 ### ⬜ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
 

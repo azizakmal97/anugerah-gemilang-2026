@@ -14,12 +14,24 @@
  *    Safe to run again.
  * 5. Pick sendTestSijil and press Run. A sample sijil arrives in your own
  *    inbox. Check it before the event.
+ * 6. Urus setia sijil: upload sijil-urusetia-latar-A4.png to the same folder,
+ *    run setupUrusetiaTemplate, set its page to A4 by hand, run
+ *    fitUrusetiaTemplate, then sendTestUrusetia.
+ *
+ * Only guests found in the attendance form (by IC, or by email) get a sijil,
+ * for the role they chose there. Anyone else gets a short "not in the
+ * attendance list" email instead.
  */
 
 var FEEDBACK_TITLE = 'Maklum Balas Majlis Anugerah Gemilang 2026';
 var BACKGROUND_NAME = 'sijil-latar-A4.png';
 var TEMPLATE_TITLE = 'Templat e-Sijil Anugerah Gemilang 2026';
 var TEMPLATE_KEY = 'TEMPLATE_ID';
+var ATTENDANCE_FORM_TITLE = 'Kehadiran Majlis Anugerah Gemilang 2026';
+var URUSETIA_ROLE = 'Urus setia';
+var URUSETIA_BACKGROUND_NAME = 'sijil-urusetia-latar-A4.png';
+var URUSETIA_TEMPLATE_TITLE = 'Templat e-Sijil Urus Setia Anugerah Gemilang 2026';
+var URUSETIA_TEMPLATE_KEY = 'URUSETIA_TEMPLATE_ID';
 var HANDLER_NAME = 'onFeedbackSubmit';
 
 var PAGE_WIDTH = 595.28;
@@ -33,14 +45,22 @@ var IC_COLOR = '#d9cfb8';
 var IC_SIZE = 11.25;
 
 function setupSijil() {
-  var folder = findEventFolder();
-  var background = findBackground(folder);
-  var presentationId = createTemplate(background);
-  DriveApp.getFileById(presentationId).moveTo(folder);
-  PropertiesService.getScriptProperties().setProperty(TEMPLATE_KEY, presentationId);
-  installTrigger(findFeedbackForm());
-  Logger.log('Templat siap: ' + DriveApp.getFileById(presentationId).getUrl());
+  buildTemplate(BACKGROUND_NAME, TEMPLATE_TITLE, TEMPLATE_KEY);
+  installTrigger(findFormNamed(FEEDBACK_TITLE));
   Logger.log('Pencetus borang maklum balas dipasang. Jalankan sendTestSijil untuk ujian.');
+}
+
+function setupUrusetiaTemplate() {
+  buildTemplate(URUSETIA_BACKGROUND_NAME, URUSETIA_TEMPLATE_TITLE, URUSETIA_TEMPLATE_KEY);
+  Logger.log('Tukar halaman ke A4, kemudian jalankan fitUrusetiaTemplate dan sendTestUrusetia.');
+}
+
+function buildTemplate(backgroundName, title, propertyKey) {
+  var folder = findEventFolder();
+  var presentationId = createTemplate(findBackground(folder, backgroundName), title);
+  DriveApp.getFileById(presentationId).moveTo(folder);
+  PropertiesService.getScriptProperties().setProperty(propertyKey, presentationId);
+  Logger.log('Templat siap: ' + DriveApp.getFileById(presentationId).getUrl());
 }
 
 function findEventFolder() {
@@ -53,28 +73,28 @@ function findEventFolder() {
   throw new Error('Folder PKPD BP/hi-tea tiada. Muat naik ' + BACKGROUND_NAME + ' ke folder PKPD BP/hi-tea dahulu.');
 }
 
-function findBackground(folder) {
-  var files = folder.getFilesByName(BACKGROUND_NAME);
+function findBackground(folder, backgroundName) {
+  var files = folder.getFilesByName(backgroundName);
   if (!files.hasNext()) {
-    throw new Error('Muat naik ' + BACKGROUND_NAME + ' ke folder PKPD BP/hi-tea dahulu.');
+    throw new Error('Muat naik ' + backgroundName + ' ke folder PKPD BP/hi-tea dahulu.');
   }
   return files.next();
 }
 
-function findFeedbackForm() {
+function findFormNamed(title) {
   var files = DriveApp.getFilesByType(MimeType.GOOGLE_FORMS);
   while (files.hasNext()) {
     var file = files.next();
-    if (file.getName() === FEEDBACK_TITLE) return FormApp.openById(file.getId());
+    if (file.getName() === title) return FormApp.openById(file.getId());
   }
-  throw new Error('Borang "' + FEEDBACK_TITLE + '" tiada dalam akaun ini.');
+  throw new Error('Borang "' + title + '" tiada dalam akaun ini.');
 }
 
 // The Slides API ignores pageSize on create (seen 2026-11-17: the deck came out 16:9),
 // so after setupSijil set File > Page setup > Custom 21 x 29.7 cm by hand, then run fitTemplate.
-function createTemplate(background) {
+function createTemplate(background, title) {
   var created = Slides.Presentations.create({
-    title: TEMPLATE_TITLE,
+    title: title,
     pageSize: {
       width: { magnitude: PAGE_WIDTH, unit: 'PT' },
       height: { magnitude: PAGE_HEIGHT, unit: 'PT' }
@@ -91,9 +111,15 @@ function createTemplate(background) {
 
 // Run after the template's page is set to A4 by hand: stretches the background to the full page.
 function fitTemplate() {
-  var templateId = PropertiesService.getScriptProperties().getProperty(TEMPLATE_KEY);
-  if (!templateId) throw new Error('Templat belum dibuat. Jalankan setupSijil dahulu.');
-  var presentation = SlidesApp.openById(templateId);
+  fitTemplateFor(TEMPLATE_KEY);
+}
+
+function fitUrusetiaTemplate() {
+  fitTemplateFor(URUSETIA_TEMPLATE_KEY);
+}
+
+function fitTemplateFor(propertyKey) {
+  var presentation = SlidesApp.openById(templateIdFor(propertyKey));
   var width = presentation.getPageWidth();
   var height = presentation.getPageHeight();
   if (Math.abs(width - PAGE_WIDTH) > 1 || Math.abs(height - PAGE_HEIGHT) > 1) {
@@ -125,7 +151,32 @@ function onFeedbackSubmit(e) {
     Logger.log('KUOTA EMEL HABIS. Sijil untuk ' + email + ' tidak dihantar.');
     throw new Error('Kuota emel harian habis. Sijil untuk ' + email + ' belum dihantar.');
   }
-  sendSijil(name, answers['No. Kad Pengenalan'] || '', email);
+  var ic = answers['No. Kad Pengenalan'] || '';
+  var attendee = findAttendee(ic, email);
+  if (!attendee) {
+    Logger.log('Tiada dalam senarai kehadiran: ' + email + '. Sijil tidak dihantar.');
+    sendNotListedEmail(name.trim(), email);
+    return;
+  }
+  sendSijil(name, ic, email, attendee.role);
+}
+
+// Newest matching attendance answer wins, so a guest who confirmed twice gets their last role.
+// IC is compared by digits only; email (any case) is the fallback for a mistyped IC.
+function findAttendee(ic, email) {
+  var icDigits = String(ic).replace(/\D/g, '');
+  var cleanEmail = String(email).trim().toLowerCase();
+  var responses = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses();
+  var byEmail = null;
+  for (var i = responses.length - 1; i >= 0; i--) {
+    var answers = readAnswers(responses[i]);
+    var attendee = { role: answers['Peranan'] || 'Peserta' };
+    var rowIc = String(answers['No. Kad Pengenalan'] || '').replace(/\D/g, '');
+    if (icDigits && rowIc === icDigits) return attendee;
+    var rowEmail = String(answers['Emel'] || '').trim().toLowerCase();
+    if (!byEmail && cleanEmail && rowEmail === cleanEmail) byEmail = attendee;
+  }
+  return byEmail;
 }
 
 function readAnswers(response) {
@@ -136,9 +187,18 @@ function readAnswers(response) {
   return answers;
 }
 
-function sendSijil(name, ic, email) {
-  var templateId = PropertiesService.getScriptProperties().getProperty(TEMPLATE_KEY);
-  if (!templateId) throw new Error('Templat belum dibuat. Jalankan setupSijil dahulu.');
+function templateIdFor(propertyKey) {
+  var templateId = PropertiesService.getScriptProperties().getProperty(propertyKey);
+  if (templateId) return templateId;
+  if (propertyKey === URUSETIA_TEMPLATE_KEY) {
+    throw new Error('Templat urus setia belum dibuat. Jalankan setupUrusetiaTemplate dahulu.');
+  }
+  throw new Error('Templat belum dibuat. Jalankan setupSijil dahulu.');
+}
+
+function sendSijil(name, ic, email, role) {
+  var isUrusetia = role === URUSETIA_ROLE;
+  var templateId = templateIdFor(isUrusetia ? URUSETIA_TEMPLATE_KEY : TEMPLATE_KEY);
 
   var cleanName = name.trim().toUpperCase();
   var copy = DriveApp.getFileById(templateId).makeCopy('e-Sijil sementara - ' + cleanName, findEventFolder());
@@ -149,9 +209,9 @@ function sendSijil(name, ic, email) {
     MailApp.sendEmail({
       to: email,
       subject: 'e-Sijil Majlis Anugerah Gemilang 2026',
-      body: buildEmailBody(name.trim()),
+      body: buildEmailBody(name.trim(), isUrusetia),
       // Plain text alone gets hard-wrapped near 76 characters, which leaves gaps on phones.
-      htmlBody: toHtmlBody(buildEmailBody(name.trim())),
+      htmlBody: toHtmlBody(buildEmailBody(name.trim(), isUrusetia)),
       attachments: [pdf],
       name: 'PKPD Batang Padang'
     });
@@ -205,17 +265,42 @@ function formatIc(ic) {
   return digits.slice(0, 6) + '-' + digits.slice(6, 8) + '-' + digits.slice(8);
 }
 
-function buildEmailBody(name) {
+function buildEmailBody(name, isUrusetia) {
+  var thanks = isUrusetia
+    ? 'Terima kasih atas sumbangan anda sebagai urus setia Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang pada 5 Disember 2026 di Hotel Grand Kampar. Terima kasih juga atas maklum balas anda.'
+    : 'Terima kasih kerana hadir ke Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang pada 5 Disember 2026 di Hotel Grand Kampar. Terima kasih juga atas maklum balas anda.';
   return [
     'Assalamualaikum dan salam sejahtera ' + name + ',',
     '',
-    'Terima kasih kerana hadir ke Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang pada 5 Disember 2026 di Hotel Grand Kampar. Terima kasih juga atas maklum balas anda.',
+    thanks,
     '',
     'e-Sijil anda dilampirkan bersama emel ini.',
     '',
     'Urus setia Majlis Anugerah Gemilang 2026',
     'PKPD Batang Padang'
   ].join('\n');
+}
+
+function sendNotListedEmail(name, email) {
+  var body = [
+    'Assalamualaikum dan salam sejahtera ' + name + ',',
+    '',
+    'Terima kasih atas maklum balas anda bagi Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang.',
+    '',
+    'No. Kad Pengenalan dan emel anda tidak ditemui dalam senarai kehadiran majlis. Oleh itu e-Sijil belum dapat dihantar.',
+    '',
+    'Jika anda hadir pada 5 Disember 2026, sila hubungi urus setia majlis supaya kehadiran anda dapat disemak.',
+    '',
+    'Urus setia Majlis Anugerah Gemilang 2026',
+    'PKPD Batang Padang'
+  ].join('\n');
+  MailApp.sendEmail({
+    to: email,
+    subject: 'e-Sijil Majlis Anugerah Gemilang 2026: kehadiran tidak ditemui',
+    body: body,
+    htmlBody: toHtmlBody(body),
+    name: 'PKPD Batang Padang'
+  });
 }
 
 function toHtmlBody(text) {
@@ -226,6 +311,19 @@ function toHtmlBody(text) {
 }
 
 function sendTestSijil() {
-  sendSijil('Nama Contoh Bin Abdullah', '900101-08-1234', Session.getActiveUser().getEmail());
+  sendSijil('Nama Contoh Bin Abdullah', '900101-08-1234', Session.getActiveUser().getEmail(), 'Peserta');
   Logger.log('Sijil ujian dihantar. Kuota emel berbaki: ' + MailApp.getRemainingDailyQuota());
+}
+
+function sendTestUrusetia() {
+  sendSijil('Nama Contoh Bin Abdullah', '900101-08-1234', Session.getActiveUser().getEmail(), URUSETIA_ROLE);
+  Logger.log('Sijil urus setia ujian dihantar. Kuota emel berbaki: ' + MailApp.getRemainingDailyQuota());
+}
+
+// Dry run of the attendance check, no email: logs who would get which sijil.
+function testFindAttendee() {
+  [['900101-08-1234', 'tiada@contoh.my'], ['', Session.getActiveUser().getEmail()]].forEach(function (pair) {
+    var attendee = findAttendee(pair[0], pair[1]);
+    Logger.log(pair.join(' / ') + ' -> ' + (attendee ? attendee.role : 'tiada dalam senarai'));
+  });
 }
