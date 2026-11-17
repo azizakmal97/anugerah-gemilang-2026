@@ -16,7 +16,7 @@ const FORMS = {
   attendance: {
     settingsKey: "attendanceFormUrl",
     submitLabel: "Sahkan Kehadiran",
-    icEntry: "718418112", // the IC is handed to the Best Dress vote card once attendance is sent
+    savesIcEntry: "718418112", // remembered once attendance is sent (remembered-ic.js)
     thanks: "Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!",
     fields: [
       { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name", uppercase: true },
@@ -27,6 +27,7 @@ const FORMS = {
   },
   feedback: {
     settingsKey: "feedbackFormUrl",
+    fillsIcEntry: "1284108868", // starts filled from attendance; the IC is dropped once feedback is sent
     submitLabel: "Hantar dan dapatkan sijil",
     thanks: "Terima kasih atas maklum balas anda. Jika No. K/P anda ada dalam senarai kehadiran, sijil akan sampai ke emel anda dalam masa terdekat. Jika tidak nampak, semak folder spam.",
     fields: [
@@ -138,6 +139,7 @@ function renderForm(formName) {
     return;
   }
   holder.append(buildForm(spec, () => renderForm(formName)));
+  if (spec.fillsIcEntry) fillRememberedIc(document.getElementById(`f-${spec.fillsIcEntry}`)); // remembered-ic.js
 }
 
 function buildForm(spec, restart) {
@@ -263,40 +265,18 @@ async function submitForm(spec, form, button, status, restart) {
     showSendError(status, viewUrl);
     return "failed";
   }
-  if (spec.icEntry) rememberAttendeeIc(values[spec.icEntry]);
+  if (spec.savesIcEntry) rememberIc(values[spec.savesIcEntry]);
+  if (spec.fillsIcEntry) forgetIc();
   showThanks(form, spec.thanks, () => {
-    if (spec.icEntry) forgetAttendeeIc();
+    if (spec.savesIcEntry) forgetIc(); // "Hantar untuk orang lain": the next person starts empty
     restart();
   });
   return "sent";
 }
 
-// The guest's IC from the attendance form, kept in this page's memory only (never in browser
-// storage) so the Best Dress card can start filled. vote.js reads it when it builds its form.
-let attendeeIc = "";
-
-function rememberAttendeeIc(ic) {
-  attendeeIc = (ic || "").trim();
-  const voteIc = document.getElementById("f-undi-ic"); // the vote card's IC input, if it is on screen
-  if (voteIc && !voteIc.value) {
-    voteIc.value = attendeeIc;
-    voteIc.form?.classList.add("ic-remembered"); // the vote card then hides the field (forms.css)
-  }
-}
-
-// Drops the IC for good, and from the vote card too, unless the guest typed a different one there.
-function forgetAttendeeIc() {
-  const voteIc = document.getElementById("f-undi-ic");
-  if (voteIc) {
-    if (voteIc.value === attendeeIc) voteIc.value = "";
-    voteIc.form?.classList.remove("ic-remembered"); // the field must be visible again for the next voter
-  }
-  attendeeIc = "";
-}
-
 function showSendError(status, viewUrl) {
   const fallback = el("a", { href: viewUrl, target: "_blank", rel: "noopener", text: "isi di Borang Google" });
-  status.replaceChildren("Jawapan belum dihantar. Semak talian internet dan cuba lagi, atau ", fallback, ".");
+  status.replaceChildren("Jawapan belum dihantar. Semak talian internet dan cuba lagi atau ", fallback, ".");
   status.classList.add("is-error");
   status.hidden = false;
 }

@@ -22,7 +22,7 @@ function loadForms({ fetch = async () => {} } = {}) {
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
   vm.runInContext(
-    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm, forgetAttendeeIc, currentAttendeeIc: () => attendeeIc };`,
+    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
     context,
   );
   return { ...context.__forms, page };
@@ -201,52 +201,4 @@ test("a failed send says so, offers the Google Form and lets the guest retry", a
   assert.equal(status.hidden, false);
   assert.deepEqual(status.classes, ["is-error"]);
   assert.equal(form.replacedWith, null, "nothing says sent");
-});
-
-const ATTENDANCE_ONE_IC = { ...ONE_FIELD, icEntry: "1" };
-
-test("after attendance is sent, the IC fills the vote card and stays in memory only", async () => {
-  const { submitForm, page, currentAttendeeIc } = loadForms();
-  page["f-undi-ic"] = { value: "" };
-  const { form } = fakeForm("871212-08-0879");
-  assert.equal(await submitForm(ATTENDANCE_ONE_IC, form, node(), node(), () => {}), "sent");
-  assert.equal(page["f-undi-ic"].value, "871212-08-0879");
-  assert.equal(currentAttendeeIc(), "871212-08-0879");
-});
-
-test("an IC the guest already typed in the vote card is not overwritten", async () => {
-  const { submitForm, page } = loadForms();
-  page["f-undi-ic"] = { value: "900101-08-1234" };
-  await submitForm(ATTENDANCE_ONE_IC, fakeForm("871212-08-0879").form, node(), node(), () => {});
-  assert.equal(page["f-undi-ic"].value, "900101-08-1234");
-});
-
-test("forgetting drops the remembered IC and clears the vote card only if it still holds it", async () => {
-  const { submitForm, forgetAttendeeIc, page, currentAttendeeIc } = loadForms();
-  page["f-undi-ic"] = { value: "" };
-  await submitForm(ATTENDANCE_ONE_IC, fakeForm("871212-08-0879").form, node(), node(), () => {});
-  forgetAttendeeIc();
-  assert.equal(page["f-undi-ic"].value, "");
-  assert.equal(currentAttendeeIc(), "");
-
-  await submitForm(ATTENDANCE_ONE_IC, fakeForm("871212-08-0879").form, node(), node(), () => {});
-  page["f-undi-ic"].value = "900101-08-1234"; // the guest changed it by hand
-  forgetAttendeeIc();
-  assert.equal(page["f-undi-ic"].value, "900101-08-1234");
-});
-
-test("the feedback form never hands its IC to the vote card", async () => {
-  const { FORMS } = loadForms();
-  assert.equal(FORMS.feedback.icEntry, undefined);
-  assert.equal(FORMS.attendance.icEntry, "718418112");
-});
-
-test("the vote card hides its IC field while the attendance IC is remembered, and shows it again on forget", async () => {
-  const { submitForm, forgetAttendeeIc, page } = loadForms();
-  const classes = new Set();
-  page["f-undi-ic"] = { value: "", form: { classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) } } };
-  await submitForm(ATTENDANCE_ONE_IC, fakeForm("871212-08-0879").form, node(), node(), () => {});
-  assert.ok(classes.has("ic-remembered"));
-  forgetAttendeeIc();
-  assert.equal(classes.has("ic-remembered"), false);
 });

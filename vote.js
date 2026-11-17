@@ -3,7 +3,7 @@
 // then the voter's own IC, posted to the "Undian Best Dress 2026" Google Form like the other forms.
 // The page never shows a count or a ranking: results live only in the owner's private sheet.
 // Uses el, formatIcInput, validateField, oneAtATime, postToGoogle, formResponseUrl,
-// showSendError, attendeeIc and forgetAttendeeIc from forms.js, which loads first.
+// showSendError from forms.js, and fillRememberedIc and forgetIc from remembered-ic.js; both load first.
 
 const VOTE_MIN_LETTERS = 3; // the web app answers nothing shorter, so the page does not ask
 const VOTE_SEARCH_DELAY_MS = 300;
@@ -144,12 +144,7 @@ function buildVoteForm() {
       form.append(buildField({ ...field, entry: `undi-${field.key}` })); // forms.js; the id only names the DOM nodes
     }
   });
-  const icInput = form.querySelector("#f-undi-ic");
-  if (icInput && attendeeIc) {
-    icInput.value = attendeeIc; // set by forms.js after attendance is sent
-    form.classList.add("ic-remembered"); // hides the field behind one line (forms.css)
-  }
-  form.append(buildIcNote(form, icInput));
+  fillRememberedIc(form.querySelector("#f-undi-ic"));
   const button = el("button", { class: "btn", type: "submit", text: "Hantar Undian" });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.append(el("p", { class: "vote-notice", text: VOTE_NOTICE }), button, status);
@@ -159,20 +154,6 @@ function buildVoteForm() {
     send();
   });
   return form;
-}
-
-// Shown only while the form has "ic-remembered"; "Tukar" brings the field back for a different IC.
-function buildIcNote(form, icInput) {
-  const change = el("button", { class: "ic-change", type: "button", text: "Tukar" });
-  change.addEventListener("click", () => {
-    form.classList.remove("ic-remembered");
-    icInput.focus();
-  });
-  return el("div", { class: "vote-ic-note" }, [
-    el("span", { class: "ic-check", "aria-hidden": "true", text: "✓" }),
-    el("span", { class: "ic-text", text: "No. K/P anda sudah disahkan semasa daftar." }),
-    change,
-  ]);
 }
 
 function buildPickField(field) {
@@ -287,9 +268,11 @@ async function submitVote(form, picks, button, status) {
     showSendError(status, SETTINGS.voteFormUrl);
     return "failed";
   }
-  forgetAttendeeIc(); // the next voter must not start with this guest's IC
   const again = el("button", { class: "btn-ghost", type: "button", text: "Undi untuk orang lain" });
-  again.addEventListener("click", () => renderVote("open"));
+  again.addEventListener("click", () => {
+    forgetIc(); // the next voter must not start with this guest's IC
+    renderVote("open");
+  });
   const done = el("div", { class: "form-done", tabindex: "-1" }, [el("p", { text: VOTE.thanks }), again]);
   form.replaceWith(done);
   done.focus();
