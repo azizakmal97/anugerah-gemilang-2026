@@ -1,6 +1,7 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role)
+Done-check: 4 GAPS 2026-11-17 (A1, A2, A3 not yet tested live; A7 waits for the urus setia design in P05)
 
 ## Stories
 
