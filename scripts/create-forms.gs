@@ -214,7 +214,7 @@ function findFormByTitle(title) {
   var files = DriveApp.getFilesByType(MimeType.GOOGLE_FORMS);
   while (files.hasNext()) {
     var file = files.next();
-    if (file.getName() === title) return FormApp.openById(file.getId());
+    if (file.getName() === title && !file.isTrashed()) return FormApp.openById(file.getId());
   }
   throw new Error('Borang "' + title + '" tiada dalam akaun ini.');
 }
