@@ -86,6 +86,7 @@
     let width = 0;
     let height = 0;
     let running = true;
+    let frameId = 0;
 
     function resize() {
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -122,18 +123,20 @@
         context.shadowBlur = mote.radius * 4;
         context.fill();
       }
-      requestAnimationFrame(frame);
+      frameId = requestAnimationFrame(frame);
     }
 
     resize();
     for (let i = 0; i < MOTE_COUNT; i++) motes.push(newMote(true));
     window.addEventListener("resize", resize);
-    // Stop drawing when the tab is in the background, to save battery.
+    // Stop drawing when the tab is in the background, to save battery. The queued frame is
+    // cancelled too: left alone it would wake up beside the new one and double the speed.
     document.addEventListener("visibilitychange", () => {
       running = !document.hidden;
-      if (running) requestAnimationFrame(frame);
+      cancelAnimationFrame(frameId);
+      if (running) frameId = requestAnimationFrame(frame);
     });
-    requestAnimationFrame(frame);
+    frameId = requestAnimationFrame(frame);
   }
 
   // ---------- Section heading rules ----------
