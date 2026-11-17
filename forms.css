@@ -173,7 +173,7 @@ button.btn:disabled { filter: grayscale(0.35) brightness(0.85); cursor: progress
 .vote-notice { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--gold-light); }
 
 /* IC already given at attendance: the field hides behind one line, "Tukar" brings it back. */
-.vote-ic-note { display: none; margin: 0; font-size: 0.95rem; color: var(--cream-muted); }
-.vote-ic-note .btn-ghost { margin-left: var(--space-2); font: inherit; cursor: pointer; }
-.ic-remembered .vote-ic-note { display: block; }
+.vote-ic-note { display: none; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0; font-size: 0.95rem; line-height: 1.4; color: var(--cream-muted); }
+.vote-ic-note .btn-ghost { font: inherit; cursor: pointer; }
+.ic-remembered .vote-ic-note { display: flex; }
 .ic-remembered .field[data-entry="undi-ic"] { display: none; }
