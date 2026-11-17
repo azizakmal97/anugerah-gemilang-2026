@@ -2,8 +2,8 @@
 // Two name searches, Lelaki and Perempuan, fed by the web app in scripts/best-dress.gs,
 // then the voter's own IC, posted to the "Undian Best Dress 2026" Google Form like the other forms.
 // The page never shows a count or a ranking: results live only in the owner's private sheet.
-// Uses el, formatIcInput, validateField, oneAtATime, postToGoogle, formResponseUrl and
-// showSendError from forms.js, which loads first.
+// Uses el, formatIcInput, validateField, oneAtATime, postToGoogle, formResponseUrl,
+// showSendError, attendeeIc and forgetAttendeeIc from forms.js, which loads first.
 
 const VOTE_MIN_LETTERS = 3; // the web app answers nothing shorter, so the page does not ask
 const VOTE_SEARCH_DELAY_MS = 300;
@@ -99,6 +99,8 @@ function buildVoteForm() {
       form.append(buildField({ ...field, entry: `undi-${field.key}` })); // forms.js; the id only names the DOM nodes
     }
   });
+  const icInput = form.querySelector("#f-undi-ic");
+  if (icInput && attendeeIc) icInput.value = attendeeIc; // set by forms.js after attendance is sent
   const button = el("button", { class: "btn", type: "submit", text: "Hantar Undian" });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.append(el("p", { class: "vote-notice", text: VOTE_NOTICE }), button, status);
@@ -222,6 +224,7 @@ async function submitVote(form, picks, button, status) {
     showSendError(status, SETTINGS.voteFormUrl);
     return "failed";
   }
+  forgetAttendeeIc(); // the next voter must not start with this guest's IC
   const again = el("button", { class: "btn-ghost", type: "button", text: "Undi untuk orang lain" });
   again.addEventListener("click", () => renderVote("open"));
   const done = el("div", { class: "form-done", tabindex: "-1" }, [el("p", { text: VOTE.thanks }), again]);

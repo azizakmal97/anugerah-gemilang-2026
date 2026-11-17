@@ -16,6 +16,7 @@ const FORMS = {
   attendance: {
     settingsKey: "attendanceFormUrl",
     submitLabel: "Sahkan Kehadiran",
+    icEntry: "718418112", // the IC is handed to the Best Dress vote card once attendance is sent
     thanks: "Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!",
     fields: [
       { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name", uppercase: true },
@@ -262,8 +263,29 @@ async function submitForm(spec, form, button, status, restart) {
     showSendError(status, viewUrl);
     return "failed";
   }
-  showThanks(form, spec.thanks, restart);
+  if (spec.icEntry) rememberAttendeeIc(values[spec.icEntry]);
+  showThanks(form, spec.thanks, () => {
+    if (spec.icEntry) forgetAttendeeIc();
+    restart();
+  });
   return "sent";
+}
+
+// The guest's IC from the attendance form, kept in this page's memory only (never in browser
+// storage) so the Best Dress card can start filled. vote.js reads it when it builds its form.
+let attendeeIc = "";
+
+function rememberAttendeeIc(ic) {
+  attendeeIc = (ic || "").trim();
+  const voteIc = document.getElementById("f-undi-ic"); // the vote card's IC input, if it is on screen
+  if (voteIc && !voteIc.value) voteIc.value = attendeeIc;
+}
+
+// Drops the IC for good, and from the vote card too, unless the guest typed a different one there.
+function forgetAttendeeIc() {
+  const voteIc = document.getElementById("f-undi-ic");
+  if (voteIc && voteIc.value === attendeeIc) voteIc.value = "";
+  attendeeIc = "";
 }
 
 function showSendError(status, viewUrl) {
