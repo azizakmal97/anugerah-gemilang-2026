@@ -134,3 +134,40 @@ button.btn:disabled { filter: grayscale(0.35) brightness(0.85); cursor: progress
 .form-done p { margin: 0; font-size: 1.05rem; color: var(--cream); }
 .form-done:focus { outline: none; } /* focus is moved here only so screen readers read the thanks */
 .form-done .btn-ghost { margin-top: var(--space-3); font: inherit; cursor: pointer; }
+
+/* ---------- Best Dress vote (vote.js) ----------
+   A second card under the action card: same gold line, but flat, so the attendance card
+   stays the one lifted focal point and the vote reads as the next step, not a rival. */
+.vote-card {
+  margin: var(--space-3) auto 0;
+  max-width: 520px;
+  padding: var(--space-3);
+  background: rgba(11, 23, 54, 0.92);
+  border: 1px solid rgba(214, 168, 78, 0.55);
+  border-radius: var(--radius-card);
+}
+.vote-title { margin: 0; font-size: 1.3rem; color: var(--gold-light); }
+.vote-lede { margin: var(--space-1) 0 0; color: var(--cream); }
+
+/* Search results: one tappable row per name, the input tile look one shade lighter. */
+.pick-list { display: grid; gap: 0.4rem; margin: var(--space-1) 0 0; padding: 0; list-style: none; }
+.pick-option {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  text-align: left;
+  color: var(--cream);
+  background: rgba(20, 42, 90, 0.7);
+  border: 1px solid rgba(214, 168, 78, 0.35);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pick-option:hover { border-color: var(--gold); }
+.pick-option:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 2px; }
+.pick-status { margin: 0.35rem 0 0; font-size: 0.92rem; color: var(--cream-muted); }
+.pick-status:empty { display: none; }
+.field input.is-chosen { border-color: var(--gold-light); background: rgba(214, 168, 78, 0.14); }
+
+.vote-notice { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--gold-light); }

@@ -24,8 +24,10 @@ function fakeElement() {
 function loadApp({ search = "" } = {}) {
   const elements = Object.fromEntries(ELEMENT_IDS.map((id) => [id, fakeElement()]));
   const formCalls = [];
+  const voteCalls = [];
   const context = {
     renderForm: (formName) => formCalls.push(formName), // forms.js has its own tests
+    renderVote: (state) => voteCalls.push(state), // vote.js has its own tests
     document: { getElementById: (id) => elements[id] },
     location: { search },
     URLSearchParams,
@@ -34,8 +36,8 @@ function loadApp({ search = "" } = {}) {
   };
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
-  vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, renderAction };`, context);
-  return { app: context.__app, elements, formCalls };
+  vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, pickVoteState, renderAction };`, context);
+  return { app: context.__app, elements, formCalls, voteCalls };
 }
 
 const myt = (hour, minute = 0) => Date.UTC(2026, 11, 5, hour - 8, minute); // 5 Dec 2026, Malaysia time
@@ -77,4 +79,18 @@ test("the countdown mode shows the countdown and no form", () => {
   app.renderAction("sebelum");
   assert.deepEqual(formCalls, [null]);
   assert.equal(elements.countdown.hidden, false);
+});
+
+test("the Best Dress vote is open from 12.00 pm, closed from 5.30 pm, hidden on other days", () => {
+  const { app } = loadApp();
+  assert.equal(app.pickVoteState("sebelum", myt(11, 59)), "hidden");
+  assert.equal(app.pickVoteState("hadir", myt(12)), "open");
+  assert.equal(app.pickVoteState("hadir", myt(17, 29)), "open");
+  assert.equal(app.pickVoteState("hadir", myt(17, 30)), "closed");
+  assert.equal(app.pickVoteState("selepas", myt(18)), "hidden");
+});
+
+test("the page draws the vote card once on load", () => {
+  const { voteCalls } = loadApp();
+  assert.equal(voteCalls.length, 1);
 });

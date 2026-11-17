@@ -38,8 +38,8 @@ No dependencies. `package-lock.json` exists only because CI runs `npm ci`.
 
 ## 4. Conventions
 
-- Plain browser JS, classic scripts, no modules, no bundler. Globals live in `app.js` and `forms.js` only
-  (`forms.js` loads first; `app.js` calls its `renderForm`).
+- Plain browser JS, classic scripts, no modules, no bundler. Globals live in `app.js`, `forms.js` and `vote.js` only
+  (`forms.js` loads first, then `vote.js`; `app.js` calls their `renderForm` and `renderVote`).
 - `app.js` = behaviour that matters (tested). `effects.js` = motion; the page must work if it fails.
 - Every motion respects `prefers-reduced-motion`.
 - Malay copy: never a comma before "dan", "atau", "serta", "untuk", "oleh". No em dash.

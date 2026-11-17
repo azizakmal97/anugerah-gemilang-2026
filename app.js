@@ -8,6 +8,11 @@ const SETTINGS = {
   attendanceOpensAt: Date.UTC(2026, 11, 5, 4, 0),  // 5 Dec 2026, 12.00 pm
   eventStartsAt: Date.UTC(2026, 11, 5, 6, 0),      // 5 Dec 2026, 2.00 pm
   attendanceClosesAt: Date.UTC(2026, 11, 5, 10, 0), // 5 Dec 2026, 6.00 pm
+  // Best Dress vote (vote.js): the vote form's "Send" link and the name-search web app URL
+  // (scripts/best-dress.gs). Voting opens with attendance and closes when the prizes start.
+  voteFormUrl: "",
+  voteSearchUrl: "",
+  voteClosesAt: Date.UTC(2026, 11, 5, 9, 30), // 5 Dec 2026, 5.30 pm
 };
 
 // Page modes, picked by the clock. Add ?mod=sebelum|hadir|selepas to preview one.
@@ -36,6 +41,12 @@ function pickMode(now) {
   if (now < SETTINGS.attendanceOpensAt) return "sebelum";
   if (now < SETTINGS.attendanceClosesAt) return "hadir";
   return "selepas";
+}
+
+// The vote card shows only on the day, beside attendance; after 5.30 pm it says voting is closed.
+function pickVoteState(modeName, now) {
+  if (modeName !== "hadir") return "hidden";
+  return now < SETTINGS.voteClosesAt ? "open" : "closed";
 }
 
 function renderAction(modeName) {
@@ -73,13 +84,20 @@ function setCountdownDigit(id, value) {
   digit.classList.add("tick");
 }
 
-// Re-check every 30 s so an open phone flips mode at 12.00 and 6.00 pm without a reload.
+// Re-check every 30 s so an open phone flips mode at 12.00, 5.30 and 6.00 pm without a reload.
 let currentMode = null;
+let currentVoteState = null;
 function tick() {
-  const modeName = pickMode(Date.now());
+  const now = Date.now();
+  const modeName = pickMode(now);
   if (modeName !== currentMode) {
     currentMode = modeName;
     renderAction(modeName);
+  }
+  const voteState = pickVoteState(modeName, now);
+  if (voteState !== currentVoteState) {
+    currentVoteState = voteState;
+    renderVote(voteState); // vote.js
   }
   if (MODES[modeName].showCountdown) updateCountdown();
 }
