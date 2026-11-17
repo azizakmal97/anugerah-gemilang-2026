@@ -1,6 +1,7 @@
 # Best Dress vote
 
 Date: 2026-11-17 · Status: agreed (owner answers 2026-11-17)
+Done-check: PASS 2026-11-17
 
 ## Stories
 
