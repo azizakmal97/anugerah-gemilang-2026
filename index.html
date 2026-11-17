@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Majlis Anugerah Gemilang 2026 | PKPD Batang Padang</title>
+<meta name="description" content="Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang 2026. Sahkan kehadiran dan isi maklum balas di sini.">
+<meta name="theme-color" content="#0b1736">
+<link rel="icon" href="assets/logo-kelab.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Great+Vibes&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+  // Mark JS + first-visit before paint so the curtain never flashes for returning guests.
+  document.documentElement.classList.add("js");
+  try {
+    if (!sessionStorage.getItem("tiraiDibuka")) document.documentElement.classList.add("first-visit");
+  } catch (e) { document.documentElement.classList.add("first-visit"); }
+</script>
+</head>
+<body>
+
+<!-- Opening curtain: two batik cloths part like a ceremony opening. Tap to skip. -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="cloth cloth-left"></div>
+  <div class="cloth cloth-right"></div>
+  <svg class="curtain-flower" viewBox="0 0 120 120">
+    <g class="draw">
+      <ellipse cx="60" cy="30" rx="11" ry="24"/>
+      <ellipse cx="60" cy="90" rx="11" ry="24"/>
+      <ellipse cx="30" cy="60" rx="24" ry="11"/>
+      <ellipse cx="90" cy="60" rx="24" ry="11"/>
+      <circle cx="60" cy="60" r="6"/>
+      <circle cx="60" cy="60" r="56"/>
+    </g>
+  </svg>
+</div>
+
+<!-- Kawung batik wallpaper, drifts slower than the page on scroll. -->
+<svg class="batik-layer" aria-hidden="true">
+  <defs>
+    <pattern id="kawung" width="64" height="64" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="currentColor" stroke-width="1.2">
+        <ellipse cx="18" cy="18" rx="7" ry="15" transform="rotate(-45 18 18)"/>
+        <ellipse cx="46" cy="18" rx="7" ry="15" transform="rotate(45 46 18)"/>
+        <ellipse cx="18" cy="46" rx="7" ry="15" transform="rotate(45 18 46)"/>
+        <ellipse cx="46" cy="46" rx="7" ry="15" transform="rotate(-45 46 46)"/>
+        <circle cx="32" cy="32" r="2.4" fill="currentColor"/>
+        <circle cx="0" cy="0" r="2.4" fill="currentColor"/>
+        <circle cx="64" cy="0" r="2.4" fill="currentColor"/>
+        <circle cx="0" cy="64" r="2.4" fill="currentColor"/>
+        <circle cx="64" cy="64" r="2.4" fill="currentColor"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect id="batik-fill" width="100%" height="200%" fill="url(#kawung)"/>
+</svg>
+
+<!-- Gold dust, like light motes in the ballroom on the poster. -->
+<canvas class="gold-dust" id="gold-dust" aria-hidden="true"></canvas>
+
+<main>
+  <header class="hero">
+    <!-- Batik medallion: rings built in effects.js, each turning its own way. -->
+    <svg class="medallion" id="medallion" viewBox="0 0 400 400" aria-hidden="true"></svg>
+
+    <div class="hero-content">
+      <div class="logos rise" style="--d: 0">
+        <img src="assets/logo-pkpd.png" alt="Logo Pejabat Kesihatan Pergigian Daerah Batang Padang" width="72" height="72">
+        <img src="assets/logo-kelab.png" alt="Logo Kelab Sukan dan Kebajikan PKPD Batang Padang" width="72" height="72">
+      </div>
+
+      <h1 class="title">
+        <span class="mask"><span class="title-main rise" style="--d: 1">Majlis Anugerah Gemilang</span></span>
+        <span class="mask"><span class="title-main rise" style="--d: 2">dan Apresiasi Budi</span></span>
+        <span class="mask"><span class="title-sub rise" style="--d: 3">PKPD Batang Padang 2026</span></span>
+      </h1>
+
+      <svg class="ornament" viewBox="0 0 320 40" aria-hidden="true">
+        <g class="draw">
+          <path d="M8 20 H112 C124 20 128 8 138 10 C146 12 146 22 139 23 C134 24 132 19 136 17"/>
+          <path d="M8 20 H112 C124 20 128 8 138 10 C146 12 146 22 139 23 C134 24 132 19 136 17" transform="matrix(-1 0 0 1 320 0)"/>
+          <ellipse cx="160" cy="11" rx="4" ry="8"/>
+          <ellipse cx="160" cy="29" rx="4" ry="8"/>
+          <ellipse cx="151" cy="20" rx="8" ry="4"/>
+          <ellipse cx="169" cy="20" rx="8" ry="4"/>
+        </g>
+      </svg>
+
+      <p class="theme-label rise" style="--d: 4">Tema</p>
+      <p class="theme-name rise" style="--d: 5">Nusantara Batik</p>
+      <p class="tagline"><span class="ink">Menjunjung Tradisi, Melakar Masa Depan</span></p>
+    </div>
+
+    <!-- The one focal point: what this guest should do right now. -->
+    <section class="action rise" style="--d: 7" id="tindakan" aria-live="polite">
+      <div class="rebung-strip" aria-hidden="true"></div>
+      <div class="action-body">
+        <p class="action-kicker" id="action-kicker">Memuatkan…</p>
+        <p class="action-text" id="action-text" hidden></p>
+        <div class="countdown" id="countdown" hidden>
+          <div><span id="cd-hari">0</span><small>hari</small></div>
+          <div><span id="cd-jam">0</span><small>jam</small></div>
+          <div><span id="cd-minit">0</span><small>minit</small></div>
+        </div>
+        <a class="btn" id="action-btn" href="#" hidden></a>
+        <p class="action-note" id="action-note" hidden></p>
+      </div>
+      <div class="rebung-strip flip" aria-hidden="true"></div>
+    </section>
+  </header>
+
+  <div class="parang-band" aria-hidden="true"></div>
+
+  <section class="details reveal" aria-labelledby="h-butiran">
+    <h2 id="h-butiran">Butiran Majlis</h2>
+    <dl>
+      <div><dt>Tarikh</dt><dd><span class="big">5</span>Disember 2026, Sabtu</dd></div>
+      <div><dt>Masa</dt><dd><span class="big">2 hingga 6</span>petang</dd></div>
+      <div><dt>Tempat</dt><dd><span class="big big-text">Hotel Grand Kampar</span>Kampar, Perak</dd></div>
+    </dl>
+    <div class="links">
+      <a class="btn-ghost" href="https://www.google.com/maps/search/?api=1&amp;query=Hotel+Grand+Kampar+Perak" target="_blank" rel="noopener">Buka peta hotel</a>
+      <a class="btn-ghost" href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=Majlis+Anugerah+Gemilang+dan+Apresiasi+Budi+PKPD+Batang+Padang+2026&amp;dates=20261205T060000Z/20261205T100000Z&amp;location=Hotel+Grand+Kampar,+Perak" target="_blank" rel="noopener">Simpan dalam kalendar</a>
+    </div>
+  </section>
+
+  <section class="program reveal" aria-labelledby="h-pengisian">
+    <div class="program-list">
+      <h2 id="h-pengisian">Pengisian Majlis</h2>
+      <!-- Gold thread fills as you scroll; each kawung node lights when passed. -->
+      <ol class="thread" id="thread">
+        <li>Penyampaian anugerah terbaik klinik dan individu</li>
+        <li>Sambutan pesara</li>
+        <li>Cabutan bertuah</li>
+        <li>Doorgift untuk semua</li>
+      </ol>
+      <p class="cert-line">Sijil penyertaan disediakan untuk semua yang hadir.</p>
+    </div>
+    <aside class="dress" id="dress">
+      <p class="dress-kicker">Pertandingan</p>
+      <p class="dress-title">Best-Dressed</p>
+      <p>Datang berbusana bertemakan <strong>Nusantara Batik</strong>. Pemenang diumumkan semasa majlis.</p>
+    </aside>
+  </section>
+
+  <div class="parang-band reverse" aria-hidden="true"></div>
+
+  <footer class="foot reveal">
+    <p class="foot-script">Jumpa anda di sana!</p>
+    <p>Kehadiran anda bersama keluarga amat dialu-alukan.</p>
+    <p class="foot-small">Anjuran Pejabat Kesihatan Pergigian Daerah Batang Padang dengan kerjasama Kelab Sukan dan Kebajikan.</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+<script src="effects.js"></script>
+</body>
+</html>
