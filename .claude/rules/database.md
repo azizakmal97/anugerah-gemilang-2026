@@ -1,0 +1,251 @@
+---
+paths:
+  - "prisma/**/*"
+  - "drizzle/**/*"
+  - "src/db/**/*"
+  - "lib/db/**/*"
+  - "migrations/**/*"
+  - "*.sql"
+---
+
+# Database Rules
+
+Loaded automatically when editing schema, migration, or query files.
+
+## Schema Change Protocol
+
+**Adding a column:** OK. Always include a default value.
+```sql
+ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
+```
+
+**Removing a column:** NOT OK directly. Follow this process:
+1. Deploy code that stops reading/writing the column
+2. Wait one release cycle
+3. Then drop the column in next release
+
+**Renaming a column:** NOT OK. Instead:
+1. Add new column with new name
+2. Migrate data: `UPDATE table SET new_name = old_name`
+3. Deploy code using new column
+4. Drop old column next release
+
+**Changing column type:** Extreme caution. Always test on a copy first.
+
+## Every Migration Needs
+
+1. Forward migration (the change)
+2. Rollback migration (how to undo it)
+3. Test on dev database before staging/prod
+4. Documented estimated run time for large tables
+
+```sql
+-- migration: 20240315_add_user_display_name.sql
+ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
+
+-- rollback: 20240315_rollback_user_display_name.sql
+ALTER TABLE users DROP COLUMN display_name;
+```
+
+## Accidental Deletion Prevention
+
+### Rule: Use Soft Deletes, Not Hard Deletes
+
+Never `DELETE FROM` on user-created content. Add `deletedAt` instead:
+
+```typescript
+// Schema — add to every user-content table
+model Post {
+  id        String    @id
+  deletedAt DateTime? // null = active, timestamp = deleted
+}
+
+// Delete = set timestamp, not remove row
+await prisma.post.update({
+  where: { id },
+  data: { deletedAt: new Date() }
+})
+
+// All queries MUST filter deleted records
+await prisma.post.findMany({
+  where: { deletedAt: null }  // Never forget this
+})
+```
+
+Hard `DELETE` only on: sessions, temp tokens, audit logs older than retention period.
+
+### Rule: WHERE Clause Audit Before Any Delete/Update
+
+Before writing any DELETE or UPDATE, state:
+1. "This affects rows where [condition]"
+2. "Estimated row count: [run SELECT COUNT(*) first]"
+3. Run `SELECT COUNT(*) WHERE [same condition]` before the write
+
+```typescript
+// Always COUNT before bulk UPDATE/DELETE
+const affected = await prisma.post.count({ where: { status: 'draft', authorId: userId } })
+console.log(`About to update ${affected} rows`) // Verify this looks right
+await prisma.post.updateMany({ where: { status: 'draft', authorId: userId }, data: { ... } })
+```
+
+### Rule: Cascade Delete Awareness
+
+Before adding `onDelete: Cascade` to any foreign key — state what records will be deleted transitively. Document it in the schema:
+
+```prisma
+model Order {
+  items OrderItem[] @relation(onDelete: Cascade) // CASCADES: deleting Order removes all OrderItems
+}
+```
+
+If cascade would delete >1 table of data, use `onDelete: Restrict` and handle deletion explicitly in code.
+
+### Rule: prisma db push — Data Loss Flag
+
+`prisma db push` silently drops columns that no longer exist in schema.
+
+Before running: compare schema diff first:
+```bash
+prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma
+```
+
+If output contains `Drop` → write a migration instead, do not use `db push`.
+
+## Query Rules
+
+```typescript
+// ORM only — no string interpolation
+// WRONG:
+const users = await db.query(`SELECT * FROM users WHERE id = ${userId}`)
+
+// CORRECT (Prisma):
+const users = await prisma.user.findUnique({ where: { id: userId } })
+
+// CORRECT (raw SQL when needed — parameterized only):
+const users = await db.execute(sql`SELECT * FROM users WHERE id = ${userId}`)
+```
+
+- Never `SELECT *` in production — list columns explicitly
+- Always paginate: include `limit` and `offset` / cursor on list queries
+- Add database index for every column used in `WHERE`, `JOIN`, or `ORDER BY`
+
+## Read Budgets: Price Every Aggregate (metered / free-tier databases)
+
+Why this exists: a clinic app on Cloudflare D1's free tier (5M rows read per day, hard cap) went down for an afternoon on 2026-10-20. Each dashboard "attention" card ran a COUNT over the whole history (~26k rows). The cache was cleared on every save "for freshness", so every save made the next load a full rescan: 165 recounts, ~4.7M rows in one day. The cost grew every month because it scaled with total history, not daily use. The rule "put repeated aggregates behind a cache" was followed and was not enough, because nobody priced it. Free tiers do not bill overages; they STOP the app until the daily reset.
+
+1. **Price before it ships.** Rows read per run x runs per day, using the WORST trigger rate (every page load, every cache clear, every timer tick). Write the number in the plan or PR and compare it with the provider's daily cap.
+2. **Cost that grows with total history must not be recomputed per save or on a short TTL.** (A COUNT or GROUP BY over every row ever.) Pick one:
+   - (a) Store the result per entity and recompute only the slice a write touched (triggers or writer hooks mark rows dirty; the read re-checks only dirty ones), plus a daily full rebuild as self-heal. If the marking is done by SQLite triggers, never use `INSERT OR REPLACE` inside one: the trigger inherits the firing statement's conflict clause, so a UNIQUE clash rolls back the user's own save. Use DELETE then INSERT, and run the full suite (omfs-system's feature tests passed; only the full suite caught it).
+   - (b) Split closed history (locked or past periods that can no longer change) from the live window. Cache the closed part and count only the live window.
+3. **Never clear a cache on save unless its recompute is cheap and bounded.** A TTL is a cost ceiling, not a fix, and a long TTL makes the screen lag, which users reject.
+4. **A free-tier cap stops the app.** Before real users: an alarm at about 50% of the daily cap that reaches the owner (the provider's own 75%/90% emails arrive too late in a working day), and a known paid-plan escape hatch (e.g. Cloudflare Workers Paid, $5/month).
+5. **Re-measure monthly** from per-query insights (e.g. `wrangler d1 insights <db> --timePeriod 7d --sort-by reads`) and compare with last month. One good snapshot says nothing about a cost that grows with history.
+6. **Never defeat an index.** A function on an indexed column (`trim(col)`, `LOWER(col)`), a `LIKE 'prefix%'` month filter, or MIN/MAX over such a column makes the database read every row. Use range comparisons (`col >= '2026-07-00' AND col <= '2026-07-99'`) and `ORDER BY col LIMIT 1` subqueries. Index the column a `NOT EXISTS (... WHERE child.parent_id = p.id)` probes. Check new query shapes with `EXPLAIN QUERY PLAN`: SCAN reads the whole table, SEARCH uses an index. In omfs-system one date-bounds endpoint called on every page mount was 52% of all reads, and a LIKE month query in a sync added another 383k a week.
+7. **Measure before you fix.** Pull per-query insights first and record the baseline. The biggest reader is often not the suspect: omfs-system guessed the dashboard counters, and the real top reader was a date-bounds lookup.
+8. **The daily cap belongs to the account, not the app.** Every database, demo or staging copy and side project on the same account spends the same allowance, so a neighbour can take your app down, and the provider's alert email does not name the project. While capped, even a migration or a deploy step that touches the database fails (D1 error 7500) until the reset: take a backup first and retry after it. To find the culprit, run the insights command on each database (`wrangler d1 list`). Keep demo and staging on a separate account, or count them in the budget.
+9. **Polling multiplies.** Price interval x open screens x hours, not one request. Prefer a longer interval, or pause when the tab is hidden. omfs-system halved its queue reads by moving a 30 s poll to 60 s.
+
+## Sensitive Data
+
+```typescript
+// Passwords — bcrypt, never plaintext
+import bcrypt from 'bcryptjs'
+const hash = await bcrypt.hash(password, 12)
+const valid = await bcrypt.compare(password, hash)
+
+// Password reset tokens — hash before storing
+import crypto from 'crypto'
+const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+// Store tokenHash, send raw token to user
+
+// Never store: plaintext passwords, raw reset tokens, API keys
+```
+
+## Transactions
+
+Required when:
+- Creating multiple related records together
+- Financial or inventory operations
+- Any "all succeed or all fail" operation
+
+```typescript
+await prisma.$transaction(async (tx) => {
+  const order = await tx.order.create({ data: orderData })
+  await tx.orderItem.createMany({ data: itemsData.map(i => ({ ...i, orderId: order.id })) })
+  await tx.inventory.update({ where: { id: item.id }, data: { quantity: { decrement: qty } } })
+})
+```
+
+## CASCADE Backup Pattern (Critical)
+
+If a table has child tables with `ON DELETE CASCADE`, **back up children before recreating parent**:
+
+```sql
+-- Before any DROP TABLE on a parent with cascades:
+CREATE TABLE _backup_visit_doctors AS SELECT * FROM visit_doctors;
+CREATE TABLE _backup_diagnoses    AS SELECT * FROM diagnoses;
+-- Now safe to recreate parent.
+DROP TABLE visits;
+CREATE TABLE visits ( ... );
+-- Reinsert children.
+INSERT INTO visit_doctors SELECT * FROM _backup_visit_doctors;
+DROP TABLE _backup_visit_doctors;
+```
+
+State in migration comment header which child tables cascade. Future agents searching the codebase will find it.
+
+## INSERT Binding Lockstep Rule
+
+Column count, `?` placeholder count, and `.bind()` argument count MUST match exactly:
+
+```typescript
+// WRONG — 3 columns, 2 placeholders, 4 binds
+db.prepare('INSERT INTO users (id, email, role) VALUES (?, ?)').bind(id, email, role, extra)
+
+// RIGHT — all three counts equal
+db.prepare('INSERT INTO users (id, email, role) VALUES (?, ?, ?)').bind(id, email, role)
+```
+
+Mismatch = silent corruption on SQLite, runtime error on Postgres. Adding a column to an INSERT requires updating ALL THREE in one commit.
+
+## Production DB Flag (Cloudflare D1 / Supabase / Neon)
+
+For cloud-hosted databases with a separate `--remote` / `--prod` flag, **always pass the flag explicitly** when querying production:
+
+```bash
+# Cloudflare D1
+npx wrangler d1 execute MY_DB --remote --command "SELECT 1"
+
+# Supabase CLI
+supabase db --linked execute "SELECT 1"
+```
+
+Hooks in `.claude/hooks/pre-db-migrate.cjs` block migrations against URLs that look like production. Do NOT bypass.
+
+### Rule: Guarded one-row fixes on production need no asking
+
+A stuck or failed record that blocks work the owner already approved (a job marked failed, a status that
+didn't move) is fixed by the agent the same turn, never handed back to the owner (owner rule 2026-11-02:
+"I don't want to face and fix this kind of problem"). Allowed without asking, on the production database:
+
+- one `UPDATE` on one row, keyed by its primary key AND its current state, so a stale fix changes nothing:
+  `UPDATE items SET status = 'scheduled' WHERE id = '<id>' AND status = 'failed' AND version = 4`;
+- a `SELECT` first to confirm the row, and a `SELECT` after to confirm the change; say what changed in the reply.
+
+Still ask first: any `DELETE`, any write that can touch more than one row, schema changes, secrets.
+Prefer an app route for a fix that keeps coming back; the raw SQL is the stopgap. Let the agent run it:
+the project's `.claude/settings.json` allows the exact remote-execute prefix (for D1:
+`"Bash(npx wrangler d1 execute <db> --remote --command:*)"`), or the permission check blocks it.
+
+## Cloudflare D1 Traps
+
+- **Never build a `UNION` whose branches grow with the input.** D1 caps compound SELECT terms far below SQLite's default: three terms worked, six failed with `too many terms in compound SELECT`. Send one indexed query per value through `env.DB.batch([...])` and merge in code. Test each query shape at its largest real size, not with two values.
+- **Changing a `CHECK` on a table other tables reference means rebuilding the children too.** Copying the parent, dropping it and renaming the copy fails at commit on a deferred foreign key violation, and `defer_foreign_keys` does not help. Create new child tables whose `REFERENCES` point at the new parent, copy every row with its id, drop the old tables children first, rename, then recreate indexes and triggers. Test it: apply up to N-1, seed parent and children, apply N, compare rows, run `PRAGMA foreign_key_check`.
+
+## Schema Conventions
+
+- Naming: snake_case (most engines) or camelCase (MongoDB) — pick one per project and never mix.
+- Every table has: `id` (uuid or autoincrement), `created_at`, `updated_at` (auto-managed).
+- Every FK gets an index. CI should flag missing FK indexes (add a check).
+- Denormalization is OK when documented — add a comment in the schema and in `database.md`.
+- Migration naming: `NNNN_descriptive_name.sql` (or framework convention like Prisma).

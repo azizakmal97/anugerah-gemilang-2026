@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+/**
+ * PreToolUse (Bash) hook.
+ * If the command is `git commit ...` AND PROGRESS.md has a 🟡 in-progress phase,
+ * ensure the commit message starts with `wip(<phase-id>):` or `done(<phase-id>):`.
+ *
+ * Warns but does NOT block (would frustrate users). Configure to block via env var
+ * STRICT_CHECKPOINT=1 if desired.
+ *
+ * One hard block: `done(<phase-id>):` on a phase with a spec needs a passed
+ * /done-check. The owner is not a coder and can't catch a skipped check.
+ *
+ * Hook input: { tool_input: { command: "..." } }
+ */
+
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const ROOT = process.cwd();
+const PROGRESS_CANDIDATES = ['PROGRESS.md', 'REFACTOR_PROGRESS.md'];
+const STRICT = process.env.STRICT_CHECKPOINT === '1';
+
+let payload = '';
+try {
+  payload = await new Promise((resolve) => {
+    let buf = '';
+    process.stdin.on('data', (chunk) => (buf += chunk));
+    process.stdin.on('end', () => resolve(buf));
+  });
+} catch {
+  process.exit(0);
+}
+
+let command = '';
+try {
+  const data = JSON.parse(payload || '{}');
+  command = data.tool_input?.command || '';
+} catch {}
+
+// Not anchored: the phase-completion step is `git add ... && git commit ...`.
+if (!command || !/\bgit\s+commit\b/.test(command)) {
+  process.exit(0);
+}
+
+let progressPath = null;
+for (const name of PROGRESS_CANDIDATES) {
+  const p = join(ROOT, name);
+  if (existsSync(p)) { progressPath = p; break; }
+}
+if (!progressPath) process.exit(0);
+
+const body = readFileSync(progressPath, 'utf8');
+
+function phaseBlock(phaseId) {
+  const heading = body.match(new RegExp(`^### \\S+\\s+${phaseId}(?=[\\s:]|$)`, 'm'));
+  if (!heading) return '';
+  const blockStart = heading.index + heading[0].length;
+  const nextHeading = body.indexOf('\n### ', blockStart);
+  return body.slice(blockStart, nextHeading === -1 ? undefined : nextHeading);
+}
+
+function blockedDoneReason() {
+  const donePhaseId = command.match(/\bdone\(([A-Za-z0-9-]+)\):/)?.[1];
+  if (!donePhaseId) return null;
+  const block = phaseBlock(donePhaseId);
+  const specPath = block.match(/\*\*Spec:\*\*\s*`?(specs\/[^\s`*]+\.md)/)?.[1];
+  if (!specPath || !existsSync(join(ROOT, specPath))) return null;
+  if (/^Done-check:\s*PASS\b/m.test(readFileSync(join(ROOT, specPath), 'utf8'))) return null;
+  return `Phase ${donePhaseId} has a spec (${specPath}) but no passed check. ` +
+         'Run /done-check, fix any gaps, then commit done again.';
+}
+
+const blockedReason = blockedDoneReason();
+if (blockedReason) {
+  process.stderr.write(`${blockedReason}\n`);
+  process.exit(2);
+}
+
+// The **Active phase:** header wins over a 🟡 left on a paused phase's heading
+// (same rule as session-start-resume.js). "none" comes first: a header like
+// "none running; several phases are half done (🟡)" names no active phase.
+function activePhaseId() {
+  const header = body.match(/\*\*Active phase:\*\*\s*(.+)/);
+  if (!header) return body.match(/### 🟡\s+([A-Za-z0-9-]+)/)?.[1] ?? null;
+  if (/^\s*_?none\b/i.test(header[1]) || !/🟡|in[- ]progress/i.test(header[1])) return null;
+  return header[1].match(/^\s*`?([A-Za-z0-9-]+)`?/)?.[1] ?? null;
+}
+
+const phaseId = activePhaseId();
+if (!phaseId) {
+  process.exit(0);
+}
+
+// Extract -m "message" or --message="message" (rough but enough)
+const msgMatch = command.match(/-m\s+["']([^"']+)["']|--message[= ]["']([^"']+)["']/);
+const message = msgMatch ? (msgMatch[1] || msgMatch[2]) : '';
+
+const wantPrefix = new RegExp(`^(wip|done)\\(${phaseId}\\):`);
+if (message && wantPrefix.test(message)) {
+  process.exit(0);
+}
+
+const warn = `\n⚠️  pre-commit-checkpoint: PROGRESS.md has active phase ${phaseId}.\n` +
+             `   Commit message should start with "wip(${phaseId}):" or "done(${phaseId}):".\n` +
+             `   Got: ${message || '(no -m message detected)'}\n`;
+
+process.stderr.write(warn);
+process.exit(STRICT ? 2 : 0);

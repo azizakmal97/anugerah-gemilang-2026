@@ -1,0 +1,12 @@
+{
+  "name": "anugerah-gemilang-2026",
+  "private": true,
+  "description": "Static event page for Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang 2026",
+  "scripts": {
+    "dev": "python -m http.server 8765",
+    "lint": "node --check app.js && node --check effects.js && node scripts/antislop-check.mjs index.html style.css",
+    "typecheck": "node -e \"console.log('No TypeScript here: plain browser JS, syntax-checked by lint and build.')\"",
+    "test": "node scripts/run-tests.mjs",
+    "build": "node scripts/check-site.mjs"
+  }
+}

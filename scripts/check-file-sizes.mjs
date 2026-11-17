@@ -1,0 +1,136 @@
+#!/usr/bin/env node
+/**
+ * File-size budget enforcer.
+ *
+ * Usage:
+ *   node scripts/check-file-sizes.mjs              # check all files vs budgets
+ *   node scripts/check-file-sizes.mjs path/to/file # check single file (post-edit hook)
+ *
+ * Exit codes:
+ *   0 = pass
+ *   1 = soft warn (over soft, under hard)
+ *   2 = hard fail (over hard)
+ *
+ * Reads file-budgets.json at repo root.
+ */
+
+import { readFileSync, statSync, readdirSync } from 'node:fs';
+import { join, relative, resolve, sep } from 'node:path';
+
+const ROOT = process.cwd();
+const BUDGETS_PATH = join(ROOT, 'file-budgets.json');
+
+let budgets;
+try {
+  budgets = JSON.parse(readFileSync(BUDGETS_PATH, 'utf8'));
+} catch (err) {
+  console.error(`[check-file-sizes] cannot read ${BUDGETS_PATH}: ${err.message}`);
+  process.exit(0); // no budgets = no enforcement, do not block
+}
+
+const { soft = {}, hard = {}, whitelist = [] } = budgets;
+
+function globToRegex(glob) {
+  const escaped = glob
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*\//g, '\x01')     // **/ → placeholder (zero-or-more path segments + slash)
+    .replace(/\*\*/g, '\x00')       // remaining ** → any chars (e.g. trailing **)
+    .replace(/\*/g, '[^/\\\\]*')    // * → single-segment wildcard
+    .replace(/\x00/g, '.*')         // ** → any path chars
+    .replace(/\x01/g, '(.*/)?');    // **/ → optional path prefix
+  return new RegExp(`^${escaped}$`);
+}
+
+const whitelistRe = whitelist.map(globToRegex);
+const softRules = Object.entries(soft).map(([g, v]) => [globToRegex(g), v]);
+const hardRules = Object.entries(hard).map(([g, v]) => [globToRegex(g), v]);
+
+function isWhitelisted(rel) {
+  return whitelistRe.some((re) => re.test(rel));
+}
+
+function matchBudget(rules, rel) {
+  for (const [re, v] of rules) {
+    if (re.test(rel)) return v;
+  }
+  return null;
+}
+
+function countLines(absPath) {
+  const buf = readFileSync(absPath);
+  let lines = 0;
+  for (let i = 0; i < buf.length; i++) {
+    if (buf[i] === 0x0a) lines++;
+  }
+  // count last line if file doesn't end with \n
+  if (buf.length > 0 && buf[buf.length - 1] !== 0x0a) lines++;
+  return lines;
+}
+
+function* walk(dir) {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    const rel = relative(ROOT, full).split(sep).join('/');
+    if (entry.isDirectory()) {
+      if (rel === 'node_modules' || rel === '.git' || rel.startsWith('.')) continue;
+      yield* walk(full);
+    } else if (entry.isFile()) {
+      yield full;
+    }
+  }
+}
+
+const args = process.argv.slice(2);
+const targets = args.length
+  ? args.map((p) => resolve(p))
+  : Array.from(walk(ROOT));
+
+let worst = 0;
+const findings = [];
+
+for (const abs of targets) {
+  let st;
+  try {
+    st = statSync(abs);
+  } catch {
+    continue;
+  }
+  if (!st.isFile()) continue;
+  const rel = relative(ROOT, abs).split(sep).join('/');
+  if (isWhitelisted(rel)) continue;
+
+  const hardLimit = matchBudget(hardRules, rel);
+  const softLimit = matchBudget(softRules, rel);
+  if (hardLimit == null && softLimit == null) continue;
+
+  const lines = countLines(abs);
+
+  if (hardLimit != null && lines > hardLimit) {
+    findings.push({ level: 'HARD', rel, lines, limit: hardLimit });
+    worst = Math.max(worst, 2);
+  } else if (softLimit != null && lines > softLimit) {
+    findings.push({ level: 'SOFT', rel, lines, limit: softLimit });
+    worst = Math.max(worst, 1);
+  }
+}
+
+if (findings.length === 0) {
+  process.exit(0);
+}
+
+for (const f of findings) {
+  const tag = f.level === 'HARD' ? '🛑 HARD FAIL' : '⚠️  SOFT WARN';
+  console.error(`${tag} ${f.rel}: ${f.lines} lines (limit ${f.limit})`);
+}
+
+if (worst === 2) {
+  console.error('\nFile size hard-limit breach. Extract before edit. See CLAUDE.md §12, §19.');
+}
+
+process.exit(worst);

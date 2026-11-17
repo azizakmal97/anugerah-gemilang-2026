@@ -1,0 +1,132 @@
+# AGENTS.md — Single Source of Truth for All AI Coding Tools
+
+> **This is the canonical rule source.** Claude Code, ZCode, Cursor, Windsurf, GitHub Copilot, Aider, Google Antigravity, and other agents read it — directly or via the shim files generated from it.
+> Edit THIS file, then run `node scripts/sync-agent-rules.mjs` to regenerate `.cursorrules`, `.cursor/rules/project.mdc`, `.windsurfrules`, `.github/copilot-instructions.md`, and the `.zcode/` layout. `CLAUDE.md` layers Claude-specific sections on top of these rules.
+>
+> **ZCode reads this file and nothing else automatically** — not `CLAUDE.md`, not `.claude/rules/*`, and not `AGENTS.md` files in subdirectories. Those rule files still exist on disk; read them with the file tools when a rule points at one. Setup and caveats: [`.zcode/README.md`](.zcode/README.md).
+
+---
+
+## Stack
+
+See `CLAUDE.md` §1–§2 for the active preset's stack + commands.
+
+## Non-Negotiable Rules
+
+1. **PROOF OVER PROMISE** — never say "this should work." Paste terminal output of typecheck + build + test.
+2. **Scope lock** — state which files will change BEFORE editing. Do not touch anything else.
+3. **Types first** — define interfaces before implementation. Zero `any`.
+4. **Test before commit** — typecheck + lint + test + build all green. No exceptions.
+5. **Verify UI in a real browser** — ANY frontend change or component refactor MUST be checked with a Playwright **e2e smoke** (load the page, assert key regions render, assert ZERO uncaught page errors). typecheck + build prove it compiles, NOT that it renders. Add a **flow test** where the page has real logic (validation, auth/role gates, dup-guard banners, confirm dialogs). The Playwright scaffold (`e2e/`, `playwright.config.ts`) ships ready to run — **run it yourself; never defer UI verification to the human.** See `.claude/rules/testing.md` → "E2E Smoke + Flow".
+6. **Per-edit commit** — see `PROGRESS.md` death-defense protocol. `wip(phase-id):` prefix.
+7. **No secrets in code or transcript** — keep secrets in `.env` / `.dev.vars` (gitignored). Never read or print a secret file (`cat`/`type`/`Get-Content` a `.env`); the runtime loads them itself. Claude Code enforces this via hook + Read deny-list. ZCode has hooks but no deny-list, and only once its plugin is installed. Every other agent must self-enforce.
+8. **Backwards-compatible APIs** — add fields, never remove.
+9. **No silent catches** — every `catch` must log or rethrow.
+10. **Ask before installing packages** — state name + version + why + bundle impact.
+11. **Read `PROGRESS.md` on session start** — if a phase is `🟡 in-progress`, resume per protocol.
+12. **A push is not a deploy** — if pushing triggers CI/CD, the work is NOT live until that run is green. Watch it (`gh run list --branch main --limit 1`, then `gh run watch <id>`). A failed build job means the deploy never ran; a failed deploy job means the code is not live. Read the real error, fix the root cause, push again, re-verify. Only say "done" or "live" once every job is green — otherwise say plainly that it is pushed but NOT live.
+13. **Capture the lesson, same turn** — when a bug took real digging, write symptom / root cause / fix / how-to-apply into `memory/` and index it in `memory/MEMORY.md` before moving on, and check that index before re-debugging anything. Only write what you VERIFIED; a confidently-wrong note is worse than none. See `.claude/rules/memory.md`.
+14. **Production readiness by trigger, not by buzzword** — the owner asks for features, never for "idempotency" or "rate limiting". Read `.claude/rules/production-readiness.md` before building any feature: Tier 1 (baseline: secrets, rate limits, spending caps, backups, monitoring) must be in place before real users; a Tier 2 topic is handled in the SAME change that triggers it (takes money → idempotency, slow work → background job, calls an API → timeout + retry); Tier 3 (Kubernetes, sharding, multi-region…) is never built without the evidence that file names. Tell the owner in one plain sentence what each safeguard you added stops.
+15. **Price database reads before they ship** — a metered or free-tier DB stops the app at its daily cap instead of billing. For every aggregate or count, write rows-read x runs-per-day at the worst trigger rate in the plan; never recompute history-sized counts per save or on a short TTL, never wrap an indexed column in a function inside a WHERE (it forces a full scan), and remember the daily cap is shared by every database on the account. See `.claude/rules/database.md` → "Read Budgets".
+16. **The owner never runs commands** — they describe what they want in plain words. When that is a new feature or touches money, logins or personal data, run `/spec` yourself before any code. Before saying a feature with a spec is finished, run `/done-check` yourself. Ask only about what people will see and do, offer simple choices with your pick first, and if they don't know, take your pick and carry on.
+
+---
+
+## File-Size Budgets
+
+See `file-budgets.json` at project root. Hard breach = CI fails. Touch a file already over budget = MUST extract first, edit after.
+
+---
+
+## Forbidden Patterns
+
+Project-specific list lives in `CLAUDE.md` §11. Universal forbidden:
+- `any` TypeScript types
+- `// @ts-ignore` without linked issue
+- `.catch(() => {})` silent failures
+- Inline auth checks (use middleware)
+- Raw DB queries in route handlers (use service layer)
+- Hardcoded secrets / API keys
+- Reading/printing secret files (`.env`, `.dev.vars`, `*.pem/*.key/*.p12`, `secrets/`) via shell
+- `eval()` / `dangerouslySetInnerHTML` without sanitization
+
+---
+
+## antislop: enforced, not remembered
+
+UI, copy and design work follows the antislop filter (github.com/miqdadbadjuber/anti-slop):
+load the `antislop` core skill plus the matching satellite before starting, and run the full
+Delivery Gate before delivering. A skill loaded once fades over a long session, so the
+mechanical half is enforced by a script and the judgment half by a written gate:
+
+- `scripts/antislop-check.mjs` checks em/en dashes, buzzwords, generic CTAs, removed focus
+  outlines, infinite animation, tap targets under 44px, theme-token contrast below 4.5:1, and
+  CSS classes used without a rule. Project bans (a name, a word the owner refuses) go in
+  `anti-slop/rules.json` (`banned` + `allowedPhrases`); that file is project-owned.
+- Claude Code: `post-edit-antislop.cjs` runs it on every user-facing file you change;
+  `pre-artifact-antislop.cjs` blocks publishing a page until it passes AND
+  `anti-slop/gates/<file name>.md` exists, is newer than the page, has the four blocks
+  (Hard Gate, Purpose-Gate, Liveliness, Craftsmanship) and no `FAIL` line.
+- Every agent: CI runs `node scripts/antislop-check.mjs --since <base>` on changed
+  user-facing files. Agents without hooks (Cursor, Windsurf, Copilot, Aider, ZCode) must run
+  the same command before committing.
+- Never bypass a finding. Fix it; a false positive means the checker needs tightening, not skipping.
+
+---
+
+## Graph-First Exploration
+
+If `graphify-out/GRAPH_REPORT.md` exists, read it FIRST before any full-repo grep.
+After structural changes (file add/rename/move/delete), run `/graphify` to update.
+
+**Auto-generation:** In Claude Code, `scripts/graphify-bootstrap.mjs` runs on every SessionStart (wired in `.claude/settings.json`). ZCode runs the same script on SessionStart once `.zcode/` is installed as a plugin. Either way it self-skips when source files < 50 OR graph < 7 days old, so the graph appears without the user asking once the codebase grows past the threshold. Other agents (Cursor / Aider / Windsurf / Copilot) don't get the auto-trigger and must run the script manually: `node scripts/graphify-bootstrap.mjs` after a fresh clone or major structural change.
+
+---
+
+## Communication Style
+
+Caveman-lite default for status updates. Full English for: error explanations, architectural rationale, user-facing strings.
+
+---
+
+## Session-Resume Pointer
+
+See `PROGRESS.md`. If a phase is `🟡 in-progress`, follow the 9-step resume protocol BEFORE doing anything else.
+
+---
+
+## Model Selection per Task
+
+Every plan, phase and task carries a model and an effort. The lineup, prices,
+benchmark notes and the rules (declare the model and effort before the first tool
+call, run only the work your session's model owns, escalate once when a check fails)
+live in one place: the global rule, `~/.claude/CLAUDE.md` section 1 "Model Selection
+per Task" (ZCode: `~/.zcode/AGENTS.md`, built from the same file). When that rule is
+loaded, it wins over the fallback line below. Do not copy its lineup or rules back here.
+
+Fallback, only for a computer or tool without the global setup (it may lag behind the global rule): hard work (architecture, unclear root cause, security, auth, money, legal or brand copy) → Opus · high; normal feature work → Sonnet · medium; status checks, build runs and mechanical edits → Haiku · low; design, graphics and video editing → Opus or Fable, never lower; on a GLM plan, GLM-5.3 at `high` for Opus work, GLM-5.3 at `low` for Sonnet work, GLM-5.3-Flash for Haiku work. Say the task's model and effort before the first tool call, and give every plan bullet a model and an effort.
+
+**In this project:** every phase block in `PROGRESS.md` carries a `Model:` and an
+`Effort:` line, plus a `(Model: <model> · <effort>)` tag on each bullet. Match it
+before opening the session. This project's own model rules, if any, are in
+`CLAUDE.md` §22 and win over the global rule.
+
+**Outside Claude Code:** DeepSeek and Gemini run in other tools (Cursor, Aider, an
+API) where `.claude/` hooks never fire. Commit and push first, never run two agents
+on the same files at once, then come back to Claude Code to run typecheck, lint,
+tests and build.
+
+---
+
+## Tool-Specific Notes
+
+Two agents run the hooks: **Claude Code** (out of the box) and **ZCode** (after a one-time plugin install). Only Claude Code also has a permission deny-list. Every other agent gets these rules as *guidance* and relies on self-discipline. The one gate that runs regardless of which agent made the edit is **CI** (`.github/workflows/`) — it re-checks lint, types, tests, build, and file-size budgets on every push.
+
+- **Claude Code**: reads `CLAUDE.md` + `.claude/rules/*`. Hooks in `.claude/hooks/` enforce rules automatically; SessionStart injects the resume reminder; `.claude/settings.json` denies secret reads and destructive commands outright.
+- **ZCode**: reads this `AGENTS.md` only. Commands, subagents, skills and hooks come from `.zcode/`, generated from `.claude/` — see [`.zcode/README.md`](.zcode/README.md) for the install and the caveats. It has no deny-list, so check destructive and secret-reading commands yourself instead of expecting to be stopped.
+- **Cursor**: reads `.cursor/rules/project.mdc` (modern) and `.cursorrules` (legacy) — both generated from this file.
+- **Windsurf**: reads `.windsurfrules` (generated from this file) and/or this `AGENTS.md`.
+- **GitHub Copilot**: reads `.github/copilot-instructions.md` (generated from this file).
+- **Google Antigravity / Aider / others**: read this `AGENTS.md` directly at session start. No automated enforcement.
+
+> The shim files and everything under `.zcode/` except `config.json` are GENERATED — never hand-edit them. Edit `AGENTS.md` (rules) or `.claude/` (commands, agents, skills, hooks), then run `node scripts/sync-agent-rules.mjs`.

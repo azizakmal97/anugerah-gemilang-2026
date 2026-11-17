@@ -1,0 +1,33 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/db-backups/
+
+# E2E (Playwright) artifacts
+e2e/.auth/
+playwright-report/
+test-results/
+
+# Build outputs
+dist/
+build/
+.next/
+.vite/
+
+# Graphify knowledge graph (rebuilt locally by scripts/graphify-rebuild.py)
+graphify-out/
+.graphify_*
+
+# Security audit output for public repos (/security-audit writes docs/security/ when private)
+.security-audit/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/

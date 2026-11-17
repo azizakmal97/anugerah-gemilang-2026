@@ -1,0 +1,134 @@
+name: CI (web)
+
+# Auto-runs on every push + pull request.
+# Robot reviewer: lint -> typecheck -> test -> build -> file-size.
+# Each step is its own job step so failures are obvious.
+
+on:
+  push:
+    branches: [main, master]
+    # Docs-only commits don't change what CI verifies — skip the run for them.
+    # GOTCHA: a docs-only `done(...)` push is also skipped; if the phase touched
+    # code, trigger CI manually: gh workflow run "<this workflow name>" --ref main
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "graphify-out/**"
+  pull_request:
+    branches: [main, master]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "graphify-out/**"
+  workflow_dispatch: # manual run (e.g. when paths-ignore skipped a done commit)
+
+# A newer push supersedes the in-flight run — cancel the stale one. Saves
+# Actions minutes (private repos only get 2,000 free min/month).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege token: CI only reads the repo.
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: antislop (changed user-facing files)
+        # Claude Code enforces antislop with hooks; this step covers every other agent
+        # and editor. Only files this push or PR changed are checked. AGENTS.md § antislop.
+        if: hashFiles('scripts/antislop-check.mjs') != ''
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE" 2>/dev/null || true
+          node scripts/antislop-check.mjs --since "$BASE"
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        # Prefer the project's own script. A bare `tsc --noEmit` checks NOTHING
+        # when the root tsconfig.json is a solution file (references only, no
+        # top-level `include`) -- CI goes green while type errors ship.
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.typecheck ? 0 : 1)"; then
+            npm run typecheck
+          else
+            npx tsc --noEmit
+          fi
+
+      - name: Unit + integration tests
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
+
+      - name: File-size budget check
+        # exit 1 = soft warning (tolerate), exit 2 = hard breach (fail). A bare
+        # `run:` fails on any non-zero, which turned every soft warning into a
+        # blocked PR -- the opposite of the script's documented contract.
+        run: node scripts/check-file-sizes.mjs || [ "$?" -eq 1 ]
+
+  # Real-browser E2E. Separate job so the fast unit gate above isn't slowed by
+  # the browser install. Auto-skips until the Playwright scaffold is filled in
+  # (e2e/auth.setup.ts exists) — see e2e/README.md.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Check E2E is set up
+        id: e2e
+        run: |
+          if [ -f e2e/auth.setup.ts ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::e2e/auth.setup.ts not found — skipping E2E. Fill in the scaffold (see e2e/README.md)."
+          fi
+
+      - name: Install dependencies
+        if: steps.e2e.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Install Chromium
+        if: steps.e2e.outputs.ready == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E
+        if: steps.e2e.outputs.ready == 'true'
+        run: npm run test:e2e
+
+      - name: Upload report on failure
+        if: ${{ failure() && steps.e2e.outputs.ready == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

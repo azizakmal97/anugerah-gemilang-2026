@@ -1,0 +1,21 @@
+{
+  "_preset": "web (static site)",
+  "soft": {
+    "*.js": 250,
+    "*.css": 600,
+    "*.html": 200,
+    "tests/**/*.mjs": 200
+  },
+  "hard": {
+    "*.js": 400,
+    "*.css": 900,
+    "*.html": 300,
+    "tests/**/*.mjs": 350
+  },
+  "whitelist": [
+    "**/node_modules/**",
+    "scripts/**",
+    ".claude/**",
+    ".zcode/**"
+  ]
+}
