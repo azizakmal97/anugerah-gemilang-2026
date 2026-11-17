@@ -34,7 +34,7 @@ THEMES = {
                    "extra": "body { background: linear-gradient(135deg, #071334 0%, #1d3c86 28%, #b8913f 48%, #f2d796 50%, #b8913f 52%, #1d3c86 72%, #071334 100%); } .field { background: radial-gradient(70% 25% at 50% 0%, rgba(214, 168, 78, 0.22), transparent 75%), radial-gradient(120% 75% at 50% 0%, var(--field-a), var(--field-b) 50%, var(--field-c)); }"},
     "emerald": {"cloth-a": "#0f6b57", "cloth-b": "#05303a", "field-a": "#0d4f52", "field-b": "#062b30", "field-c": "#03161a", "plate": "3, 22, 26"},
 }
-DEFAULT_THEME = "navy"
+DEFAULT_THEME = "emas-nila"  # owner pick 2026-11-17
 
 
 def theme_style(theme: str) -> str:
