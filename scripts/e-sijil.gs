@@ -18,7 +18,7 @@
  *    run setupUrusetiaTemplate, set its page to A4 by hand, run
  *    fitUrusetiaTemplate, then sendTestUrusetia.
  *
- * Only guests found in the attendance form (by IC, or by email) get a sijil,
+ * Only guests found in the attendance form (by IC) get a sijil,
  * for the role they chose there. Anyone else gets a short "not in the
  * attendance list" email instead.
  */
@@ -152,7 +152,7 @@ function onFeedbackSubmit(e) {
     throw new Error('Kuota emel harian habis. Sijil untuk ' + email + ' belum dihantar.');
   }
   var ic = answers['No. Kad Pengenalan'] || '';
-  var attendee = findAttendee(ic, email);
+  var attendee = findAttendee(ic);
   if (!attendee) {
     Logger.log('Tiada dalam senarai kehadiran: ' + email + '. Sijil tidak dihantar.');
     sendNotListedEmail(name.trim(), email);
@@ -162,21 +162,17 @@ function onFeedbackSubmit(e) {
 }
 
 // Newest matching attendance answer wins, so a guest who confirmed twice gets their last role.
-// IC is compared by digits only; email (any case) is the fallback for a mistyped IC.
-function findAttendee(ic, email) {
+// IC is compared by digits only. Attendance has no email question (owner 2026-11-17).
+function findAttendee(ic) {
   var icDigits = String(ic).replace(/\D/g, '');
-  var cleanEmail = String(email).trim().toLowerCase();
+  if (!icDigits) return null;
   var responses = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses();
-  var byEmail = null;
   for (var i = responses.length - 1; i >= 0; i--) {
     var answers = readAnswers(responses[i]);
-    var attendee = { role: answers['Peranan'] || 'Peserta' };
     var rowIc = String(answers['No. Kad Pengenalan'] || '').replace(/\D/g, '');
-    if (icDigits && rowIc === icDigits) return attendee;
-    var rowEmail = String(answers['Emel'] || '').trim().toLowerCase();
-    if (!byEmail && cleanEmail && rowEmail === cleanEmail) byEmail = attendee;
+    if (rowIc === icDigits) return { role: answers['Peranan'] || 'Peserta' };
   }
-  return byEmail;
+  return null;
 }
 
 function readAnswers(response) {
@@ -287,7 +283,7 @@ function sendNotListedEmail(name, email) {
     '',
     'Terima kasih atas maklum balas anda bagi Majlis Anugerah Gemilang dan Apresiasi Budi PKPD Batang Padang.',
     '',
-    'No. Kad Pengenalan dan emel anda tidak ditemui dalam senarai kehadiran majlis. Oleh itu e-Sijil belum dapat dihantar.',
+    'No. Kad Pengenalan anda tidak ditemui dalam senarai kehadiran majlis. Oleh itu e-Sijil belum dapat dihantar.',
     '',
     'Jika anda hadir pada 5 Disember 2026, sila hubungi urus setia majlis supaya kehadiran anda dapat disemak.',
     '',
@@ -322,8 +318,8 @@ function sendTestUrusetia() {
 
 // Dry run of the attendance check, no email: logs who would get which sijil.
 function testFindAttendee() {
-  [['900101-08-1234', 'tiada@contoh.my'], ['', Session.getActiveUser().getEmail()]].forEach(function (pair) {
-    var attendee = findAttendee(pair[0], pair[1]);
-    Logger.log(pair.join(' / ') + ' -> ' + (attendee ? attendee.role : 'tiada dalam senarai'));
+  ['900101-08-1234', '900101081234', ''].forEach(function (ic) {
+    var attendee = findAttendee(ic);
+    Logger.log((ic || '(kosong)') + ' -> ' + (attendee ? attendee.role : 'tiada dalam senarai'));
   });
 }
