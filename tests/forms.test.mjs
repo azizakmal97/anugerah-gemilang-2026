@@ -240,3 +240,13 @@ test("the feedback form never hands its IC to the vote card", async () => {
   assert.equal(FORMS.feedback.icEntry, undefined);
   assert.equal(FORMS.attendance.icEntry, "718418112");
 });
+
+test("the vote card hides its IC field while the attendance IC is remembered, and shows it again on forget", async () => {
+  const { submitForm, forgetAttendeeIc, page } = loadForms();
+  const classes = new Set();
+  page["f-undi-ic"] = { value: "", form: { classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) } } };
+  await submitForm(ATTENDANCE_ONE_IC, fakeForm("871212-08-0879").form, node(), node(), () => {});
+  assert.ok(classes.has("ic-remembered"));
+  forgetAttendeeIc();
+  assert.equal(classes.has("ic-remembered"), false);
+});

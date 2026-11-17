@@ -278,13 +278,19 @@ let attendeeIc = "";
 function rememberAttendeeIc(ic) {
   attendeeIc = (ic || "").trim();
   const voteIc = document.getElementById("f-undi-ic"); // the vote card's IC input, if it is on screen
-  if (voteIc && !voteIc.value) voteIc.value = attendeeIc;
+  if (voteIc && !voteIc.value) {
+    voteIc.value = attendeeIc;
+    voteIc.form?.classList.add("ic-remembered"); // the vote card then hides the field (forms.css)
+  }
 }
 
 // Drops the IC for good, and from the vote card too, unless the guest typed a different one there.
 function forgetAttendeeIc() {
   const voteIc = document.getElementById("f-undi-ic");
-  if (voteIc && voteIc.value === attendeeIc) voteIc.value = "";
+  if (voteIc) {
+    if (voteIc.value === attendeeIc) voteIc.value = "";
+    voteIc.form?.classList.remove("ic-remembered"); // the field must be visible again for the next voter
+  }
   attendeeIc = "";
 }
 

@@ -100,7 +100,11 @@ function buildVoteForm() {
     }
   });
   const icInput = form.querySelector("#f-undi-ic");
-  if (icInput && attendeeIc) icInput.value = attendeeIc; // set by forms.js after attendance is sent
+  if (icInput && attendeeIc) {
+    icInput.value = attendeeIc; // set by forms.js after attendance is sent
+    form.classList.add("ic-remembered"); // hides the field behind one line (forms.css)
+  }
+  form.append(buildIcNote(form, icInput));
   const button = el("button", { class: "btn", type: "submit", text: "Hantar Undian" });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.append(el("p", { class: "vote-notice", text: VOTE_NOTICE }), button, status);
@@ -110,6 +114,16 @@ function buildVoteForm() {
     send();
   });
   return form;
+}
+
+// Shown only while the form has "ic-remembered"; "Tukar" brings the field back for a different IC.
+function buildIcNote(form, icInput) {
+  const change = el("button", { class: "btn-ghost", type: "button", text: "Tukar" });
+  change.addEventListener("click", () => {
+    form.classList.remove("ic-remembered");
+    icInput.focus();
+  });
+  return el("p", { class: "vote-ic-note" }, ["Guna No. K/P yang anda sahkan semasa daftar tadi.", change]);
 }
 
 function buildPickField(field) {
