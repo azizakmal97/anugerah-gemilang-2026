@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** P06 (⏸ P04 waiting on the owner's live test, A1 and A3)
-**Last update:** 2026-11-17, Opus 5.5 · medium (P06 started)
+**Active phase:** _none_ (⏸ P04 and ⏸ P06 waiting on the owner's live tests)
+**Last update:** 2026-11-17, Opus 5.5 · medium (P06 built and live, waiting on the owner's test)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -367,9 +367,9 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Verified:** lint, 18 tests, build, file sizes green; full-size crops of frame, plate and band checked; both emailed PDFs viewed.
 
-### 🟡 P06 — Best Dress vote (one man + one woman, private top 5)
+### ⏸ P06 — Best Dress vote (one man + one woman, private top 5)
 
-**Status:** in-progress
+**Status:** waiting on the owner's end-to-end test (bullet 5); code, form, sheet and web app are live
 **Spec:** specs/best-dress-vote.md (agreed 2026-11-17)
 **Model:** Opus 5.5 · medium (UI and the name-privacy parts), Sonnet 5.5 · medium for the scripts and tests
 
