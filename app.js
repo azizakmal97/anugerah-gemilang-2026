@@ -20,7 +20,7 @@ const MODES = {
   },
   hadir: {
     kicker: "Selamat datang!",
-    text: "Sahkan kehadiran anda sebelum masuk ke dewan. Ambil masa kurang seminit.",
+    text: "Sahkan kehadiran anda. Ambil masa kurang seminit.",
     form: "attendance",
   },
   selepas: {
