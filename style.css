@@ -11,6 +11,7 @@
   --sogan-deep: #4e2610;
   --cream: #f6eedb;
   --cream-muted: #d9cfb8;
+  --alert: #ffb4a2; /* form errors only: warm, not in the batik palette, so it reads as a warning */
 
   --font-display: "Cinzel", "Times New Roman", serif;
   --font-script: "Great Vibes", cursive;

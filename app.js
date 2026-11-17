@@ -1,6 +1,7 @@
 // ===== Settings: the only part to edit =====
 const SETTINGS = {
-  // Paste the "Send" link of each Google Form here. Empty = button shows "not ready".
+  // Paste the "Send" link of each Google Form here. The page posts answers to the same form;
+  // the link is also the fallback when a send fails. Empty = the page says "not ready".
   attendanceFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdeJcNFkM2DSM9uO1kvrXqTUH-1IUHxdPF0-GElP2HS6ReoRQ/viewform",
   feedbackFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLScePvaOIe15yw6V39JPmsJX9Iai1sI7z5mOh_DDlwRHzLy5vw/viewform",
   // All times are Malaysia time (UTC+8), written as UTC instants.
@@ -15,19 +16,17 @@ const MODES = {
     kicker: "Majlis bermula dalam",
     text: "",
     showCountdown: true,
-    note: "Butang Sahkan Kehadiran akan muncul di sini pada hari majlis, 5 Disember, mulai 12.00 tengah hari.",
+    note: "Borang pengesahan kehadiran akan muncul di sini pada hari majlis, 5 Disember, mulai 12.00 tengah hari.",
   },
   hadir: {
     kicker: "Selamat datang!",
-    text: "Sahkan kehadiran anda sebelum masuk ke dewan. Nama anda akan dicetak pada sijil, jadi isi dengan ejaan penuh.",
-    buttonLabel: "Sahkan Kehadiran",
-    formKey: "attendanceFormUrl",
+    text: "Sahkan kehadiran anda sebelum masuk ke dewan. Ambil masa kurang seminit.",
+    form: "attendance",
   },
   selepas: {
     kicker: "Terima kasih kerana hadir",
     text: "Isi borang maklum balas ringkas ini. Sijil penyertaan anda akan dihantar ke emel sejurus selepas borang dihantar.",
-    buttonLabel: "Isi maklum balas dan dapatkan sijil",
-    formKey: "feedbackFormUrl",
+    form: "feedback",
   },
 };
 
@@ -43,7 +42,6 @@ function renderAction(modeName) {
   const mode = MODES[modeName];
   const kicker = document.getElementById("action-kicker");
   const text = document.getElementById("action-text");
-  const button = document.getElementById("action-btn");
   const note = document.getElementById("action-note");
 
   kicker.textContent = mode.kicker;
@@ -53,23 +51,7 @@ function renderAction(modeName) {
   note.textContent = mode.note || "";
   note.hidden = !mode.note;
 
-  if (!mode.formKey) {
-    button.hidden = true;
-    return;
-  }
-  button.hidden = false;
-  const url = SETTINGS[mode.formKey];
-  if (url) {
-    button.href = url;
-    button.target = "_blank";
-    button.rel = "noopener";
-    button.textContent = mode.buttonLabel;
-    button.removeAttribute("aria-disabled");
-  } else {
-    button.removeAttribute("href");
-    button.textContent = "Pautan borang belum disediakan";
-    button.setAttribute("aria-disabled", "true");
-  }
+  renderForm(mode.form || null); // forms.js
 }
 
 function updateCountdown() {

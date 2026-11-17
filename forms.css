@@ -1,0 +1,128 @@
+/* ---------- In-page forms (inside the action card) ----------
+   Inputs reuse the countdown tile look (thin gold line on a sogan wash, 4px corners),
+   so the form reads as part of the same batik card, not a pasted-in widget. */
+
+.borang { margin-top: var(--space-3); text-align: left; }
+
+.event-form { display: grid; gap: var(--space-3); }
+
+.field { margin: 0; padding: 0; border: 0; min-width: 0; }
+
+.field > label,
+.field > legend {
+  display: block;
+  padding: 0;
+  font-weight: 600;
+  font-size: 1.02rem;
+  line-height: 1.35;
+  color: var(--cream);
+}
+
+.field-help {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--cream-muted);
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field select,
+.field textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--space-1);
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-size: 1rem; /* 16px keeps iPhone Safari from zooming in on focus */
+  color: var(--cream);
+  background: rgba(122, 63, 29, 0.25);
+  border: 1px solid rgba(214, 168, 78, 0.55);
+  border-radius: 4px;
+}
+.field textarea { resize: vertical; }
+.field select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 12px) 55%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 2.25rem; }
+.field select option { color: var(--navy-deep); background: var(--cream); }
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 3px solid var(--gold-light);
+  outline-offset: 2px;
+  border-color: var(--gold-light);
+}
+
+.field [aria-invalid="true"] { border-color: var(--alert); }
+
+/* Rating: five tiles like the countdown digits; the chosen one fills with gold. */
+.rating {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-top: var(--space-1);
+}
+.rating label { position: relative; display: block; cursor: pointer; }
+.rating input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.rating span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--gold-light);
+  background: rgba(122, 63, 29, 0.25);
+  border: 1px solid rgba(214, 168, 78, 0.55);
+  border-radius: 4px;
+}
+.rating input:checked + span {
+  color: var(--navy-deep);
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  border-color: var(--gold-light);
+}
+.rating input:focus-visible + span { outline: 3px solid var(--gold-light); outline-offset: 2px; }
+.rating input[aria-invalid="true"] + span { border-color: var(--alert); }
+
+.rating-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--cream-muted);
+}
+
+.field-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--alert);
+}
+
+/* The submit is the same gold pill as the page's one action; reset the button defaults. */
+button.btn {
+  margin-top: 0;
+  border: 0;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+button.btn:disabled { filter: grayscale(0.35) brightness(0.85); cursor: progress; }
+
+.form-status { margin: 0; font-size: 0.95rem; color: var(--cream-muted); text-align: center; }
+.form-status.is-error { color: var(--alert); font-weight: 600; }
+.form-status a { color: var(--gold-light); }
+
+.form-done { text-align: center; }
+.form-done p { margin: 0; font-size: 1.05rem; color: var(--cream); }
+.form-done:focus { outline: none; } /* focus is moved here only so screen readers read the thanks */
+.form-done .btn-ghost { margin-top: var(--space-3); font: inherit; cursor: pointer; }
