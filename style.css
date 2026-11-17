@@ -433,6 +433,17 @@ h2 {
 .btn-ghost:hover { background: rgba(214, 168, 78, 0.16); }
 .btn-ghost:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 3px; }
 
+/* ---------- Tentatif ---------- */
+.tentatif {
+  margin-top: var(--space-5);
+  text-align: center;
+}
+.tentatif p {
+  max-width: 34rem;
+  margin: 0 auto;
+  color: var(--cream-muted);
+}
+
 /* ---------- Program: gold thread timeline ---------- */
 .program {
   margin-top: var(--space-5);

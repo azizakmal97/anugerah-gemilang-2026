@@ -15,12 +15,12 @@ const MODES = {
     kicker: "Majlis bermula dalam",
     text: "",
     showCountdown: true,
-    note: "Pengesahan kehadiran dibuka pada 5 Disember, 12.00 tengah hari. Imbas kod QR di meja pendaftaran.",
+    note: "Butang Sahkan Kehadiran akan muncul di sini pada hari majlis, 5 Disember, mulai 12.00 tengah hari.",
   },
   hadir: {
     kicker: "Selamat datang!",
     text: "Sahkan kehadiran anda sebelum masuk ke dewan. Nama anda akan dicetak pada sijil, jadi isi dengan ejaan penuh.",
-    buttonLabel: "Sahkan kehadiran saya",
+    buttonLabel: "Sahkan Kehadiran",
     formKey: "attendanceFormUrl",
   },
   selepas: {
