@@ -1,7 +1,7 @@
 # Progress Tracker
 
 **Active phase:** none (next: `P01` Google Forms)
-**Last update:** 2026-11-17
+**Last update:** 2026-11-17 (closed; resume at P01 bullet 1)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -211,7 +211,9 @@ Every Friday:
 **Delivered:**
 - Batik event page live on GitHub Pages, three clock modes, official logos.
 - Template applied and adapted to a static site: node:test tests, check-site build, file budgets, CLAUDE.md.
-- antislop checker now reads linked local stylesheets (was reporting every class as undefined).
+- antislop checker now reads linked local stylesheets (was reporting every class as undefined); same fix pushed to vibe-coding-template (1622c58).
+- Plan confirmed by owner: one QR. Before: countdown. 5 Dec 12 pm: big "Sahkan Kehadiran" button, tentatif, hotel map. After 6 pm: "Isi maklum balas dan dapatkan sijil".
+- Official tentatif (AJK Protokol) added as a schedule section.
 
 **Safeguards added (plain words):**
 - If a Google Form link is missing, the button says so instead of going nowhere (no dead links).
