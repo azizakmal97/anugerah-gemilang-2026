@@ -78,6 +78,7 @@ function createBaseForm(title, description, confirmation) {
     .setDescription(description)
     .setConfirmationMessage(confirmation)
     .setCollectEmail(false)
+    .setRequireLogin(false)
     .setLimitOneResponsePerUser(false)
     .setAllowResponseEdits(false)
     .setShowLinkToRespondAgain(false);
