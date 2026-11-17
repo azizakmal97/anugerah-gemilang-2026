@@ -1,6 +1,7 @@
 # Every tab of the committee sheet in the event look
 
 Date: 2026-11-17 · Status: agreed (owner 2026-11-17: "boleh tak hias/design lawa2 setiap sheet lain yang ada")
+Done-check: 4 GAPS 2026-11-17 (A1 to A4 not built yet; covered by the "Sheet look" bullet of P07 in PROGRESS.md, which a separate session is running now. The only styled tab today is "Keputusan Best Dress", scripts/best-dress-results.gs styleResults.)
 
 ## Stories
 
