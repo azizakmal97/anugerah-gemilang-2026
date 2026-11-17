@@ -1,6 +1,6 @@
 # Draf borang Google (P01)
 
-Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Belum dibuat di Google Forms.
+Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Dibuat pada 2026-11-17 oleh `scripts/create-forms.gs`.
 
 ## 1. Borang Kehadiran
 
@@ -30,6 +30,9 @@ Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Belum dibuat di Goo
 | 3 | Bagaimana makanan dan tempat majlis? | - | Skala linear 1 hingga 5 | Ya | 1 = Kurang memuaskan; 5 = Sangat memuaskan |
 | 4 | Ada cadangan atau komen untuk majlis akan datang? | Pilihan. Boleh dibiarkan kosong. | Perenggan | Tidak | - |
 | 5 | Nama penuh | Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil. | Jawapan pendek | Ya | - |
-| 6 | Emel | Sijil anda akan dihantar ke emel ini. Semak ejaan emel sebelum menghantar. | Jawapan pendek (pengesahan: emel) | Ya | - |
+| 6 | No. Kad Pengenalan | Untuk dicetak pada sijil. Contoh: 900101-08-1234 | Jawapan pendek (pengesahan: corak 900101-08-1234) | Ya | - |
+| 7 | Emel | Sijil anda akan dihantar ke emel ini. Semak ejaan emel sebelum menghantar. | Jawapan pendek (pengesahan: emel) | Ya | - |
 
 **Mesej selepas hantar:** Terima kasih atas maklum balas anda. Sijil penyertaan akan sampai ke emel anda dalam masa terdekat. Jika tidak nampak, semak folder spam.
+
+No. Kad Pengenalan hanya muncul pada PDF sijil tetamu itu sendiri dan dalam hamparan respons. Ia tidak pernah dipaparkan di laman web.

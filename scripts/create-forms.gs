@@ -7,6 +7,10 @@
  * account that should own the forms, make a New project, paste this whole
  * file, Save, pick createForms in the function menu, press Run, allow the
  * permissions, then read the links in the Execution log.
+ *
+ * Feedback form already exists and still needs the IC question? Pick
+ * addIcQuestion instead and press Run. It adds "No. Kad Pengenalan" after
+ * "Nama penuh" and skips itself if the question is already there.
  */
 
 var CLINICS = [
@@ -20,6 +24,11 @@ var CLINICS = [
 ];
 
 var NAME_HELP = 'Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil.';
+var IC_TITLE = 'No. Kad Pengenalan';
+var IC_HELP = 'Untuk dicetak pada sijil. Contoh: 900101-08-1234';
+var IC_PATTERN = '^\\d{6}-?\\d{2}-?\\d{4}$';
+var IC_PATTERN_HELP = 'Format: 900101-08-1234';
+var FEEDBACK_TITLE = 'Maklum Balas Majlis Anugerah Gemilang 2026';
 var RATING_LOW = 'Kurang memuaskan';
 var RATING_HIGH = 'Sangat memuaskan';
 
@@ -72,7 +81,7 @@ function buildAttendanceForm() {
 
 function buildFeedbackForm() {
   var form = createBaseForm(
-    'Maklum Balas Majlis Anugerah Gemilang 2026',
+    FEEDBACK_TITLE,
     'Kongsi pandangan anda dalam kurang dua minit. Sijil penyertaan akan dihantar ke emel anda selepas borang dihantar.',
     'Terima kasih atas maklum balas anda. Sijil penyertaan akan sampai ke emel anda dalam masa terdekat. Jika tidak nampak, semak folder spam.'
   );
@@ -85,6 +94,7 @@ function buildFeedbackForm() {
     .setHelpText('Pilihan. Boleh dibiarkan kosong.')
     .setRequired(false);
   addShortText(form, 'Nama penuh', NAME_HELP);
+  addIcItem(form);
   addEmail(form, 'Emel', 'Sijil anda akan dihantar ke emel ini. Semak ejaan emel sebelum menghantar.');
   return form;
 }
@@ -119,4 +129,43 @@ function addRating(form, title) {
     .setBounds(1, 5)
     .setLabels(RATING_LOW, RATING_HIGH)
     .setRequired(true);
+}
+
+function addIcItem(form) {
+  var item = addShortText(form, IC_TITLE, IC_HELP);
+  item.setValidation(FormApp.createTextValidation()
+    .requireTextMatchesPattern(IC_PATTERN)
+    .setHelpText(IC_PATTERN_HELP)
+    .build());
+  return item;
+}
+
+// One-off for the feedback form that already exists. Safe to run twice.
+function addIcQuestion() {
+  var form = findFeedbackFormByTitle(FEEDBACK_TITLE);
+  var items = form.getItems();
+  var nameItem = null;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].getTitle() === IC_TITLE) {
+      Logger.log('Soalan "' + IC_TITLE + '" sudah ada. Tiada apa diubah.');
+      return;
+    }
+    if (items[i].getTitle() === 'Nama penuh') nameItem = items[i];
+  }
+  if (!nameItem) throw new Error('Soalan "Nama penuh" tiada dalam borang maklum balas.');
+
+  var newItem = addIcItem(form);
+  form.moveItem(newItem.getIndex(), nameItem.getIndex() + 1);
+  Logger.log('Siap. Soalan "' + IC_TITLE + '" ditambah selepas "Nama penuh".');
+  Logger.log('Pautan sunting borang maklum balas: ' + form.getEditUrl());
+}
+
+// The d/e/ id in the published link is not the form id, so find it by title in Drive.
+function findFeedbackFormByTitle(title) {
+  var files = DriveApp.getFilesByType(MimeType.GOOGLE_FORMS);
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getName() === title) return FormApp.openById(file.getId());
+  }
+  throw new Error('Borang "' + title + '" tiada dalam akaun ini.');
 }
