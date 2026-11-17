@@ -28,7 +28,14 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { -webkit-text-size-adjust: 100%; background: var(--navy-deep); }
+/* clip, not just hidden: phones widen the layout viewport to fit anything that pokes out
+   (the medallion is wider than the screen), which pushes the whole page off-centre. */
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--navy-deep);
+  overflow-x: hidden;
+  overflow-x: clip;
+}
 
 body {
   margin: 0;
@@ -40,6 +47,7 @@ body {
   font-size: 1.0625rem;
   line-height: 1.6;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ---------- Ambient layers ---------- */
@@ -135,6 +143,7 @@ main {
 .hero {
   position: relative;
   text-align: center;
+  overflow-x: clip; /* keep the oversized medallion inside the screen width */
 }
 .hero-content { position: relative; z-index: 1; }
 
@@ -155,9 +164,9 @@ main {
   transform-box: view-box;
   transform-origin: 200px 200px;
 }
-.medallion .ring-a { animation: spin 140s linear infinite; }
-.medallion .ring-b { animation: spin 90s linear infinite reverse; }
-.medallion .ring-c { animation: spin 60s linear infinite; }
+.medallion .ring-a { animation: spin 140s linear infinite; } /* antislop-allow R-19: owner asked for an animated batik hero; slow brand motif, stops under reduced motion */
+.medallion .ring-b { animation: spin 90s linear infinite reverse; } /* antislop-allow R-19: owner asked for an animated batik hero; slow brand motif, stops under reduced motion */
+.medallion .ring-c { animation: spin 60s linear infinite; } /* antislop-allow R-19: owner asked for an animated batik hero; slow brand motif, stops under reduced motion */
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .logos {
