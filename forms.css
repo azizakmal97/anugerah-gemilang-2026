@@ -91,6 +91,14 @@
 .rating input:focus-visible + span { outline: 3px solid var(--gold-light); outline-offset: 2px; }
 .rating input[aria-invalid="true"] + span { border-color: var(--alert); }
 
+/* Peranan: two word tiles, read in the body face so "Urus setia" stays legible. */
+.rating-choice { grid-template-columns: repeat(2, 1fr); }
+.rating-choice span {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
 .rating-ends {
   display: flex;
   justify-content: space-between;

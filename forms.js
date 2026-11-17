@@ -6,6 +6,7 @@
 const NAME_HELP = "Eja nama anda dengan betul kerana nama ini akan dicetak pada sijil.";
 const ATTENDANCE_NAME_HELP = "Tulis nama penuh anda.";
 const RATING_ENDS = ["Kurang memuaskan", "Sangat memuaskan"];
+const ROLES = ["Peserta", "Urus setia"]; // picks which e-sijil the guest gets
 const CLINICS = ["KP Tapah", "KP Slim River", "KP Sungkai", "KP Bidor", "KP Tanjung Malim", "OMFS HSR", "Paeds Dental HSR"];
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const IC_PATTERN = /^\d{6}-?\d{2}-?\d{4}$/; // same rule as the Google Form
@@ -18,7 +19,9 @@ const FORMS = {
     thanks: "Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!",
     fields: [
       { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name" },
+      { entry: "718418112", kind: "ic", label: "No. Kad Pengenalan", help: "Untuk semakan sijil anda. Contoh: 900101-08-1234" },
       { entry: "1345289916", kind: "select", label: "Klinik atau unit", options: CLINICS },
+      { entry: "75149903", kind: "choice", label: "Peranan", options: ROLES },
       { entry: "1638971287", kind: "email", label: "Emel", help: "Gunakan emel yang anda semak." },
     ],
   },
@@ -46,6 +49,7 @@ function validateField(field, rawValue) {
     if (field.optional) return "";
     if (field.kind === "select") return "Sila pilih klinik atau unit.";
     if (field.kind === "rating") return "Sila pilih satu nilai, 1 hingga 5.";
+    if (field.kind === "choice") return "Sila pilih peranan anda.";
     return "Sila isi ruangan ini.";
   }
   if (field.kind === "email" && !EMAIL_PATTERN.test(value)) return "Emel ini tidak sah. Contoh: nama@moh.gov.my";
@@ -152,6 +156,7 @@ function buildField(field) {
   const describedBy = [helpNode && `${id}-help`, `${id}-err`].filter(Boolean).join(" ");
 
   if (field.kind === "rating") return buildRating(field, errorNode, describedBy);
+  if (field.kind === "choice") return buildChoice(field, errorNode, describedBy);
 
   const control = buildControl(field, id, describedBy);
   const wrapper = el("div", { class: "field", "data-entry": field.entry });
@@ -189,12 +194,23 @@ function buildRating(field, errorNode, describedBy) {
   return el("fieldset", { class: "field", "data-entry": field.entry }, [el("legend", { text: field.label }), scale, ends, errorNode]);
 }
 
+// Same gold tiles as the rating, one per option, for a short either-or answer.
+function buildChoice(field, errorNode, describedBy) {
+  const tiles = el("div", { class: "rating rating-choice" });
+  field.options.forEach((option) => {
+    const input = el("input", { type: "radio", name: field.entry, value: option, "aria-describedby": describedBy });
+    tiles.append(el("label", {}, [input, el("span", { text: option })]));
+  });
+  return el("fieldset", { class: "field", "data-entry": field.entry }, [el("legend", { text: field.label }), tiles, errorNode]);
+}
+
 function readValues(spec, form) {
   const values = {};
   spec.fields.forEach((field) => {
     const checked = form.querySelector(`[name="${field.entry}"]:checked`);
     const control = form.querySelector(`[name="${field.entry}"]`);
-    values[field.entry] = field.kind === "rating" ? (checked ? checked.value : "") : control.value;
+    const isRadio = field.kind === "rating" || field.kind === "choice";
+    values[field.entry] = isRadio ? (checked ? checked.value : "") : control.value;
   });
   return values;
 }
