@@ -390,6 +390,8 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - One vote per IC (the first), only guests on the attendance list count, self-picks and late votes are dropped, and a double tap sends once (idempotency).
 - Two votes at the same moment cannot overwrite the results with an older count (lock).
 
+**Sheet tabs renamed (owner 2026-11-17):** in "Anugerah Gemilang 2026 - Respons", "Form responses 1" is now "Kehadiran", "Form responses 2" is now "Maklum Balas". No script looks tabs up by those names (they find forms by title and the results tab as "Keputusan Best Dress"), so nothing broke. "Sheet1" was not opened or changed.
+
 **Waiting on owner:**
 - Gemini proofread of the vote copy (quota out until about 2026-11-23).
 - Look at the vote card on your phone (`?mod=hadir`): wording and feel.
