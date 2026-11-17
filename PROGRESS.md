@@ -423,7 +423,7 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 
 **Waiting on owner:**
 - Gemini proofread for new copy (quota out until about 2026-11-23).
-- Note for the owner: their own November attendance row (IC 970718...) will not count on the day. They register again on 5 Dec like everyone else.
+- Owner said 2026-11-17 they deleted their own November attendance record. Check the attendance form's Responses too (a deleted sheet row leaves the form response the matching reads; memory `test-cleanup-form-responses.md`) and tell the owner if one is left.
 
 ## Resume note (2026-11-17, /close)
 
