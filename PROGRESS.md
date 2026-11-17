@@ -1,7 +1,7 @@
 # Progress Tracker
 
-**Active phase:** _none_ (⏸ P04 waiting for Opus 5.5 · high via P05, then the email test)
-**Last update:** 2026-11-17, Opus 5.5 · medium (P04 started by /autonomous; P05 deferred, needs high effort)
+**Active phase:** _none_ (⏸ P04 waiting on the owner's live test, A1 and A3)
+**Last update:** 2026-11-17, Opus 5.5 · medium (owner override: P05 done, P04 waiting on the owner's live test)
 **Last commit:** _none yet_
 **Plan reference:** `AUDIT_AND_ROADMAP.md` (if exists) OR project README roadmap section.
 **Model strategy:** the global rule `~/.claude/CLAUDE.md` section 1 (without it: `AGENTS.md` → "Model Selection per Task"); this project's overrides in `CLAUDE.md` §22. Every phase below MUST carry an explicit `Model:` and `Effort:` line.
@@ -306,7 +306,7 @@ Every Friday:
 
 ### ⏸ P04 — e-sijil only for people who really came
 
-**Status:** waiting for Opus 5.5 · high (urus setia design, in P05), then Sonnet 5.5 · low (email test)
+**Status:** waiting on owner: end-to-end test on the live page (A1, A3)
 **Started:** 2026-11-17
 **Spec:** specs/attendee-only-sijil.md
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
@@ -320,28 +320,41 @@ Every Friday:
 - [x] `scripts/create-forms.gs`: one-off `addAttendanceQuestions` adds required "No. Kad Pengenalan" (same rule as feedback) and "Peranan" (Peserta / Urus setia) to the attendance form, safe to run twice; update `docs/forms.md` (Model: Sonnet 5.5 · medium)
 - [x] `scripts/e-sijil.gs`: in `onFeedbackSubmit`, look up the attendance answers (IC digits first, email as fallback); matched → sijil for the role chosen there; unmatched → short "tiada dalam senarai kehadiran" email, no sijil (Model: Sonnet 5.5 · medium; email copy Opus 5.5 · medium)
 - [x] (run 2026-11-17; entry ids IC 718418112, Peranan 75149903) Run `addAttendanceQuestions` in Apps Script (Claude in Chrome, /u/1), read the two new entry ids, add both fields to `FORMS.attendance` in `forms.js` + tests (Model: Sonnet 5.5 · low)
-- [ ] A7: Urus setia sijil background + template: moved into P05 (needs Opus 5.5 · high for the new look); the script picks the template by role (Model: Opus 5.5 · high)
-- [ ] A1, A2, A3: Test with the owner's email, matched by IC, matched by email only, matched urus setia, unmatched (Model: Sonnet 5.5 · low)
+- [x] (76d2e00 → 2573d52, run 2026-11-17) Owner 2026-11-17: no email on attendance. Emel dropped from `forms.js`, `buildAttendanceForm`, `docs/forms.md`; `removeAttendanceEmail` run in Apps Script; `findAttendee` matches IC digits only; spec A2 removed (Model: Opus 5.5 · medium, owner override)
+- [x] A7: urus setia template built from the P05 background, A4 by hand, fitted; `sendTestUrusetia` PDF checked (Model: Opus 5.5 · medium, owner override)
+- [ ] A1, A3: owner test on the live page: confirm attendance with IC (`?mod=hadir`), send feedback with the same IC (`?mod=selepas`), sijil arrives; feedback with an unknown IC gets the "tiada dalam senarai kehadiran" email. Delete the test rows after (Model: Sonnet 5.5 · low)
 
-**Resume note (2026-11-17):** code, live site and Apps Script are all updated: the e-sijil now goes only to listed attendees. Left: (1) P05 makes `sijil-urusetia-latar-A4.png`, then run `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestUrusetia`. Until then an urus setia guest's feedback stops with "Templat urus setia belum dibuat" and Google mails the owner. (2) End-to-end test: confirm attendance on the live page with the owner's email and IC, send feedback, check the sijil arrives; send feedback with an unknown IC and email, check the "kehadiran tidak ditemui" email. Delete the test rows after.
+**Resume note (2026-11-17, later):** code, live site, Apps Script and both templates are done; attendance has no email, matching is by IC only. Only the owner's live test (A1, A3) is left, then re-run /done-check and mark P04 done.
 Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate forms + sheet; all three trashed (Drive trash, created 13:18), live forms untouched. Finders now skip trashed files.
 
 **Safeguards added (plain words):**
 - Someone who fills feedback without confirming attendance gets no sijil, only a polite email to contact the urus setia.
-- A one-digit IC typo does not cost a real guest the sijil: the email is checked too.
+- A guest is matched by IC digits only, typed with or without dashes (owner 2026-11-17 dropped the email question, so a wrong IC now means no sijil and the polite email).
 - If the urus setia template is missing, the script stops and Google emails the owner, instead of sending the wrong sijil.
 
 **Waiting on owner:**
-- Gemini proofread owed for the new Malay lines (attendance IC help, urus setia email, "tiada dalam senarai" email); quota out until about 2026-11-23.
+- Test A1 and A3 on the live page (links in the bullet above), then tell Claude the result.
+- Gemini proofread owed for the new Malay lines (attendance IC help, urus setia email, "tiada dalam senarai" email, now "No. Kad Pengenalan anda tidak ditemui"); quota out until about 2026-11-23.
 
-### 🟡 P05 — Redesign the e-sijil in real batik (peserta + urus setia)
+### ✅ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
 
-**Status:** in-progress
+**Status:** done
 **Started:** 2026-11-17
+**Completed:** 2026-11-17
+**Commits:** 3f7ad21 → 1e0d647
 **Model:** Opus 5.5 · **Effort:** medium (owner override: owner said "guna medium", 2026-11-17, for the new look normally tagged high)
-**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd, AND the whole sijil "doesn't look like batik theme". So this is a redesign, not a nudge: real batik on the certificate (kawung field, parang border bands, pucuk rebung edges, sogan brown with the gold), matching the website's motifs; theme name placed as part of the design or removed. Two versions: peserta and urus setia.
+**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd, AND the whole sijil "doesn't look like batik theme". So this is a redesign, not a nudge. Two versions: peserta and urus setia.
 
 **Plan:**
-- [ ] Redesign `print/make_sijil.py`: prominent batik, name box (top 279 pt, h 57) and IC box (top 334.5 pt) kept clear, signature kept; render `hi-tea/sijil/sijil-latar-A4.png` (Model: Opus 5.5 · medium, owner override)
-- [ ] Urus setia version `hi-tea/sijil/sijil-urusetia-latar-A4.png`: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia" (Model: Opus 5.5 · medium, owner override)
-- [ ] Copy both PNGs to `hi-tea/`; Apps Script: paste code, `removeAttendanceEmail`, refresh peserta background + `fitTemplate`, `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestSijil`, `sendTestUrusetia` (Model: Opus 5.5 · medium, owner override)
+- [x] Redesign `print/make_sijil.py` + `print/sijil.template.html`: sogan parang cloth frame, pucuk rebung rows top and bottom, kawung field, kawung knots at the corners, a dark name plate edged in rebung, one parang band above the signature. Motifs are the website's own tiles. "Nusantara Batik" line removed: the cloth carries the theme. Name box (top 279 pt, h 57) and IC box (top 334.5 pt) unchanged (Model: Opus 5.5 · medium, owner override)
+- [x] Urus setia version `sijil-urusetia-latar-A4.png`: SIJIL PENGHARGAAN, "Setinggi-tinggi penghargaan kepada", "atas sumbangan sebagai urus setia" (Model: Opus 5.5 · medium, owner override)
+- [x] Both PNGs in `hi-tea/sijil/` and `hi-tea/` (Drive). Apps Script: code pasted at 1e0d647, `removeAttendanceEmail`, `refreshBackground` (new: swaps the peserta image in place, then fits), `setupUrusetiaTemplate`, A4 by hand, `fitUrusetiaTemplate`, `sendTestSijil`, `sendTestUrusetia`. Both PDFs checked in Gmail: A4, new batik, name and IC inside the plate (Model: Opus 5.5 · medium, owner override)
+
+**Delivered:** urus setia template "Templat e-Sijil Urus Setia Anugerah Gemilang 2026" in PKPD BP/hi-tea. Previews: `hi-tea/sijil/_sijil-latar-A4-contoh-nama.png`, `_sijil-urusetia-latar-A4-contoh-nama.png`.
+
+**Waiting on owner:**
+- Look at the two test sijil in your inbox. Say if you want any change.
+- Gemini proofread owed for "Setinggi-tinggi penghargaan kepada" and "atas sumbangan sebagai urus setia" (quota out until about 2026-11-23).
+- Old preview `hi-tea/sijil/_sijil-contoh-nama.png` is stale; delete it if you like (Claude's recycle script cannot reach J:).
+
+**Verified:** lint, 18 tests, build, file sizes green; full-size crops of frame, plate and band checked; both emailed PDFs viewed.
