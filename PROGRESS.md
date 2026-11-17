@@ -235,11 +235,11 @@ Every Friday:
 **Plan for this phase:**
 - [x] Attendance form: nama penuh (as on certificate), klinik, emel. Nothing else.
 - [x] Feedback form: short rating + comments, plus emel for the e-sijil.
-- [x] Paste both "Send" links into  in ; test now sets an empty link itself.
+- [x] Paste both "Send" links into `SETTINGS` in `app.js`; test now sets an empty link itself.
 - [ ] Print QR to the live URL for the registration desk.
 
 **Delivered so far:**
-- Both forms built 2026-11-17 by  on azizakmal@moh.gov.my (Apps Script project "Untitled project"), saved in Drive folder PKPD BP/hi-tea with one response sheet "Anugerah Gemilang 2026 - Respons".
+- Both forms built 2026-11-17 by `scripts/create-forms.gs` on azizakmal@moh.gov.my (Apps Script project "Untitled project"), saved in Drive folder PKPD BP/hi-tea with one response sheet "Anugerah Gemilang 2026 - Respons".
 - Both forms open without sign-in (checked logged-out with curl).
 
 **Waiting on owner:**
