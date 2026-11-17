@@ -438,9 +438,45 @@ h2 {
   margin-top: var(--space-5);
   text-align: center;
 }
-.tentatif p {
-  max-width: 34rem;
+.schedule {
+  list-style: none;
+  max-width: 36rem;
   margin: 0 auto;
+  padding: 0;
+  text-align: left;
+}
+.schedule > li {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 1px solid rgba(214, 168, 78, 0.3);
+}
+.schedule time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  color: var(--gold-light);
+}
+.schedule .slot {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--cream);
+}
+.schedule ul {
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cream-muted);
+}
+.schedule ul li { padding: 0.1rem 0; }
+/* Lucky draws are what most guests wait for, so they get the gold. */
+.schedule ul li.draw { color: var(--gold); font-weight: 600; }
+.schedule-note {
+  margin: var(--space-2) 0 0;
+  font-size: 0.95rem;
   color: var(--cream-muted);
 }
 
