@@ -239,8 +239,7 @@ function fillCertificate(copyId, cleanName, formattedIc) {
   var presentation = SlidesApp.openById(copyId);
   var slide = presentation.getSlides()[0];
   var lines = nameLines(cleanName);
-  addCenteredText(slide, NAME_BOX, lines.join('
-'), {
+  addCenteredText(slide, NAME_BOX, lines.join('\n'), {
     family: 'Cinzel',
     bold: true,
     size: nameFontSize(lines),
