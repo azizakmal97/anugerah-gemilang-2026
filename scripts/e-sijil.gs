@@ -238,10 +238,12 @@ function sendSijil(name, ic, email, role) {
 function fillCertificate(copyId, cleanName, formattedIc) {
   var presentation = SlidesApp.openById(copyId);
   var slide = presentation.getSlides()[0];
-  addCenteredText(slide, NAME_BOX, cleanName, {
+  var lines = nameLines(cleanName);
+  addCenteredText(slide, NAME_BOX, lines.join('
+'), {
     family: 'Cinzel',
     bold: true,
-    size: nameFontSize(cleanName),
+    size: nameFontSize(lines),
     color: NAME_COLOR
   });
   if (formattedIc) {
@@ -259,7 +261,11 @@ function addCenteredText(slide, box, text, style) {
   var shape = slide.insertTextBox(text, box.left, box.top, box.width, box.height);
   shape.setContentAlignment(SlidesApp.ContentAlignment.MIDDLE);
   var range = shape.getText();
-  range.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
+  range.getParagraphStyle()
+    .setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER)
+    .setLineSpacing(100)
+    .setSpaceAbove(0)
+    .setSpaceBelow(0);
   range.getTextStyle()
     .setFontFamily(style.family)
     .setBold(style.bold)
@@ -268,12 +274,47 @@ function addCenteredText(slide, box, text, style) {
   return shape;
 }
 
-// Shrinks long names so they stay on one line and clear of the kawung knots at both ends of the
-// name plate (P05 design): the text must fit NAME_CLEAR_WIDTH, not the whole box. 0.75 is Cinzel bold
-// capitals per point of size, measured on real long names (0.58 to 0.71) plus a margin.
-function nameFontSize(cleanName) {
-  var fitted = NAME_CLEAR_WIDTH / (Math.max(cleanName.length, 1) * 0.75);
-  return Math.round(Math.min(NAME_MAX_SIZE, fitted) * 2) / 2;
+// A name that would print smaller than NAME_TWO_LINE_BELOW on one line goes on two lines
+// (owner 2026-11-17: bigger and easier to read). The break goes before BIN, BINTI, A/L or A/P when
+// the name has one, so the guest's own name stays on line 1; otherwise at the space nearest the middle.
+var NAME_TWO_LINE_BELOW = 17;
+var NAME_TWO_LINE_MAX = 16; // two lines of Cinzel at 16 pt fill the 57 pt name box with a little air
+var NAME_BREAK_WORDS = ['BIN', 'BINTI', 'A/L', 'A/P'];
+
+function nameLines(cleanName) {
+  if (oneLineSize(cleanName.length) >= NAME_TWO_LINE_BELOW) return [cleanName];
+  var words = cleanName.split(/\s+/);
+  if (words.length < 2) return [cleanName];
+  var breakAt = -1;
+  for (var i = 1; i < words.length; i++) {
+    if (NAME_BREAK_WORDS.indexOf(words[i]) !== -1) { breakAt = i; break; }
+  }
+  if (breakAt === -1) breakAt = middleBreak(words);
+  return [words.slice(0, breakAt).join(' '), words.slice(breakAt).join(' ')];
+}
+
+function middleBreak(words) {
+  var total = words.join(' ').length;
+  var best = 1;
+  var bestGap = Infinity;
+  for (var i = 1; i < words.length; i++) {
+    var gap = Math.abs(words.slice(0, i).join(' ').length - total / 2);
+    if (gap < bestGap) { bestGap = gap; best = i; }
+  }
+  return best;
+}
+
+// Keeps each line clear of the kawung knots at both ends of the name plate (P05 design): a line
+// must fit NAME_CLEAR_WIDTH. 0.75 is Cinzel bold capitals per point of size, measured on real long
+// names (0.58 to 0.71) plus a margin.
+function oneLineSize(letters) {
+  return NAME_CLEAR_WIDTH / (Math.max(letters, 1) * 0.75);
+}
+
+function nameFontSize(lines) {
+  var longest = Math.max.apply(null, lines.map(function (line) { return line.length; }));
+  var cap = lines.length > 1 ? NAME_TWO_LINE_MAX : NAME_MAX_SIZE;
+  return Math.floor(Math.min(cap, oneLineSize(longest)) * 2) / 2;
 }
 
 function formatIc(ic) {
