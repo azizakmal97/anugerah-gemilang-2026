@@ -322,6 +322,7 @@ Every Friday:
 - [x] (run 2026-11-17; entry ids IC 718418112, Peranan 75149903) Run `addAttendanceQuestions` in Apps Script (Claude in Chrome, /u/1), read the two new entry ids, add both fields to `FORMS.attendance` in `forms.js` + tests (Model: Sonnet 5.5 · low)
 - [x] (76d2e00 → 2573d52, run 2026-11-17) Owner 2026-11-17: no email on attendance. Emel dropped from `forms.js`, `buildAttendanceForm`, `docs/forms.md`; `removeAttendanceEmail` run in Apps Script; `findAttendee` matches IC digits only; spec A2 removed (Model: Opus 5.5 · medium, owner override)
 - [x] A7: urus setia template built from the P05 background, A4 by hand, fitted; `sendTestUrusetia` PDF checked (Model: Opus 5.5 · medium, owner override)
+- [x] (e396d8f, run 2026-11-17) A8: owner block list added. `onFeedbackSubmit` skips any IC listed in the Script property `BLOCKED_ICS` (no sijil, no email). The list lives only in Apps Script settings, never in this repo. Dry run in Apps Script: listed IC true, other IC false; temporary function removed (Model: Opus 5.5 · low)
 - [ ] A1, A3: owner test on the live page: confirm attendance with IC (`?mod=hadir`), send feedback with the same IC (`?mod=selepas`), sijil arrives; feedback with an unknown IC gets the "tiada dalam senarai kehadiran" email. Delete the test rows after (Model: Sonnet 5.5 · low)
 
 **Resume note (2026-11-17, later):** code, live site, Apps Script and both templates are done; attendance has no email, matching is by IC only. Only the owner's live test (A1, A3) is left, then re-run /done-check and mark P04 done.
@@ -331,6 +332,7 @@ Incident 2026-11-17: a mis-picked function ran `createForms` and made duplicate 
 - Someone who fills feedback without confirming attendance gets no sijil, only a polite email to contact the urus setia.
 - A guest is matched by IC digits only, typed with or without dashes (owner 2026-11-17 dropped the email question, so a wrong IC now means no sijil and the polite email).
 - If the urus setia template is missing, the script stops and Google emails the owner, instead of sending the wrong sijil.
+- Someone on the owner's block list gets no sijil and no email; their IC is kept in Apps Script settings only, so it never appears in this public repo.
 
 **Waiting on owner:**
 - Test A1 and A3 on the live page (links in the bullet above), then tell Claude the result.

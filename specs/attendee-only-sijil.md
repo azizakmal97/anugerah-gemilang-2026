@@ -1,7 +1,7 @@
 # e-sijil only for people who came, by role
 
 Date: 2026-11-17 · Status: agreed (owner choices 2026-11-17: match against attendance only, no approval step, trust the chosen role; later the same day: no email on attendance, match by IC only)
-Done-check: pending for A8 (owner block list, added 2026-11-17). Before that: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A7 met; re-checked after hiding the form instruction once sent and the feedback thank-you now saying the sijil needs the IC on the attendance list, which touch no spec item)
+Done-check: 2 GAPS 2026-11-17 (A1, A3 not yet tested end to end on the live page; A2 removed by owner; A4 to A8 met; A8 checked by a dry run in Apps Script, listed IC true and other IC false, no automated test since Apps Script code has none)
 
 ## Stories
 
