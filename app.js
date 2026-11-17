@@ -1,8 +1,8 @@
 // ===== Settings: the only part to edit =====
 const SETTINGS = {
   // Paste the "Send" link of each Google Form here. Empty = button shows "not ready".
-  attendanceFormUrl: "",
-  feedbackFormUrl: "",
+  attendanceFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdeJcNFkM2DSM9uO1kvrXqTUH-1IUHxdPF0-GElP2HS6ReoRQ/viewform",
+  feedbackFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLScePvaOIe15yw6V39JPmsJX9Iai1sI7z5mOh_DDlwRHzLy5vw/viewform",
   // All times are Malaysia time (UTC+8), written as UTC instants.
   attendanceOpensAt: Date.UTC(2026, 11, 5, 4, 0),  // 5 Dec 2026, 12.00 pm
   eventStartsAt: Date.UTC(2026, 11, 5, 6, 0),      // 5 Dec 2026, 2.00 pm
