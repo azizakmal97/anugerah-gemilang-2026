@@ -30,12 +30,28 @@ function createForms() {
 
   attendanceForm.setDestination(FormApp.DestinationType.SPREADSHEET, spreadsheet.getId());
   feedbackForm.setDestination(FormApp.DestinationType.SPREADSHEET, spreadsheet.getId());
+  moveToEventFolder([spreadsheet.getId(), attendanceForm.getId(), feedbackForm.getId()]);
 
   Logger.log('Pautan borang kehadiran (hantar kepada Claude): ' + attendanceForm.getPublishedUrl());
   Logger.log('Pautan borang maklum balas (hantar kepada Claude): ' + feedbackForm.getPublishedUrl());
   Logger.log('Pautan sunting borang kehadiran: ' + attendanceForm.getEditUrl());
   Logger.log('Pautan sunting borang maklum balas: ' + feedbackForm.getEditUrl());
   Logger.log('Pautan hamparan respons: ' + spreadsheet.getUrl());
+}
+
+// Files land in My Drive root; move them to the event folder (My Drive/PKPD BP/hi-tea) if this account has it.
+function moveToEventFolder(fileIds) {
+  var folders = DriveApp.getFoldersByName('hi-tea');
+  while (folders.hasNext()) {
+    var folder = folders.next();
+    var parents = folder.getParents();
+    if (parents.hasNext() && parents.next().getName() === 'PKPD BP') {
+      fileIds.forEach(function (id) { DriveApp.getFileById(id).moveTo(folder); });
+      Logger.log('Disimpan dalam folder: ' + folder.getUrl());
+      return;
+    }
+  }
+  Logger.log('Folder PKPD BP/hi-tea tiada dalam akaun ini; fail kekal di My Drive.');
 }
 
 function buildAttendanceForm() {
