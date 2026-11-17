@@ -309,7 +309,7 @@ Every Friday:
 **Model:** Sonnet 5.5 · **Effort:** medium (Apps Script + site), Opus 5.5 · medium for any copy
 **Why (owner 2026-11-17):** a shared QR would let someone who did not come fill feedback and get a sijil.
 **Owner choice (2026-11-17): A only** (a hall code can be passed on too). Send the sijil only when the feedback email or IC is also in the attendance tab; unmatched answers wait in a list for the committee to approve.
-**Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Open question for the spec: how a person is marked urusetia. Recommended: a "Urusetia" tab in the response sheet where the committee lists emails (not a choice on the form, which anyone could tick). Urusetia sijil needs its own wording (e.g. SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia") and its own background, designed on Opus.
+**Also (owner 2026-11-17): separate sijil for peserta and urusetia.** Decided by Claude (owner 2026-11-17: "just make a choice", no name list): a required "Peranan" choice (Peserta / Urus setia) on the attendance form. Peserta matched in the attendance tab get the peserta sijil automatically. Anyone who chose Urus setia is held in an "Untuk kelulusan" list; the owner approves, then the urus setia sijil is sent. So ticking Urus setia alone gets nothing. Urus setia sijil: SIJIL PENGHARGAAN, "atas sumbangan sebagai urus setia", own background.
 
 **Plan (after the choice):**
 - [ ] Spec with the owner's choice (Model: Opus 5.5 · medium)
@@ -317,10 +317,10 @@ Every Friday:
 - [ ] Urusetia sijil: design the second background + template, pick template by the Urusetia list (Model: Opus 5.5 · medium for design, Sonnet 5.5 · medium for script)
 - [ ] Test with the owner's email, both matched and unmatched (Model: Sonnet 5.5 · low)
 
-### ⬜ P05 — Fix "Nusantara Batik" line on the e-sijil
+### ⬜ P05 — Redesign the e-sijil in real batik (peserta + urus setia)
 
 **Model:** Opus 5.5 · **Effort:** medium (edit to a settled design)
-**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd.
+**Owner 2026-11-17:** the script line "Nusantara Batik" under the venue looks hanging and odd, AND the whole sijil "doesn't look like batik theme". So this is a redesign, not a nudge: real batik on the certificate (kawung field, parang border bands, pucuk rebung edges, sogan brown with the gold), matching the website's motifs; theme name placed as part of the design or removed. Two versions: peserta and urus setia. Model: Opus 5.5 · high (new look).
 
 **Plan:**
 - [ ] Rework or remove that line in `print/make_sijil.py` (e.g. move the theme into the event block, or drop it), re-render `hi-tea/sijil/sijil-latar-A4.png`, show the owner (Model: Opus 5.5 · medium)
