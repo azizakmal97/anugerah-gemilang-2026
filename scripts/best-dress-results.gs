@@ -134,8 +134,8 @@ function writeCurrentResults() {
     var answers = readAnswers(response);
     return { timestamp: response.getTimestamp().getTime(), ic: answers['No. Kad Pengenalan'], name: answers['Nama penuh'] };
   });
-  // isEventTime, not isVoteOpen: VOTE_TEST_UNTIL only opens the search for a preview, it never counts.
-  var tally = tallyVotes(votes, attendees, isEventTime);
+  // The day, plus the committee's test window while it is set (countedTimeRule in best-dress.gs).
+  var tally = tallyVotes(votes, attendees, countedTimeRule());
   writeResults(openResultsTab(), tally, new Date());
 }
 

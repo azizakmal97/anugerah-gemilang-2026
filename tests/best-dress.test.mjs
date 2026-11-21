@@ -53,13 +53,33 @@ test("search is closed before 12.00 pm and from 6.00 pm on 5 Dec", () => {
   assert.deepEqual(searchReply("siti", CLOSE - 1).names, ["Siti Aminah"]);
 });
 
-test("VOTE_TEST_UNTIL opens search early and closes it by itself", () => {
-  const properties = { VOTE_TEST_UNTIL: "2026-11-20T23:00:00+08:00" };
-  const { searchReply } = loadSearch({ attendees: [guest("Siti Aminah")], properties });
-  const testUntil = Date.parse(properties.VOTE_TEST_UNTIL);
-  assert.equal(searchReply("siti", testUntil - 1).open, true);
-  assert.equal(searchReply("siti", testUntil).open, false);
-  assert.equal(loadSearch({ properties: { VOTE_TEST_UNTIL: "bukan tarikh" } }).searchReply("siti", OPEN - 1).open, false);
+const TEST_WINDOW = { TEST_FROM: "2026-11-21T12:00:00+08:00", VOTE_TEST_UNTIL: "2026-11-30T23:59:00+08:00" };
+const TEST_FROM = Date.parse(TEST_WINDOW.TEST_FROM);
+const TEST_UNTIL = Date.parse(TEST_WINDOW.VOTE_TEST_UNTIL);
+
+test("the committee's test window opens search early and closes it by itself", () => {
+  const { searchReply } = loadSearch({ properties: TEST_WINDOW });
+  assert.equal(searchReply("siti", TEST_FROM - 1).open, false);
+  assert.equal(searchReply("siti", TEST_FROM).open, true);
+  assert.equal(searchReply("siti", TEST_UNTIL - 1).open, true);
+  assert.equal(searchReply("siti", TEST_UNTIL).open, false);
+});
+
+test("a half-set or broken test window opens nothing", () => {
+  const onlyUntil = { VOTE_TEST_UNTIL: TEST_WINDOW.VOTE_TEST_UNTIL };
+  assert.equal(loadSearch({ properties: onlyUntil }).searchReply("siti", TEST_FROM + 1).open, false);
+  const broken = { TEST_FROM: "bukan tarikh", VOTE_TEST_UNTIL: TEST_WINDOW.VOTE_TEST_UNTIL };
+  assert.equal(loadSearch({ properties: broken }).searchReply("siti", TEST_FROM + 1).open, false);
+});
+
+test("attendance sent inside the test window is searchable only while the window is set", () => {
+  const attendees = [
+    guest("Siti Ujian", "900101084444", TEST_FROM + 60 * 1000),
+    guest("Siti Lama", "900101085555", TEST_FROM - 60 * 1000),
+  ];
+  assert.deepEqual(loadSearch({ attendees, properties: TEST_WINDOW }).searchReply("siti", TEST_FROM + 120 * 1000).names, ["Siti Ujian"]);
+  // Window deleted after testing: on the day, the test answer no longer counts.
+  assert.deepEqual(loadSearch({ attendees }).searchReply("siti", OPEN + 1).names, []);
 });
 
 test("only attendance sent on 5 Dec, 12.00 to 6.00 pm, is searchable", () => {
