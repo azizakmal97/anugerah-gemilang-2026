@@ -127,28 +127,30 @@ function el(tag, attributes = {}, children = []) {
   return node;
 }
 
-function renderForm(formName) {
-  const holder = document.getElementById("borang");
+// The main card's holder is "borang"; only that form owns the instruction line above it.
+function renderForm(formName, holderId = "borang") {
+  const holder = document.getElementById(holderId);
+  const ownsInstruction = holderId === "borang";
   holder.replaceChildren();
   holder.hidden = !formName;
   if (!formName) return;
-  showInstruction(true);
+  if (ownsInstruction) showInstruction(true);
   const spec = FORMS[formName];
   if (!SETTINGS[spec.settingsKey]) {
     holder.append(el("p", { class: "form-status", text: "Pautan borang belum disediakan." }));
     return;
   }
-  holder.append(buildForm(spec, () => renderForm(formName)));
+  holder.append(buildForm(spec, () => renderForm(formName, holderId), ownsInstruction));
   if (spec.fillsIcEntry) fillRememberedIc(document.getElementById(`f-${spec.fillsIcEntry}`)); // remembered-ic.js
 }
 
-function buildForm(spec, restart) {
+function buildForm(spec, restart, ownsInstruction) {
   const form = el("form", { class: "event-form", novalidate: "" });
   spec.fields.forEach((field) => form.append(buildField(field)));
   const button = el("button", { class: "btn", type: "submit", text: spec.submitLabel });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.append(button, status);
-  const send = oneAtATime(() => submitForm(spec, form, button, status, restart));
+  const send = oneAtATime(() => submitForm(spec, form, button, status, restart, ownsInstruction));
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     send();
@@ -246,7 +248,7 @@ function showErrors(spec, form, errors) {
   if (first) first.focus();
 }
 
-async function submitForm(spec, form, button, status, restart) {
+async function submitForm(spec, form, button, status, restart, ownsInstruction = true) {
   const values = readValues(spec, form);
   const errors = findErrors(spec, values);
   showErrors(spec, form, errors);
@@ -267,7 +269,7 @@ async function submitForm(spec, form, button, status, restart) {
   }
   if (spec.savesIcEntry) rememberIc(values[spec.savesIcEntry]);
   if (spec.fillsIcEntry) forgetIc();
-  showThanks(form, spec.thanks, () => {
+  showThanks(form, spec.thanks, ownsInstruction, () => {
     if (spec.savesIcEntry) forgetIc(); // "Hantar untuk orang lain": the next person starts empty
     restart();
   });
@@ -281,12 +283,12 @@ function showSendError(status, viewUrl) {
   status.hidden = false;
 }
 
-function showThanks(form, thanks, restart) {
+function showThanks(form, thanks, ownsInstruction, restart) {
   const again = el("button", { class: "btn-ghost", type: "button", text: "Hantar untuk orang lain" });
   again.addEventListener("click", restart);
   const done = el("div", { class: "form-done", tabindex: "-1" }, [el("p", { text: thanks }), again]);
   form.replaceWith(done);
-  showInstruction(false);
+  if (ownsInstruction) showInstruction(false);
   done.focus();
 }
 

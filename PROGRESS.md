@@ -437,3 +437,5 @@ Owner 2026-11-17 ("dismiss all"): the open items below were dismissed. Do not ra
 - Deleting "Sheet1" and the unused script property `BEST_DRESS_SHEET_ID`.
 
 `/done-check` is PASS for attendee-only-sijil, best-dress-vote, in-site-forms, remembered-ic and sheet-look.
+
+**Feedback from 4.00 pm (owner 2026-11-21, picked "add below"):** on 5 Dec the feedback form also shows from 4.00 pm, in its own card under attendance and the Best Dress vote (`SETTINGS.feedbackOpensAt`, `pickEarlyFeedbackState` in app.js, `#maklum-balas` in index.html). At 6.00 pm the card goes and feedback becomes the main card, as before. `renderForm` takes a holder id; only the main card's form hides the instruction line. Tests in `tests/app.test.mjs`; gate `anti-slop/gates/2026-11-21-early-feedback.md` (Model: Opus 5.5 · medium).

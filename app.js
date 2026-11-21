@@ -7,6 +7,7 @@ const SETTINGS = {
   // All times are Malaysia time (UTC+8), written as UTC instants.
   attendanceOpensAt: Date.UTC(2026, 11, 5, 4, 0),  // 5 Dec 2026, 12.00 pm
   eventStartsAt: Date.UTC(2026, 11, 5, 6, 0),      // 5 Dec 2026, 2.00 pm
+  feedbackOpensAt: Date.UTC(2026, 11, 5, 8, 0),    // 5 Dec 2026, 4.00 pm: feedback joins attendance (owner 2026-11-21)
   attendanceClosesAt: Date.UTC(2026, 11, 5, 10, 0), // 5 Dec 2026, 6.00 pm
   // Best Dress vote (vote.js): the vote form's "Send" link and the name-search web app URL
   // (scripts/best-dress.gs). Voting opens and closes with attendance (owner 2026-11-17: 6.00 pm, not 5.30).
@@ -49,6 +50,21 @@ function pickVoteState(modeName, now) {
   return now < SETTINGS.voteClosesAt ? "open" : "closed";
 }
 
+// From 4.00 pm the feedback form sits under attendance and the vote, so one QR covers all three.
+// After 6.00 pm feedback becomes the main card, so this one goes away. A preview before the day
+// (?mod=hadir) shows it too, the same way it shows the vote open.
+function pickEarlyFeedbackState(modeName, now) {
+  if (modeName !== "hadir") return "hidden";
+  const previewBeforeDay = now < SETTINGS.attendanceOpensAt;
+  return previewBeforeDay || now >= SETTINGS.feedbackOpensAt ? "open" : "hidden";
+}
+
+function renderEarlyFeedback(state) {
+  const isOpen = state === "open";
+  document.getElementById("maklum-balas").hidden = !isOpen;
+  renderForm(isOpen ? "feedback" : null, "maklum-balas-isi"); // forms.js
+}
+
 function renderAction(modeName) {
   const mode = MODES[modeName];
   const kicker = document.getElementById("action-kicker");
@@ -84,9 +100,10 @@ function setCountdownDigit(id, value) {
   digit.classList.add("tick");
 }
 
-// Re-check every 30 s so an open phone flips mode at 12.00 and 6.00 pm without a reload.
+// Re-check every 30 s so an open phone flips mode at 12.00, 4.00 and 6.00 pm without a reload.
 let currentMode = null;
 let currentVoteState = null;
+let currentEarlyFeedbackState = null;
 function tick() {
   const now = Date.now();
   const modeName = pickMode(now);
@@ -98,6 +115,11 @@ function tick() {
   if (voteState !== currentVoteState) {
     currentVoteState = voteState;
     renderVote(voteState); // vote.js
+  }
+  const earlyFeedbackState = pickEarlyFeedbackState(modeName, now);
+  if (earlyFeedbackState !== currentEarlyFeedbackState) {
+    currentEarlyFeedbackState = earlyFeedbackState;
+    renderEarlyFeedback(earlyFeedbackState);
   }
   if (MODES[modeName].showCountdown) updateCountdown();
 }
