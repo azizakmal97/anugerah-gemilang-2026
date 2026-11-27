@@ -287,3 +287,60 @@ function cleanUpTestFeedback() {
   });
   Logger.log('Rekod ujian dibuang.');
 }
+
+// Owner 2026-11-27 ("Yes, delete all"): every answer before the event is a test. Pick
+// clearAllTestData and press Run to end the test window, delete every answer in the three forms
+// and their response-tab rows (headers stay), forget every sijil record, drop the cached Best Dress
+// names and recount the results tab to empty. Run it again after the 3 or 4 Dec rehearsal.
+var TEST_DATA_FORM_TITLES = [ATTENDANCE_FORM_TITLE, FEEDBACK_TITLE, VOTE_FORM_TITLE];
+var OLD_NAMES_CACHE_KEYS = ['best-dress-names-v2'];
+
+function clearAllTestData() {
+  var properties = PropertiesService.getScriptProperties();
+  properties.deleteProperty(TEST_FROM_KEY);
+  properties.deleteProperty(VOTE_TEST_KEY);
+  Logger.log('Tetingkap ujian ditutup (' + TEST_FROM_KEY + ', ' + VOTE_TEST_KEY + ' dipadamkan).');
+
+  TEST_DATA_FORM_TITLES.forEach(function (title) {
+    var form = findFormNamed(title);
+    var answerCount = form.getResponses().length;
+    form.deleteAllResponses();
+    var rowCount = clearResponseTab(form);
+    Logger.log(title + ': ' + answerCount + ' jawapan dan ' + rowCount + ' baris dipadamkan.');
+  });
+
+  clearSijilRecords();
+  CacheService.getScriptCache().removeAll([NAMES_CACHE_KEY].concat(OLD_NAMES_CACHE_KEYS));
+  refreshBestDressResults();
+  Logger.log('Siap. Senarai nama Best Dress dan tab "' + RESULTS_TAB_NAME + '" kini kosong.');
+}
+
+// Deletes every row under the header in the tab this form writes to. Returns how many went.
+function clearResponseTab(form) {
+  var sheet = linkedResponseTab(form);
+  if (!sheet) {
+    Logger.log('Tiada tab respons untuk "' + form.getTitle() + '".');
+    return 0;
+  }
+  var dataRows = sheet.getLastRow() - 1;
+  if (dataRows < 1) return 0;
+  // A sheet must keep one row below its frozen header, so add a blank one before deleting them all.
+  if (sheet.getMaxRows() === sheet.getLastRow()) sheet.insertRowAfter(sheet.getLastRow());
+  sheet.deleteRows(2, dataRows);
+  return dataRows;
+}
+
+function linkedResponseTab(form) {
+  var destinationId;
+  try {
+    destinationId = form.getDestinationId();
+  } catch (error) {
+    return null; // the form has no response sheet
+  }
+  var sheets = SpreadsheetApp.openById(destinationId).getSheets();
+  for (var index = 0; index < sheets.length; index++) {
+    var formUrl = sheets[index].getFormUrl();
+    if (formUrl && FormApp.openByUrl(formUrl).getId() === form.getId()) return sheets[index];
+  }
+  return null;
+}
