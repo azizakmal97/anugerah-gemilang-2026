@@ -35,7 +35,7 @@ useDefault = true
 # regexes = ['''PRIVATE KEY-----`''']
 
 [[allowlists]]
-description = "localStorage key names in remembered-ic.js (the phone keeps the attendance IC under them). Labels, not secrets."
+description = "localStorage key names in remembered-ic.js, also quoted in PROGRESS.md (the phone keeps the attendance IC under them). Labels, not secrets."
 condition = "AND"
-paths = ['''remembered-ic\.js''']
+paths = ['''remembered-ic\.js''', '''PROGRESS\.md''']
 regexes = ['''anugerah2026-(ic|nama)''']
