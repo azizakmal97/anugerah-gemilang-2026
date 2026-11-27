@@ -41,7 +41,7 @@ var SENT_NOTES = {
 };
 var SIJIL_RECORD_PREFIX = 'SIJIL_IC_';
 var NOT_LISTED_RECORD_PREFIX = 'TIADA_';
-var RECORD_LOCK_WAIT_MS = 60000;
+var RECORD_LOCK_WAIT_MS = 60000; // then the claim goes ahead unlocked: a rare double sijil beats none
 var RECORD_TIME_ZONE = 'Asia/Kuala_Lumpur';
 
 // Soft cream rows under the navy header. Light on purpose: a row the form adds keeps Google's
@@ -101,13 +101,16 @@ function emailKey(email) {
 }
 
 // One script lock for every check-then-mark, so two quick submits cannot both pass the check.
+// If the lock stays busy, the work runs anyway instead of throwing: a throw here used to lose the
+// guest's sijil, while running unlocked risks at most a duplicate.
 function withRecordLock(work) {
   var lock = LockService.getScriptLock();
-  lock.waitLock(RECORD_LOCK_WAIT_MS);
+  var locked = lock.tryLock(RECORD_LOCK_WAIT_MS);
+  if (!locked) console.warn('Record lock still busy after ' + RECORD_LOCK_WAIT_MS / 1000 + ' s; going ahead unlocked.');
   try {
     return work(PropertiesService.getScriptProperties());
   } finally {
-    lock.releaseLock();
+    if (locked) lock.releaseLock();
   }
 }
 

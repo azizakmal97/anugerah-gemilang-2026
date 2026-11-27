@@ -159,6 +159,19 @@ test("after a check-in refreshes the list, searches never read the form", () => 
   assert.equal(formReads(), 1, "30 searches reuse the list the check-in built");
 });
 
+test("a check-in still stores the list when the lock is busy, and an older list never overwrites a newer one", () => {
+  const attendees = [guest("Siti Aminah")];
+  const { context, searchReply, cacheStore } = loadSearch({ attendees, lockFree: false });
+  context.refreshNameList();
+  assert.equal(JSON.parse(cacheStore["best-dress-names-v3"]).count, 1);
+  attendees.push(guest("Siti Baru", "900101089999"));
+  const newer = context.buildNameList();
+  attendees.pop();
+  context.storeNameList(context.CacheService.getScriptCache(), newer);
+  context.refreshNameList(); // a slow check-in that read the form before Siti Baru arrived
+  assert.deepEqual(searchReply("siti", OPEN + 1).names, ["Siti Aminah", "Siti Baru"]);
+});
+
 test("while another search rebuilds the list, the reply says busy instead of failing", () => {
   const { doGet, formReads } = loadSearch({ attendees: [guest("Siti Aminah")], lockFree: false, properties: {
     TEST_FROM: new Date(Date.now() - 60000).toISOString(), VOTE_TEST_UNTIL: new Date(Date.now() + 60000).toISOString(),

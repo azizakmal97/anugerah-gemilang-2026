@@ -8,7 +8,7 @@ import vm from "node:vm";
 const read = (name) => readFileSync(new URL(`../scripts/${name}`, import.meta.url), "utf8");
 const SOURCES = ["e-sijil.gs", "best-dress.gs", "best-dress-results.gs", "sijil-records.gs"].map(read);
 
-function loadSijil() {
+function loadSijil({ lockFree = true } = {}) {
   const properties = { TEMPLATE_ID: "peserta-template", URUSETIA_TEMPLATE_ID: "urusetia-template" };
   const mails = [];
   const sentRows = [];
@@ -24,7 +24,8 @@ function loadSijil() {
         getKeys: () => Object.keys(properties),
       }),
     },
-    LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => lockFree, releaseLock: () => {} }) },
+    console: { warn: () => {} },
     Utilities: { formatDate: () => "2026-12-05" },
     MailApp: { getRemainingDailyQuota: () => 1000, sendEmail: (mail) => mails.push(mail) },
     DriveApp: {
@@ -121,6 +122,13 @@ test("a failed send frees the IC so the guest can try again", () => {
   context.MailApp.sendEmail = (mail) => mails.push(mail);
   send("Ali Bin Abu", "900101-08-1111", "Peserta");
   assert.equal(mails.length, 1);
+});
+
+test("a lock still busy after its wait never loses the sijil", () => {
+  const { send, mails, properties } = loadSijil({ lockFree: false });
+  send("Ali Bin Abu", "900101-08-1111", "Peserta");
+  assert.equal(mails.length, 1);
+  assert.ok(properties.SIJIL_IC_900101081111, "the claim is still marked");
 });
 
 test("the sijil log never holds a full IC", () => {

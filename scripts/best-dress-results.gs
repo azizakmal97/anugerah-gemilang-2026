@@ -3,8 +3,9 @@
  *
  * Counts the vote form's responses into the tab "Keputusan Best Dress" of the
  * committee's response sheet (the attendance form's destination), so only the
- * committee can see it. The tab updates itself on every vote. It never holds an
- * IC: only names and counts.
+ * committee can see it. The tab recounts itself once a minute while voting is
+ * open (a time trigger, not one recount per vote: in a rush those queued behind
+ * each other and held up sijil claims). It never holds an IC: only names and counts.
  *
  * Lives in the same Apps Script project as create-forms.gs, e-sijil.gs and
  * best-dress.gs (one Code.gs), so it reuses their helpers and its names must
@@ -12,22 +13,24 @@
  *
  * How to run: after createVoteForm has made the vote form, pick
  * setupBestDressResults and press Run, allow the permissions, then read the
- * sheet link in the Execution log. Safe to run twice. To recount by hand, pick
+ * sheet link in the Execution log. Safe to run twice: it replaces the old
+ * per-vote trigger with the one-minute recount. To recount by hand, pick
  * refreshBestDressResults.
  *
  * End of the day: pick setupEventDayTriggers and press Run once (safe to run
  * again). At 6.00 pm on 5 Dec the attendance form stops taking answers, and at
- * 6.01 pm the results recount once more, in case a vote in the last rush found
- * the recount busy. Google may run a timed job a few minutes late; that is
- * fine, because answers after 6.00 pm never count (isEventTime).
+ * 6.01 pm the results recount once more and the one-minute recount is removed.
+ * Google may run a timed job a few minutes late; that is fine, because answers
+ * after 6.00 pm never count (isEventTime).
  */
 
 var RESULTS_TAB_NAME = 'Keputusan Best Dress';
-var RESULTS_HANDLER = 'onVoteSubmit';
+var RESULTS_HANDLER = 'recountWhileVoting';
+var OLD_RESULTS_HANDLER = 'onVoteSubmit'; // the per-vote trigger before 27 Nov; setup removes it
+var RESULTS_RECOUNT_MINUTES = 1;
 var RESULTS_TOP_COUNT = 5;
 var RESULTS_CATEGORIES = ['Lelaki', 'Perempuan'];
 var RESULTS_TIME_ZONE = 'Asia/Kuala_Lumpur';
-var RESULTS_LOCK_WAIT_MS = 30000;
 var CLOSE_ATTENDANCE_HANDLER = 'closeAttendanceForm';
 var FINAL_RECOUNT_HANDLER = 'recountAfterVoting';
 var FINAL_RECOUNT_DELAY_MS = 60 * 1000; // 6.01 pm, read at run time so file order in Code.gs never matters
@@ -58,10 +61,8 @@ var RESULTS_THEME = {
 
 function setupBestDressResults() {
   var tab = openResultsTab();
-  ScriptApp.getProjectTriggers().forEach(function (trigger) {
-    if (trigger.getHandlerFunction() === RESULTS_HANDLER) ScriptApp.deleteTrigger(trigger);
-  });
-  ScriptApp.newTrigger(RESULTS_HANDLER).forForm(findFormNamed(VOTE_FORM_TITLE)).onFormSubmit().create();
+  removeRecountTriggers();
+  ScriptApp.newTrigger(RESULTS_HANDLER).timeBased().everyMinutes(RESULTS_RECOUNT_MINUTES).create();
   refreshBestDressResults();
   Logger.log('Tab keputusan Best Dress: ' + tab.getParent().getUrl() + '#gid=' + tab.getSheetId());
 }
@@ -72,30 +73,24 @@ function openResultsTab() {
   return spreadsheet.getSheetByName(RESULTS_TAB_NAME) || spreadsheet.insertSheet(RESULTS_TAB_NAME);
 }
 
-// In a rush a recount may still be busy after 30 s. Skipping is safe: the busy recount or the
-// next vote counts this one too, and recountAfterVoting at 6.01 pm catches the very last.
-function onVoteSubmit() {
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(RESULTS_LOCK_WAIT_MS)) {
-    Logger.log('Kiraan undi sedang berjalan. Undi ini akan dikira pada kiraan seterusnya.');
-    return;
-  }
-  try {
-    writeCurrentResults();
-  } finally {
-    lock.releaseLock();
-  }
+function removeRecountTriggers() {
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    var handler = trigger.getHandlerFunction();
+    if (handler === RESULTS_HANDLER || handler === OLD_RESULTS_HANDLER) ScriptApp.deleteTrigger(trigger);
+  });
 }
 
-// Two votes landing together run two recounts; the lock stops the older one writing last.
+// The one-minute trigger. Outside voting (the day, or the committee's test window) it only
+// reads the clock, so leaving it on for days costs next to nothing.
+function recountWhileVoting() {
+  if (!isVoteOpen(Date.now())) return;
+  writeCurrentResults();
+}
+
+// No script lock, so sijil claims and name-list stores never wait behind a recount. Recounts come
+// one a minute and each rewrites the whole tab from the forms, so an overlap still leaves a true count.
 function refreshBestDressResults() {
-  var lock = LockService.getScriptLock();
-  lock.waitLock(RESULTS_LOCK_WAIT_MS);
-  try {
-    writeCurrentResults();
-  } finally {
-    lock.releaseLock();
-  }
+  writeCurrentResults();
 }
 
 function setupEventDayTriggers() {
@@ -117,6 +112,7 @@ function closeAttendanceForm() {
 }
 
 function recountAfterVoting() {
+  removeRecountTriggers();
   refreshBestDressResults();
 }
 

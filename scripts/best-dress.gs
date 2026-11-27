@@ -42,12 +42,13 @@ var TEST_FROM_KEY = 'TEST_FROM';
 var SEARCH_MIN_LETTERS = 3;
 var SEARCH_MAX_RESULTS = 10;
 var SEARCH_MAX_QUERY = 40;
-var NAMES_CACHE_KEY = 'best-dress-names-v2'; // v2: entries carry the guest's Jantina
+var NAMES_CACHE_KEY = 'best-dress-names-v3'; // v3: {count, attendees}; v2 entries carried Jantina
 // The list is rebuilt by refreshNameList on every check-in (trigger from setupNameSearch), so searches
 // never read the form themselves. Load test 2026-11-27: 30 searches at once that each reread the form
 // all failed. The cache only needs to outlive the event day; 6 hours is CacheService's maximum.
 var NAMES_CACHE_SECONDS = 21600;
 var NAMES_LOCK_WAIT_MS = 10000; // a search waits this long for another to finish rebuilding the list
+var NAMES_STORE_LOCK_WAIT_MS = 2000; // a check-in holds the lock only to store the list it built
 var NAMES_REFRESH_HANDLER = 'refreshNameList';
 
 function doGet(e) {
@@ -106,27 +107,29 @@ function matchNames(attendees, key, gender) {
 // Read from the cache; on a miss, one search at a time rebuilds it (the others wait, then reuse it).
 function attendeeNames() {
   var cache = CacheService.getScriptCache();
-  var cached = cache.get(NAMES_CACHE_KEY);
-  if (cached) return JSON.parse(cached);
+  var cached = readNameList(cache);
+  if (cached) return cached.attendees;
 
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(NAMES_LOCK_WAIT_MS)) throw new Error('Name list is being rebuilt; try again');
   try {
-    cached = cache.get(NAMES_CACHE_KEY); // another search may have rebuilt it while this one waited
-    return cached ? JSON.parse(cached) : rebuildNameList(cache);
+    cached = readNameList(cache); // another search may have rebuilt it while this one waited
+    return cached ? cached.attendees : storeNameList(cache, buildNameList());
   } finally {
     lock.releaseLock();
   }
 }
 
-// Attendance form submit trigger: a new check-in is searchable within seconds.
+// Attendance form submit trigger: a new check-in is searchable within seconds. The form is read
+// with no lock held, so a queue of check-ins never keeps the script lock (and sijil claims) waiting.
 function refreshNameList() {
+  var list = buildNameList();
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(NAMES_LOCK_WAIT_MS * 3)) return; // a queue of check-ins: the next one rebuilds anyway
+  var locked = lock.tryLock(NAMES_STORE_LOCK_WAIT_MS);
   try {
-    rebuildNameList(CacheService.getScriptCache());
+    storeNameList(CacheService.getScriptCache(), list); // unlocked if busy: the count check still holds
   } finally {
-    lock.releaseLock();
+    if (locked) lock.releaseLock();
   }
 }
 
@@ -140,10 +143,25 @@ function setupNameSearch() {
   Logger.log('Siap. Senarai nama Best Dress dikemas kini setiap kali kehadiran dihantar.');
 }
 
-function rebuildNameList(cache) {
+function readNameList(cache) {
+  var cached = cache.get(NAMES_CACHE_KEY);
+  return cached ? JSON.parse(cached) : null;
+}
+
+// A list built from fewer responses than the cached one is older: it never overwrites it.
+function storeNameList(cache, list) {
+  var cached = readNameList(cache);
+  if (cached && cached.count > list.count) return cached.attendees;
+  cache.put(NAMES_CACHE_KEY, JSON.stringify(list), NAMES_CACHE_SECONDS);
+  return list.attendees;
+}
+
+// Returns {count: responses read, attendees}. Reads the form; stores nothing.
+function buildNameList() {
   var byKey = {};
   var isCounted = countedTimeRule();
-  findFormNamed(ATTENDANCE_FORM_TITLE).getResponses().forEach(function (response) {
+  var responses = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses();
+  responses.forEach(function (response) {
     if (!isCounted(response.getTimestamp().getTime())) return;
     var answers = readAnswers(response);
     var name = String(answers['Nama penuh'] || '').replace(/\s+/g, ' ').trim();
@@ -151,8 +169,7 @@ function rebuildNameList(cache) {
     if (key && !byKey[key]) byKey[key] = { name: name, gender: String(answers['Jantina'] || '') };
   });
   var attendees = Object.keys(byKey).sort().map(function (key) { return byKey[key]; });
-  cache.put(NAMES_CACHE_KEY, JSON.stringify(attendees), NAMES_CACHE_SECONDS);
-  return attendees;
+  return { count: responses.length, attendees: attendees };
 }
 
 function jsonReply(body) {
