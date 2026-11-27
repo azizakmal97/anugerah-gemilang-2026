@@ -14,8 +14,10 @@
  *
  * What was sent is remembered in Script properties, which only the owner can
  * open: TIADA_IC_<digits>, TIADA_EMEL_<email>, TIADA_COUNT_<date>, and
- * SIJIL_IC_<digits> (the name printed last time). To let a guest get the
- * "tidak ditemui" email again, delete their TIADA_ key there.
+ * SIJIL_IC_<digits> (the name printed last time and the role it was sent for).
+ * To let a guest get the "tidak ditemui" email again, delete their TIADA_ key
+ * there. After the committee's test runs, pick clearSijilRecords and press Run:
+ * a tester's record would otherwise stop their real sijil on the day.
  *
  * Look of the sheet: pick styleCommitteeSheet and press Run. Safe to run again;
  * it changes no answer.
@@ -34,8 +36,11 @@ var SENT_TAB = 'Sijil Dihantar';
 var SENT_HEADERS = ['Masa', 'No. K/P (4 digit akhir)', 'Nama pada sijil', 'Emel', 'Peranan', 'Catatan'];
 var SENT_NOTES = {
   'new': 'Baharu',
-  replace: 'Ganti sijil lama (nama berubah)'
+  replace: 'Ganti sijil lama (nama berubah)',
+  role: 'Ganti sijil lama (peranan berubah)'
 };
+var SIJIL_RECORD_PREFIX = 'SIJIL_IC_';
+var NOT_LISTED_RECORD_PREFIX = 'TIADA_';
 var RECORD_LOCK_WAIT_MS = 60000;
 var RECORD_TIME_ZONE = 'Asia/Kuala_Lumpur';
 
@@ -58,10 +63,28 @@ function notListedDecision(seen) {
   return 'send';
 }
 
-/** Pure. previousName: the name printed on this IC's last sijil, or null. Returns new | skip | replace. */
-function sijilAction(previousName, nameToPrint) {
-  if (!previousName) return 'new';
-  return previousName === nameToPrint ? 'skip' : 'replace';
+/**
+ * Pure. previous and current: {name, role} of this IC's last sijil (previous null if none) and of
+ * this one. Returns new | skip | replace (name changed) | role (role changed). Skips only when both
+ * match, so an urus setia who tested as Peserta still gets the urus setia sijil on the day.
+ */
+function sijilAction(previous, current) {
+  if (!previous) return 'new';
+  if (previous.name !== current.name) return 'replace';
+  return previous.role === current.role ? 'skip' : 'role';
+}
+
+// Reads a SIJIL_IC_ value. Records written before 27 Nov hold the name alone, with no role:
+// such a record never matches a role, so the guest gets a fresh sijil rather than none.
+function readSijilRecord(stored) {
+  if (!stored) return null;
+  try {
+    var record = JSON.parse(stored);
+    if (record && typeof record.name === 'string') return { name: record.name, role: String(record.role || '') };
+  } catch (error) {
+    // not JSON: an older record that holds the printed name only
+  }
+  return { name: stored, role: '' };
 }
 
 // The name exactly as the sijil prints it, so any visible spelling fix counts as a new name.
@@ -108,23 +131,39 @@ function claimNotListedEmail(icDigits, email) {
   });
 }
 
-// Returns {action, previous}. Marks the new name straight away; releaseSijilClaim undoes it if the send fails.
-function claimSijil(icDigits, nameToPrint) {
+// Returns {action, previous}. Marks the new name and role straight away; releaseSijilClaim undoes it
+// if the send fails. previous is the stored text, so the release puts back exactly what was there.
+function claimSijil(icDigits, nameToPrint, role) {
   return withRecordLock(function (properties) {
-    var key = 'SIJIL_IC_' + icDigits;
+    var key = SIJIL_RECORD_PREFIX + icDigits;
     var previous = properties.getProperty(key);
-    var action = sijilAction(previous, nameToPrint);
-    if (action !== 'skip') properties.setProperty(key, nameToPrint);
+    var current = { name: nameToPrint, role: role };
+    var action = sijilAction(readSijilRecord(previous), current);
+    if (action !== 'skip') properties.setProperty(key, JSON.stringify(current));
     return { action: action, previous: previous };
   });
 }
 
 function releaseSijilClaim(icDigits, previous) {
   withRecordLock(function (properties) {
-    var key = 'SIJIL_IC_' + icDigits;
+    var key = SIJIL_RECORD_PREFIX + icDigits;
     if (previous) properties.setProperty(key, previous);
     else properties.deleteProperty(key);
   });
+}
+
+// Run once after the committee's tests (1 Dec cleanup, and again after the rehearsal): forgets every
+// sijil sent and every "tidak ditemui" email, so testers get their real sijil on the day. Changes no
+// sheet row: the two record tabs keep their history.
+function clearSijilRecords() {
+  var removed = withRecordLock(function (properties) {
+    var keys = properties.getKeys().filter(function (key) {
+      return key.indexOf(SIJIL_RECORD_PREFIX) === 0 || key.indexOf(NOT_LISTED_RECORD_PREFIX) === 0;
+    });
+    keys.forEach(function (key) { properties.deleteProperty(key); });
+    return keys.length;
+  });
+  Logger.log('Rekod sijil dibuang: ' + removed + '. Penguji akan menerima sijil sebenar pada hari majlis.');
 }
 
 function logNotListed(name, icDigits, email, note) {
@@ -226,7 +265,7 @@ function cleanUpTestFeedback() {
   var me = Session.getActiveUser().getEmail();
   var testMasks = [maskedIc(digitsOf(TEST_SIJIL_IC)), maskedIc(digitsOf(TEST_NOT_LISTED_IC))];
   withRecordLock(function (properties) {
-    properties.deleteProperty('SIJIL_IC_' + digitsOf(TEST_SIJIL_IC));
+    properties.deleteProperty(SIJIL_RECORD_PREFIX + digitsOf(TEST_SIJIL_IC));
     properties.deleteProperty('TIADA_IC_' + digitsOf(TEST_NOT_LISTED_IC));
     properties.deleteProperty('TIADA_EMEL_' + emailKey(me));
     var countKey = 'TIADA_COUNT_' + Utilities.formatDate(new Date(), RECORD_TIME_ZONE, 'yyyy-MM-dd');

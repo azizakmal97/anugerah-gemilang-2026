@@ -21,6 +21,7 @@ function loadSijil() {
         setProperty: (key, value) => { properties[key] = value; },
         setProperties: (values) => Object.assign(properties, values),
         deleteProperty: (key) => { delete properties[key]; },
+        getKeys: () => Object.keys(properties),
       }),
     },
     LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
@@ -81,6 +82,35 @@ test("the same IC with a new name gets a replacement that says so", () => {
   assert.match(mails[1].subject, /\(dikemas kini\)$/);
   assert.match(mails[1].body, /menggantikan e-Sijil yang dihantar sebelum ini/);
   assert.deepEqual(sentRows.map((row) => [row[1], row[4]]), [["ALI BIN ABU", "new"], ["ALI BIN ABU BAKAR", "replace"]]);
+});
+
+test("the same IC and name with a new role gets the new role's sijil", () => {
+  const { send, mails, sentRows } = loadSijil();
+  send("Siti Aminah", "900101-08-2222", "Peserta"); // tested as Peserta in November
+  send("Siti Aminah", "900101-08-2222", "Urus setia"); // the day, as urus setia
+  send("Siti Aminah", "900101-08-2222", "Urus setia");
+  assert.equal(mails.length, 2);
+  assert.deepEqual([...mails[1].attachments].map((pdf) => pdf.templateId), ["peserta-template", "urusetia-template"]);
+  assert.deepEqual(sentRows.map((row) => row[4]), ["new", "role"]);
+});
+
+test("a record from before roles were stored never blocks a sijil", () => {
+  const { send, mails, properties } = loadSijil();
+  properties.SIJIL_IC_900101081111 = "ALI BIN ABU"; // the old format: printed name only
+  send("Ali Bin Abu", "900101-08-1111", "Peserta");
+  assert.equal(mails.length, 1);
+  assert.deepEqual(JSON.parse(properties.SIJIL_IC_900101081111), { name: "ALI BIN ABU", role: "Peserta" });
+});
+
+test("clearSijilRecords forgets every sijil and 'tidak ditemui' record, nothing else", () => {
+  const { context, send, mails, properties } = loadSijil();
+  send("Ali Bin Abu", "900101-08-1111", "Peserta");
+  send("Orang Luar", "800808-08-9999", null, "a@contoh.my");
+  context.clearSijilRecords();
+  assert.deepEqual(Object.keys(properties).sort(), ["TEMPLATE_ID", "URUSETIA_TEMPLATE_ID"]);
+  send("Ali Bin Abu", "900101-08-1111", "Peserta");
+  send("Orang Luar", "800808-08-9999", null, "a@contoh.my");
+  assert.equal(mails.length, 4, "after the clear both guests are mailed again");
 });
 
 test("a failed send frees the IC so the guest can try again", () => {

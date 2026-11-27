@@ -12,6 +12,8 @@ required question is missing, the guest still sees "Terima kasih" and the answer
 
 - [ ] Delete script properties `TEST_FROM` and `VOTE_TEST_UNTIL` (Apps Script > Project Settings).
 - [ ] Delete the test rows in the response sheets, including "UJIAN JANTINA WANITA" (IC 900101-08-0000).
+- [ ] Apps Script editor: pick `clearSijilRecords` and press Run. It forgets every test sijil and
+      "tidak ditemui" email, so testers still get their real sijil on the day.
 
 ## 3. Rehearsal, 3 or 4 Dec (about 15 minutes, two phones)
 
@@ -24,7 +26,8 @@ Set a short test window first: `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 ho
 - [ ] Typing a name without tapping it is refused; tapping it then sending works.
 - [ ] Results tab "Keputusan Best Dress" shows the vote.
 - [ ] `?mod=selepas`: send feedback with Phone A's IC and a real email. The e-sijil arrives.
-- [ ] Delete both test properties again and the test rows. Done.
+- [ ] Delete both test properties again and the test rows.
+- [ ] Run `clearSijilRecords` again (Apps Script editor). Done.
 
 ## 4. In the hall, 5 Dec
 

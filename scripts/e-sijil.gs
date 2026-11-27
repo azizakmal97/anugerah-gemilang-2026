@@ -196,13 +196,13 @@ function handleFeedback(answers, findGuest) {
     return;
   }
   var nameToPrint = printedName(name);
-  var claim = claimSijil(icDigits, nameToPrint);
+  var claim = claimSijil(icDigits, nameToPrint, attendee.role);
   if (claim.action === 'skip') {
-    Logger.log('Sijil untuk No. K/P ini sudah dihantar dengan nama yang sama. Tiada apa dihantar.');
+    Logger.log('Sijil untuk No. K/P ini sudah dihantar dengan nama dan peranan yang sama. Tiada apa dihantar.');
     return;
   }
   try {
-    sendSijil(name, ic, email, attendee.role, claim.action === 'replace');
+    sendSijil(name, ic, email, attendee.role, claim.action !== 'new');
   } catch (error) {
     releaseSijilClaim(icDigits, claim.previous); // so the guest can send feedback again and still get it
     throw error;
