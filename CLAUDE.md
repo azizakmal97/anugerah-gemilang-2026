@@ -98,6 +98,12 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
   the layout viewport and the whole page looks off-centre. `overflow-x: hidden` on `body` is not
   enough; `html`, `body` and `.hero` use `overflow-x: clip`.
 - Gotcha: the in-app browser pane, when hidden, returns stale screenshots. Measure with JS.
+- FORMS FROZEN from 2026-11-27 to the end of the event (owner): no question added, removed or
+  renamed in any of the three Google Forms. A required question the page does not send makes every
+  check-in vanish while the page still says "Terima kasih". Event-day checklist: `docs/event-day.md`.
+- The Apps Script project lives on the WORK account azizakmal@moh.gov.my (Chrome profile
+  xzizakmal97, `/u/1/`), not on xzizakmal97. Load test 2026-11-27: 30 searches at once all failed
+  while each search reread the attendance form; the name list is now built per check-in.
 
 ---
 
