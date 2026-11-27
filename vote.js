@@ -154,8 +154,9 @@ async function openWhenServerAgrees(renderId) {
   warmNameSearch();
 }
 
-// The web app reads the attendance form only on the first search after its 5-minute cache runs out
-// (about 5 s). One throwaway 3-letter search while the guest reads the form pays that wait early.
+// The web app keeps the name list for 6 hours and rebuilds it on every check-in, so it reads the
+// attendance form (about 5 s) only when no list is kept yet. One throwaway 3-letter search while the
+// guest reads the form pays that rare wait early.
 function warmNameSearch() {
   searchNames("aaa").catch(() => {}); // nothing to show: the real search reports its own failure
 }
