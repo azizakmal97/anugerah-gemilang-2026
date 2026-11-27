@@ -14,6 +14,7 @@ const SETTINGS = {
   voteFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSegopqOizhGqnmYCD3mqQ4dLvWvSzXXl0f4GbyO9ZQbgExziA/viewform",
   voteSearchUrl: "https://script.google.com/macros/s/AKfycbx_HYRODCfk-Ff0Ogf7zH4BSzQosu_OTy--uYuadhiM7Gw-P2XVfeDWvgiF_ewFfb9Xzw/exec",
   voteClosesAt: Date.UTC(2026, 11, 5, 10, 0), // 5 Dec 2026, 6.00 pm
+  voteClosedNoticeUntil: Date.UTC(2026, 11, 5, 16, 0), // 6 Dec 2026, 12.00 am: the "closed" line goes
 };
 
 // Page modes, picked by the clock. Add ?mod=sebelum|hadir|selepas to preview one.
@@ -48,8 +49,10 @@ function pickMode(now) {
   return "selepas";
 }
 
-// The vote card shows only on the day, beside attendance; after 6.00 pm it says voting is closed.
+// The vote card shows only on the day, beside attendance. From 6.00 pm to midnight it stays and
+// says voting is closed, so a guest who looks for it is not left wondering where it went.
 function pickVoteState(modeName, now) {
+  if (modeName === "selepas") return now < SETTINGS.voteClosedNoticeUntil ? "closed" : "hidden";
   if (modeName !== "hadir") return "hidden";
   return now < SETTINGS.voteClosesAt ? "open" : "closed";
 }
