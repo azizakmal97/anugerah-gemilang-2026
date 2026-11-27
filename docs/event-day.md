@@ -25,7 +25,7 @@ After the rehearsal (section 3) the same cleanup is needed again: run `clearAllT
 
 Done early on 28 Nov (P08 in PROGRESS.md): check-in, name search by gender, votes (own-name and repeat
 votes dropped), e-sijil email with the right name, pages at 375 px, owner test on two phones. One fix from it:
-a feedback sent with empty ratings now says so beside the button (0aa34e5). Test data cleared at 05:42 the
+a feedback sent with empty ratings now says so beside the button (4972e61). Test data cleared at 05:42 the
 same day. A second rehearsal on 3 or 4 Dec is optional; if run, clean up again with `clearAllTestData`.
 
 Set a short test window first: `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 hour.

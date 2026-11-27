@@ -452,7 +452,7 @@ email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-
       "tidak ditemui" email instead (only if the owner agrees to a second email).
 - [x] 7. (passed 28 Nov) Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
       (warning before 12 pm shows), `?mod=selepas`; no console errors, no sideways scroll.
-- [x] 8. (done 28 Nov; found: empty feedback ratings gave no message near the button, fixed in 0aa34e5) Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
+- [x] 8. (done 28 Nov; found: empty feedback ratings gave no message near the button, fixed in 4972e61) Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
       check in, vote, send feedback. Report anything odd.
 - [x] 9. (done 28 Nov 05:42: 4 check-ins, 3 feedbacks, 5 votes, 4 sijil records cleared; 0 responses x3, search closed) Clean up: run `clearAllTestData` (deletes test answers, sheet rows, sijil records, cache) and
       delete `TEST_FROM` / `VOTE_TEST_UNTIL`. Verify 0 responses in all 3 forms and search `{"open":false}`.
