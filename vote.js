@@ -11,6 +11,7 @@ const VOTE_MAX_NAMES = 10; // the web app answers at most this many, so a shorte
 const VOTE_SEARCH_TIMEOUT_MS = 10000;
 const VOTE_RETRY_MS = 1500; // a busy or failed search is asked once more after this pause
 const VOTE_CHECK_AGAIN_MS = 60000; // while the web app still says "not yet", ask again each minute
+const VOTE_CACHE_FRESH_MS = 60000; // an older saved reply still shows at once, but the web app is asked again
 const VOTE_NOTICE = "Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dikira.";
 const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian tekan nama itu dalam senarai yang keluar.";
 const PICK_HOW_TO = "Cara mengundi: taip nama, kemudian tekan nama itu dalam senarai. Nama yang ditaip sahaja tanpa dipilih tidak boleh dihantar.";
@@ -69,14 +70,16 @@ function nameKey(text) {
 }
 
 // Every search answer is kept on the phone (they are names the web app already sent), so a longer query
-// shows matches at once. cache maps a query key to its reply. complete: a cached reply that held fewer
-// than VOTE_MAX_NAMES names already holds every match, so the web app need not be asked again.
-function cachedMatches(cache, key) {
+// shows matches at once. cache maps a query key to {names, at: when it arrived}. complete: a reply under a
+// minute old that held fewer than VOTE_MAX_NAMES names already holds every match, so the web app need not
+// be asked again. An older one may miss a guest who checked in since, so it only fills the list meanwhile.
+function cachedMatches(cache, key, now = Date.now()) {
   const known = new Set();
   let complete = false;
-  cache.forEach((names, cachedKey) => {
+  cache.forEach(({ names, at }, cachedKey) => {
     names.forEach((name) => known.add(name));
-    if (key.includes(cachedKey) && (cachedKey === key || names.length < VOTE_MAX_NAMES)) complete = true;
+    const fresh = now - at < VOTE_CACHE_FRESH_MS;
+    if (fresh && key.includes(cachedKey) && (cachedKey === key || names.length < VOTE_MAX_NAMES)) complete = true;
   });
   const names = [...known].filter((name) => nameKey(name).includes(key)).sort().slice(0, VOTE_MAX_NAMES);
   return { names, complete };
@@ -239,7 +242,7 @@ function buildPickField(field) {
   const runSearch = async (query, ticket, isRetry = false) => {
     try {
       const reply = await searchNames(query, field.gender);
-      if (reply.open) nameCache.set(nameKey(query), reply.names);
+      if (reply.open) nameCache.set(nameKey(query), { names: reply.names, at: Date.now() });
       if (ticket !== latest) return;
       if (!reply.open) {
         showVoteNotOpen();

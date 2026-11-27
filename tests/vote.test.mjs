@@ -163,12 +163,21 @@ test("if the open-check fails the form still shows, and a late answer to an old 
 
 test("names already fetched show at once, and a short complete reply needs no new search", () => {
   const { cachedMatches } = loadVoteHelpers();
-  const cache = new Map([["SIT", ["Siti Aminah", "Siti Nur'aini"]]]);
-  assert.deepEqual(plain(cachedMatches(cache, "SITI N")), { names: ["Siti Nur'aini"], complete: true });
-  assert.deepEqual(plain(cachedMatches(cache, "AMI")), { names: ["Siti Aminah"], complete: false });
-  const full = new Map([["AMI", Array.from({ length: 10 }, (_, i) => `Amin ${String.fromCharCode(65 + i)}`)]]);
-  assert.equal(cachedMatches(full, "AMIN").complete, false, "a reply of 10 may have left names out");
-  assert.equal(cachedMatches(full, "AMI").complete, true, "the same query is already answered");
+  const now = Date.now();
+  const cache = new Map([["SIT", { names: ["Siti Aminah", "Siti Nur'aini"], at: now }]]);
+  assert.deepEqual(plain(cachedMatches(cache, "SITI N", now)), { names: ["Siti Nur'aini"], complete: true });
+  assert.deepEqual(plain(cachedMatches(cache, "AMI", now)), { names: ["Siti Aminah"], complete: false });
+  const full = new Map([["AMI", { names: Array.from({ length: 10 }, (_, i) => `Amin ${String.fromCharCode(65 + i)}`), at: now }]]);
+  assert.equal(cachedMatches(full, "AMIN", now).complete, false, "a reply of 10 may have left names out");
+  assert.equal(cachedMatches(full, "AMI", now).complete, true, "the same query is already answered");
+});
+
+test("a saved reply over a minute old still shows its names but asks the web app again", () => {
+  const { cachedMatches } = loadVoteHelpers();
+  const now = Date.now();
+  const cache = new Map([["SIT", { names: ["Siti Aminah"], at: now - 60000 }]]);
+  assert.deepEqual(plain(cachedMatches(cache, "SITI", now)), { names: ["Siti Aminah"], complete: false });
+  assert.equal(cachedMatches(cache, "SITI", now - 1).complete, true, "a second younger it was still trusted");
 });
 
 test("an unpicked name is refused with the tap-in-the-list instruction", () => {
