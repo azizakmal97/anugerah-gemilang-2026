@@ -91,7 +91,27 @@ function findBackground(folder, backgroundName) {
   return files.next();
 }
 
+// The form's id is kept in Script properties (FORM_ID_<title>) after the first lookup, so every
+// later call opens it directly instead of listing Drive, and a copy someone makes with the same
+// title can never be picked by mistake. If the saved id stops opening, the title lookup runs again.
+var FORM_ID_PREFIX = 'FORM_ID_';
+
 function findFormNamed(title) {
+  var properties = PropertiesService.getScriptProperties();
+  var savedId = properties.getProperty(FORM_ID_PREFIX + title);
+  if (savedId) {
+    try {
+      return FormApp.openById(savedId);
+    } catch (error) {
+      console.warn('Saved id for form "' + title + '" no longer opens, looking it up by title: ' + error);
+    }
+  }
+  var form = findFormByTitle(title);
+  properties.setProperty(FORM_ID_PREFIX + title, form.getId());
+  return form;
+}
+
+function findFormByTitle(title) {
   var files = DriveApp.getFilesByType(MimeType.GOOGLE_FORMS);
   while (files.hasNext()) {
     var file = files.next();
