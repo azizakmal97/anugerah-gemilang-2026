@@ -43,7 +43,7 @@ var SEARCH_MIN_LETTERS = 3;
 var SEARCH_MAX_RESULTS = 10;
 var SEARCH_MAX_QUERY = 40;
 var NAMES_CACHE_KEY = 'best-dress-names-v2'; // v2: entries carry the guest's Jantina
-var NAMES_CACHE_SECONDS = 300; // a guest who confirms attendance shows up in search within 5 minutes
+var NAMES_CACHE_SECONDS = 30; // a new check-in shows in search within 30 s (owner 2026-11-27: 5 minutes too long)
 
 function doGet(e) {
   var parameters = (e && e.parameter) || {};
