@@ -10,7 +10,7 @@ const SOURCE = readFileSync(new URL("../scripts/best-dress.gs", import.meta.url)
 const OPEN = Date.UTC(2026, 11, 5, 4, 0); // 12.00 pm, 5 Dec, Malaysia time
 const CLOSE = Date.UTC(2026, 11, 5, 10, 0); // 6.00 pm
 
-function loadSearch({ attendees = [], properties = {} } = {}) {
+function loadSearch({ attendees = [], properties = {}, lockFree = true } = {}) {
   let formReads = 0;
   const cacheStore = {};
   const context = {
@@ -23,6 +23,9 @@ function loadSearch({ attendees = [], properties = {} } = {}) {
     }),
     readAnswers: (response) => response,
     PropertiesService: { getScriptProperties: () => ({ getProperty: (key) => properties[key] ?? null }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => lockFree, releaseLock() {} }) },
+    console: { error() {} },
+    ContentService: { createTextOutput: (text) => ({ text, setMimeType() { return this; } }), MimeType: { JSON: "json" } },
     CacheService: {
       getScriptCache: () => ({
         get: (key) => cacheStore[key] ?? null,
@@ -35,7 +38,8 @@ function loadSearch({ attendees = [], properties = {} } = {}) {
   // JSON round trip: the reply goes out as JSON anyway, and vm arrays fail deepEqual across realms.
   // gender is optional here, so the older tests read as before: no g sent keeps every guest.
   const searchReply = (query, nowMs, gender = "") => JSON.parse(JSON.stringify(context.searchReply(query, gender, nowMs)));
-  return { searchReply, formReads: () => formReads };
+  const doGet = (q, g) => JSON.parse(context.doGet({ parameter: { q, g } }).text);
+  return { searchReply, doGet, context, cacheStore, formReads: () => formReads };
 }
 
 // readAnswers is faked as identity, so one object is both the response and its answers.
@@ -145,4 +149,20 @@ test("a gendered search lists only that gender, plus guests who never answered J
 test("the reply never carries a guest's Jantina, only names", () => {
   const { searchReply } = loadSearch({ attendees: [guest("Siti Aminah", "900101081234", OPEN + 1, "Perempuan")] });
   assert.deepEqual(searchReply("siti", OPEN + 2, "Perempuan"), { open: true, names: ["Siti Aminah"] });
+});
+
+test("after a check-in refreshes the list, searches never read the form", () => {
+  const { context, searchReply, formReads } = loadSearch({ attendees: [guest("Siti Aminah")] });
+  context.refreshNameList();
+  assert.equal(formReads(), 1);
+  for (let i = 0; i < 30; i++) searchReply("siti", OPEN + 1);
+  assert.equal(formReads(), 1, "30 searches reuse the list the check-in built");
+});
+
+test("while another search rebuilds the list, the reply says busy instead of failing", () => {
+  const { doGet, formReads } = loadSearch({ attendees: [guest("Siti Aminah")], lockFree: false, properties: {
+    TEST_FROM: new Date(Date.now() - 60000).toISOString(), VOTE_TEST_UNTIL: new Date(Date.now() + 60000).toISOString(),
+  } });
+  assert.deepEqual(doGet("siti", "Perempuan"), { open: true, names: [], busy: true });
+  assert.equal(formReads(), 0, "no form read without the lock");
 });

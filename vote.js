@@ -9,6 +9,7 @@ const VOTE_MIN_LETTERS = 3; // the web app answers nothing shorter, so the page 
 const VOTE_SEARCH_DELAY_MS = 150;
 const VOTE_MAX_NAMES = 10; // the web app answers at most this many, so a shorter reply holds every match
 const VOTE_SEARCH_TIMEOUT_MS = 10000;
+const VOTE_RETRY_MS = 1500; // a busy or failed search is asked once more after this pause
 const VOTE_CHECK_AGAIN_MS = 60000; // while the web app still says "not yet", ask again each minute
 const VOTE_NOTICE = "Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dikira.";
 const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian tekan nama itu dalam senarai yang keluar.";
@@ -91,6 +92,7 @@ async function searchNames(query, gender = "") {
     const response = await fetch(`${SETTINGS.voteSearchUrl}?q=${encodeURIComponent(query)}${genderPart}`, { signal: controller.signal });
     if (!response.ok) throw new Error(`Name search answered ${response.status}`);
     const reply = await response.json();
+    if (reply.busy === true) throw new Error("Name search busy");
     const names = Array.isArray(reply.names) ? reply.names.filter((name) => typeof name === "string") : [];
     return { open: reply.open === true, names: names.slice(0, VOTE_MAX_NAMES) };
   } finally {
@@ -234,7 +236,7 @@ function buildPickField(field) {
     if (names.length) showStatus(PICK_TAP_ONE, true);
   };
 
-  const runSearch = async (query, ticket) => {
+  const runSearch = async (query, ticket, isRetry = false) => {
     try {
       const reply = await searchNames(query, field.gender);
       if (reply.open) nameCache.set(nameKey(query), reply.names);
@@ -247,6 +249,10 @@ function buildPickField(field) {
       if (!reply.names.length) showStatus("Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran.");
     } catch (error) {
       if (ticket !== latest) return;
+      if (!isRetry) {
+        timer = setTimeout(() => runSearch(query, ticket, true), VOTE_RETRY_MS);
+        return;
+      }
       console.error("Name search failed:", error);
       showStatus("Carian gagal. Semak talian internet dan taip semula.", true);
     }

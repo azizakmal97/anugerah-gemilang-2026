@@ -190,3 +190,8 @@ test("each name search asks for its own gender's list", async () => {
   await loadVote({ fetch }).searchNames("siti", "Perempuan");
   assert.equal(asked, `${READY.voteSearchUrl}?q=siti&g=Perempuan`);
 });
+
+test("a busy reply from the web app is a failure to retry, not an empty list", async () => {
+  const fetch = async () => ({ ok: true, json: async () => ({ open: true, names: [], busy: true }) });
+  await assert.rejects(loadVote({ fetch }).searchNames("siti", "Perempuan"), /busy/);
+});

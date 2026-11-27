@@ -43,11 +43,22 @@ var SEARCH_MIN_LETTERS = 3;
 var SEARCH_MAX_RESULTS = 10;
 var SEARCH_MAX_QUERY = 40;
 var NAMES_CACHE_KEY = 'best-dress-names-v2'; // v2: entries carry the guest's Jantina
-var NAMES_CACHE_SECONDS = 30; // a new check-in shows in search within 30 s (owner 2026-11-27: 5 minutes too long)
+// The list is rebuilt by refreshNameList on every check-in (trigger from setupNameSearch), so searches
+// never read the form themselves. Load test 2026-11-27: 30 searches at once that each reread the form
+// all failed. The cache only needs to outlive the event day; 6 hours is CacheService's maximum.
+var NAMES_CACHE_SECONDS = 21600;
+var NAMES_LOCK_WAIT_MS = 10000; // a search waits this long for another to finish rebuilding the list
+var NAMES_REFRESH_HANDLER = 'refreshNameList';
 
 function doGet(e) {
   var parameters = (e && e.parameter) || {};
-  return jsonReply(searchReply(String(parameters.q || ''), String(parameters.g || ''), Date.now()));
+  try {
+    return jsonReply(searchReply(String(parameters.q || ''), String(parameters.g || ''), Date.now()));
+  } catch (error) {
+    // A readable "busy" lets the page retry, where a thrown error would show Google's HTML error page.
+    console.error('Name search failed: ' + error);
+    return jsonReply({ open: true, names: [], busy: true });
+  }
 }
 
 function searchReply(query, gender, nowMs) {
@@ -91,12 +102,45 @@ function matchNames(attendees, key, gender) {
   return found;
 }
 
-// Distinct attendees ({ name, gender }) from attendance that counts (countedTimeRule), sorted, cached so 125 phones typing at once do not reread the form.
+// Distinct attendees ({ name, gender }) from attendance that counts (countedTimeRule), sorted.
+// Read from the cache; on a miss, one search at a time rebuilds it (the others wait, then reuse it).
 function attendeeNames() {
   var cache = CacheService.getScriptCache();
   var cached = cache.get(NAMES_CACHE_KEY);
   if (cached) return JSON.parse(cached);
 
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(NAMES_LOCK_WAIT_MS)) throw new Error('Name list is being rebuilt; try again');
+  try {
+    cached = cache.get(NAMES_CACHE_KEY); // another search may have rebuilt it while this one waited
+    return cached ? JSON.parse(cached) : rebuildNameList(cache);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Attendance form submit trigger: a new check-in is searchable within seconds.
+function refreshNameList() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(NAMES_LOCK_WAIT_MS * 3)) return; // a queue of check-ins: the next one rebuilds anyway
+  try {
+    rebuildNameList(CacheService.getScriptCache());
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Run once from the editor (pick setupNameSearch, press Run). Safe to run twice.
+function setupNameSearch() {
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    if (trigger.getHandlerFunction() === NAMES_REFRESH_HANDLER) ScriptApp.deleteTrigger(trigger);
+  });
+  ScriptApp.newTrigger(NAMES_REFRESH_HANDLER).forForm(findFormNamed(ATTENDANCE_FORM_TITLE)).onFormSubmit().create();
+  refreshNameList();
+  Logger.log('Siap. Senarai nama Best Dress dikemas kini setiap kali kehadiran dihantar.');
+}
+
+function rebuildNameList(cache) {
   var byKey = {};
   var isCounted = countedTimeRule();
   findFormNamed(ATTENDANCE_FORM_TITLE).getResponses().forEach(function (response) {
