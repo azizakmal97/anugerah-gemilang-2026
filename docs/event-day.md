@@ -8,12 +8,18 @@ Do not add, remove or rename any question in the three Google Forms (Kehadiran, 
 Undian Best Dress). The page sends answers blind (`no-cors`): if Google refuses one because a
 required question is missing, the guest still sees "Terima kasih" and the answer is lost.
 
-## 2. Cleanup, 1 Dec (calendar reminder 9 am)
+## 2. Cleanup, 1 Dec (calendar reminder 9 am): done early, 27 Nov
 
-- [ ] Delete script properties `TEST_FROM` and `VOTE_TEST_UNTIL` (Apps Script > Project Settings).
-- [ ] Delete the test rows in the response sheets, including "UJIAN JANTINA WANITA" (IC 900101-08-0000).
-- [ ] Apps Script editor: pick `clearSijilRecords` and press Run. It forgets every test sijil and
-      "tidak ditemui" email, so testers still get their real sijil on the day.
+Owner approved on 27 Nov ("Yes, delete all"). Done in one run of `clearAllTestData`
+(Apps Script editor, sijil-records.gs). The 1 Dec reminder needs nothing more.
+
+- [x] Deleted script properties `TEST_FROM` and `VOTE_TEST_UNTIL` (27 Nov).
+- [x] Deleted every answer in the three forms (Kehadiran 7, Maklum Balas 4, Undian 4) and their
+      response-sheet rows (7 + 4; the vote form has no sheet), including "UJIAN JANTINA WANITA" (27 Nov).
+- [x] Forgot every test sijil and "tidak ditemui" email (6 records, `clearSijilRecords`), dropped the
+      cached Best Dress names and recounted "Keputusan Best Dress" to empty (27 Nov).
+
+After the rehearsal (section 3) the same cleanup is needed again: run `clearAllTestData` once.
 
 ## 3. Rehearsal, 3 or 4 Dec (about 15 minutes, two phones)
 
@@ -26,8 +32,8 @@ Set a short test window first: `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 ho
 - [ ] Typing a name without tapping it is refused; tapping it then sending works.
 - [ ] Results tab "Keputusan Best Dress" shows the vote.
 - [ ] `?mod=selepas`: send feedback with Phone A's IC and a real email. The e-sijil arrives.
-- [ ] Delete both test properties again and the test rows.
-- [ ] Run `clearSijilRecords` again (Apps Script editor). Done.
+- [ ] Apps Script editor: pick `clearAllTestData` and press Run. It deletes both test properties,
+      every answer and test row, and every sijil record. Done.
 
 ## 4. In the hall, 5 Dec
 
