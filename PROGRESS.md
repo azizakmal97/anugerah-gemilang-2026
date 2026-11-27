@@ -426,6 +426,41 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - Done 2026-11-17 21:44 (owner: "ya padam"): every answer before 5 Dec deleted from the forms' Responses: Kehadiran 3 -> 0, Maklum Balas 4 -> 0 (the owner's own and the "Ujian Laman" tests), Undian 0. Sheet tabs were already empty. TIADA_COUNT_2026-11-17 removed, names cache cleared, results recounted. Temporary function removed from Code.gs.
 - New Malay lines owed a Gemini proofread: urus setia email line "Dua e-Sijil anda dilampirkan...", replacement line "...menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.", subject "(dikemas kini)", closed-form message "Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.", tab headers and notes in scripts/sijil-records.gs.
 
+### 🟡 P08 — Full rehearsal before the event (URGENT, owner 2026-11-28)
+
+**Model:** Opus 5.5 · **Effort:** low (checks on settled code; step up to medium only if something fails)
+**Goal:** prove check-in, vote, feedback and e-sijil work end to end on the live system, then leave it clean.
+**Rules:** forms are FROZEN (no question changes). Apps Script runs on the work account
+azizakmal@moh.gov.my (check the account chip before every Run; slot moves). Deploy only with clasp.
+Close every tab. The owner must say yes in the chat before step 2 (it sends real form answers and one
+email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-deployment first.
+
+- [ ] 1. Pre-check (read-only): `npm test`, `npm run lint`, `npm run build`; live site 200; search answers
+      `{"open":false}`; Triggers page has refreshNameList, onFeedbackSubmit, recountWhileVoting,
+      closeAttendanceForm, recountAfterVoting; all 3 forms have 0 responses. (Opus · low)
+- [ ] 2. Ask the owner: "OK to send test answers and one sijil email to <owner's email> now?" Wait for yes.
+- [ ] 3. Open a 1-hour test window: script properties `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 h (MYT, ISO with +08:00).
+- [ ] 4. Send through the real forms (same entry ids as `forms.js`): check-ins "UJIAN LELAKI" (Lelaki) and
+      "UJIAN WANITA" (Perempuan), test ICs 900101-08-0001 / 900101-08-0002. Within 1 minute: search
+      `q=ujian&g=Lelaki` shows only UJIAN LELAKI, `g=Perempuan` only UJIAN WANITA.
+- [ ] 5. Send two votes. Voter IC ...0001 (UJIAN LELAKI): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA.
+      Voter IC ...0002 (UJIAN WANITA): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA. Own-name picks are
+      dropped, so within 2 minutes "Keputusan Best Dress" must show UJIAN LELAKI 1 and UJIAN WANITA 1.
+      Then a second vote from IC ...0001 must change nothing.
+- [ ] 6. Send one feedback with IC 900101-08-0001 and the owner's email. The e-sijil PDF arrives
+      (owner confirms in chat), name printed right. A feedback with an IC not checked in gets the
+      "tidak ditemui" email instead (only if the owner agrees to a second email).
+- [ ] 7. Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
+      (warning before 12 pm shows), `?mod=selepas`; no console errors, no sideways scroll.
+- [ ] 8. Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
+      check in, vote, send feedback. Report anything odd.
+- [ ] 9. Clean up: run `clearAllTestData` (deletes test answers, sheet rows, sijil records, cache) and
+      delete `TEST_FROM` / `VOTE_TEST_UNTIL`. Verify 0 responses in all 3 forms and search `{"open":false}`.
+- [ ] 10. Record the result here and in `docs/event-day.md` section 3; commit, push.
+
+**Also owed (separate, low):** the weekly Security Scan is red: it flags a storage key name; the fix is
+adding that name to the scan's allowlist. Needs the owner's yes. (Opus · low)
+
 ## Resume note (2026-11-17, second /close)
 
 Nothing is in flight; P01 to P07 are done and live. Also shipped this session outside a phase: vote card waits for the web app before showing the form (c66edb1), hero title wider and medallion reaching the screen edges (1a12831, 2749ee9), attendance IC remembered on the phone for vote and feedback (99e8a70, spec remembered-ic.md), gold dust no longer doubles on tab return (ecdf89c), Malay comma test for the page scripts (77e59e0).
