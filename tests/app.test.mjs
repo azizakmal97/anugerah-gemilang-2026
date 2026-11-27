@@ -21,15 +21,17 @@ function fakeElement() {
   };
 }
 
-function loadApp({ search = "" } = {}) {
+function loadApp({ search = "", earlyFormOpen = false } = {}) {
   const elements = Object.fromEntries(ELEMENT_IDS.map((id) => [id, fakeElement()]));
   const formCalls = [];
   const voteCalls = [];
   const earlyFeedbackCalls = [];
+  const moveCalls = [];
   const context = {
     // forms.js has its own tests; here only which form goes into which holder matters.
     renderForm: (formName, holderId = "borang") => (holderId === "borang" ? formCalls : earlyFeedbackCalls).push(formName),
     renderVote: (state) => voteCalls.push(state), // vote.js has its own tests
+    moveForm: (fromId, toId) => (earlyFormOpen ? moveCalls.push([fromId, toId]) > 0 : false),
     document: { getElementById: (id) => elements[id] },
     location: { search },
     URLSearchParams,
@@ -39,7 +41,7 @@ function loadApp({ search = "" } = {}) {
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
   vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, pickVoteState, pickEarlyFeedbackState, renderEarlyFeedback, renderAction, isEarlyAttendance };`, context);
-  return { app: context.__app, elements, formCalls, voteCalls, earlyFeedbackCalls };
+  return { app: context.__app, elements, formCalls, voteCalls, earlyFeedbackCalls, moveCalls };
 }
 
 const myt = (hour, minute = 0) => Date.UTC(2026, 11, 5, hour - 8, minute); // 5 Dec 2026, Malaysia time
@@ -85,6 +87,14 @@ test("the attendance form before 12.00 pm says such check-ins do not count", () 
   assert.equal(elements["action-note"].hidden, false);
   app.renderAction("hadir", false);
   assert.equal(elements["action-note"].hidden, true);
+});
+
+test("at 6.00 pm a feedback form being typed in the side card moves to the main card, not redrawn", () => {
+  const { app, formCalls, moveCalls } = loadApp({ earlyFormOpen: true });
+  formCalls.length = 0;
+  app.renderAction("selepas");
+  assert.deepEqual(moveCalls, [["maklum-balas-isi", "borang"]]);
+  assert.deepEqual(formCalls, [], "no fresh form wipes what was typed");
 });
 
 test("the countdown mode shows the countdown and no form", () => {

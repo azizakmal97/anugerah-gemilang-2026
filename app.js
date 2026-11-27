@@ -87,6 +87,8 @@ function renderAction(modeName, isEarly = false) {
   note.textContent = noteText;
   note.hidden = !noteText;
 
+  // At 6.00 pm a feedback form already open in the side card moves over with what was typed in it.
+  if (mode.form === "feedback" && moveForm("maklum-balas-isi", "borang")) return; // forms.js
   renderForm(mode.form || null); // forms.js
 }
 

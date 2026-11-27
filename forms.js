@@ -144,17 +144,32 @@ function renderForm(formName, holderId = "borang") {
     holder.append(el("p", { class: "form-status", text: "Pautan borang belum disediakan." }));
     return;
   }
-  holder.append(buildForm(spec, () => renderForm(formName, holderId), ownsInstruction));
+  // "Hantar untuk orang lain" redraws in whichever holder the form sits in by then (moveForm may move it).
+  holder.append(buildForm(spec, (done) => renderForm(formName, done.parentElement.id)));
   if (spec.fillsIcEntry) fillRememberedIc(document.getElementById(`f-${spec.fillsIcEntry}`), "Beri maklum balas"); // remembered-ic.js
 }
 
-function buildForm(spec, restart, ownsInstruction) {
+// Moves a live form, with what the guest typed, into another holder. Used at 6.00 pm, when
+// feedback moves from the side card to the main one. Returns false when there is no form to move.
+function moveForm(fromId, toId) {
+  const from = document.getElementById(fromId);
+  const to = document.getElementById(toId);
+  if (!from.querySelector("form")) return false;
+  to.replaceChildren(...from.childNodes);
+  to.hidden = false;
+  from.hidden = true;
+  if (toId === "borang") showInstruction(true);
+  return true;
+}
+
+function buildForm(spec, restart) {
   const form = el("form", { class: "event-form", novalidate: "" });
   spec.fields.forEach((field) => form.append(buildField(field)));
   const button = el("button", { class: "btn", type: "submit", text: spec.submitLabel });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.append(button, status);
-  const send = oneAtATime(() => submitForm(spec, form, button, status, restart, ownsInstruction));
+  // Read at send time: the form may have moved into the main card since it was built.
+  const send = oneAtATime(() => submitForm(spec, form, button, status, restart, form.parentElement.id === "borang"));
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     send();
@@ -273,9 +288,9 @@ async function submitForm(spec, form, button, status, restart, ownsInstruction =
   }
   if (spec.savesIcEntry) rememberIc(values[spec.savesIcEntry], values[spec.savesNameEntry]);
   if (spec.fillsIcEntry) forgetIc();
-  showThanks(form, spec.thanks, ownsInstruction, () => {
+  showThanks(form, spec.thanks, ownsInstruction, (done) => {
     if (spec.savesIcEntry) forgetIc(); // "Hantar untuk orang lain": the next person starts empty
-    restart();
+    restart(done);
   });
   return "sent";
 }
@@ -289,8 +304,8 @@ function showSendError(status, viewUrl) {
 
 function showThanks(form, thanks, ownsInstruction, restart) {
   const again = el("button", { class: "btn-ghost", type: "button", text: "Hantar untuk orang lain" });
-  again.addEventListener("click", restart);
   const done = el("div", { class: "form-done", tabindex: "-1" }, [el("p", { text: thanks }), again]);
+  again.addEventListener("click", () => restart(done));
   form.replaceWith(done);
   if (ownsInstruction) showInstruction(false);
   done.focus();

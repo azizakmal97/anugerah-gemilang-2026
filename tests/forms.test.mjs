@@ -22,7 +22,7 @@ function loadForms({ fetch = async () => {} } = {}) {
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
   vm.runInContext(
-    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm };`,
+    `${FORMS_SOURCE}\n;globalThis.__forms = { FORMS, formatIcInput, validateField, findErrors, toFormBody, formResponseUrl, oneAtATime, submitForm, moveForm };`,
     context,
   );
   return { ...context.__forms, page };
@@ -204,4 +204,19 @@ test("a failed send says so, offers the Google Form and lets the guest retry", a
   assert.equal(status.hidden, false);
   assert.deepEqual(status.classes, ["is-error"]);
   assert.equal(form.replacedWith, null, "nothing says sent");
+});
+
+test("moveForm carries a half-typed form, and its typing, into the main card", () => {
+  const { moveForm, page } = loadForms();
+  const typed = { tag: "form", value: "ALI BIN ABU" };
+  const holder = (childNodes) => Object.assign(node(), { childNodes, querySelector: (tag) => childNodes.find((kid) => kid.tag === tag) || null });
+  page["maklum-balas-isi"] = holder([typed]);
+  page.borang = Object.assign(holder([]), { hidden: true });
+  assert.equal(moveForm("maklum-balas-isi", "borang"), true);
+  assert.equal(page.borang.children[0], typed, "the same node moves, so nothing typed is lost");
+  assert.equal(page.borang.hidden, false);
+  assert.equal(page["maklum-balas-isi"].hidden, true);
+
+  page["maklum-balas-isi"] = holder([]);
+  assert.equal(moveForm("maklum-balas-isi", "borang"), false, "nothing to move: the caller draws a fresh form");
 });
