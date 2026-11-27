@@ -458,7 +458,7 @@ email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-
       delete `TEST_FROM` / `VOTE_TEST_UNTIL`. Verify 0 responses in all 3 forms and search `{"open":false}`.
 - [x] 10. Record the result here and in `docs/event-day.md` section 3; commit, push.
 
-**Also owed (separate, low):** the weekly Security Scan is red: it flags a storage key name; the fix is
+**Done 28 Nov (owner yes):** Security Scan green again (.gitleaks.toml allowlist, run 46072469418). Was: the weekly Security Scan is red: it flags a storage key name; the fix is
 adding that name to the scan's allowlist. Needs the owner's yes. (Opus · low)
 
 ## Resume note (2026-11-17, second /close)
