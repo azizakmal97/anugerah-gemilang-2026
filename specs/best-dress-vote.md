@@ -41,7 +41,7 @@ Why P1: the owner announces the winners at the event; results must not be public
 - Owner 2026-11-17: only votes sent on 5 Dec between 12.00 pm and 6.00 pm count, so a test vote left over from November can never count or use up an IC.
 - Owner 2026-11-17 ("nama boleh muncul lepas type huruf"): names show only after 3 typed letters, loaded live from Google while voting is open, never stored in this repo, never a full list.
 - The voter's IC is the same IC rule and auto-format as the other forms.
-- No gender is stored: the guest decides who goes under Lelaki and who under Perempuan.
+- ~~No gender is stored~~ Changed 2026-11-27 (owner: "user can choose woman name in lelaki section", chose "Add Jantina"): attendance asks Jantina (Lelaki / Perempuan, required), and the name search sends only that gender's names to each pick. A guest with no Jantina answer (sent before the question existed) shows in both lists. The reply still carries names only. Also 2026-11-27: names already fetched show at once on the phone, and a typed name that is not tapped in the list cannot be sent.
 - Votes land in a Google Form response sheet like the other forms, and an Apps Script on the owner's account counts them.
 
 ## Open questions
