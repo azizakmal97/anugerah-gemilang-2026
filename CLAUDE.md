@@ -104,6 +104,9 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
   check-in vanish while the page still says "Terima kasih". Event-day checklist: `docs/event-day.md`.
 - The Apps Script project lives on the WORK account azizakmal@moh.gov.my (Chrome profile
   xzizakmal97; its `/u/N/` slot moves, so check the account chip before every Run), not on xzizakmal97.
+  Browser (owner 2026-11-28): Claude in Chrome only, on the Chrome that has the work account
+  (deviceId 9bbffaab-e88f-4d0d-8c11-75159e45faed on 27-28 Nov; names and slots move, so confirm the
+  account chip says azizakmal@moh.gov.my). Never the built-in pane for Google: it is not signed in.
   Deploy with clasp (`clasp push --force`, then `clasp create-deployment --deploymentId ...`). Load test 2026-11-27: 30 searches at once all failed
   while each search reread the attendance form; the name list is now built per check-in.
 
