@@ -18,6 +18,17 @@
   try {
     if (!sessionStorage.getItem("tiraiDibuka")) document.documentElement.classList.add("first-visit");
   } catch (e) { document.documentElement.classList.add("first-visit"); }
+  // If effects.js fails to load or run, the curtain would stay up and the form stay invisible.
+  // 3 s after the page is parsed (effects.js runs just before that and opens within 1.7 s), show
+  // the page anyway: dropping first-visit hides the curtain through the CSS.
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+      var root = document.documentElement;
+      if (root.classList.contains("opened")) return;
+      root.classList.remove("first-visit");
+      root.classList.add("opened");
+    }, 3000);
+  });
 </script>
 </head>
 <body>
