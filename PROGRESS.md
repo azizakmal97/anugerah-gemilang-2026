@@ -441,3 +441,22 @@ Owner 2026-11-17 ("dismiss all"): the open items below were dismissed. Do not ra
 **Feedback from 4.00 pm (owner 2026-11-21, picked "add below"):** on 5 Dec the feedback form also shows from 4.00 pm, in its own card under attendance and the Best Dress vote (`SETTINGS.feedbackOpensAt`, `pickEarlyFeedbackState` in app.js, `#maklum-balas` in index.html). At 6.00 pm the card goes and feedback becomes the main card, as before. `renderForm` takes a holder id; only the main card's form hides the instruction line. Tests in `tests/app.test.mjs`; gate `anti-slop/gates/2026-11-21-early-feedback.md` (Model: Opus 5.5 · medium).
 
 **Committee test window (owner 2026-11-21, "so other ajk can test"):** e04db29 is live in Apps Script (version 3 of the active web app deployment, same URL). Script properties `TEST_FROM=2026-11-21T00:00:00+08:00` and `VOTE_TEST_UNTIL=2026-11-30T23:59:00+08:00` make attendance, votes and sijil inside that window count as if it were the event (`countedTimeRule` in best-dress.gs). Checked: `/exec?q=abc` answers `{"open":true}`. **Cleanup after 30 Nov, before 5 Dec:** delete both properties, delete the test form responses (attendance, feedback, vote) and their sheet rows, clear the `best-dress-names` cache, recount. Never touch the owner's own rows.
+
+## Resume note (2026-11-27, audit fixes /close)
+
+All 11 findings of the 27 Nov audit are fixed, tested (109 tests) and live (948b512 to ddb50be):
+sijil claim keeps the role plus `clearSijilRecords`; phone name cache trusts replies for 60 s; one-minute
+recount trigger (`recountWhileVoting`) replaces the per-vote trigger, short locks, sijil claim never lost
+on a busy lock; remembered name shown with the IC ("Undi sebagai NAMA (K/P berakhir dengan 1234)");
+pre-12 pm warning on the attendance form; test window stops counting once VOTE_TEST_UNTIL passes;
+curtain fallback after 3 s; feedback form moves (not redrawn) at 6 pm; form ids kept in script
+properties; Best Dress card says "ditutup" from 6 pm to midnight. Web app version 7 (same URL).
+`setupBestDressResults` was run as the work account; Triggers page checked: refreshNameList,
+onFeedbackSubmit, recountWhileVoting, closeAttendanceForm, recountAfterVoting.
+
+Repo made PUBLIC on 27 Nov (owner yes): private Pages stopped when GitHub billing failed. Pages re-created
+(branch main, root), CI green again.
+
+Owed: weekly Security Scan red since 23 Nov. Gitleaks flags `IC_STORE_KEY = "anugerah2026-ic"` in
+remembered-ic.js, a localStorage key name, not a secret. The fix (an allowlist entry in `.gitleaks.toml`
+for `anugerah2026-(ic|nama)` in remembered-ic.js) waits for the owner's yes.
