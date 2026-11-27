@@ -1,0 +1,16 @@
+{
+  "scriptId": "1Z-aIMtKgXTGgyz4dsbcro7uq9r4Ll8ML7B9WApVOOjIX1kTBwOgDIR_B",
+  "rootDir": "scripts",
+  "scriptExtensions": [".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"],
+  "filePushOrder": [
+    "scripts/appsscript.json",
+    "scripts/create-forms.gs",
+    "scripts/e-sijil.gs",
+    "scripts/best-dress.gs",
+    "scripts/best-dress-results.gs",
+    "scripts/sijil-records.gs"
+  ],
+  "skipSubdirectories": true
+}
