@@ -218,7 +218,7 @@ function handleFeedback(answers, findGuest) {
   var nameToPrint = printedName(name);
   var claim = claimSijil(icDigits, nameToPrint, attendee.role);
   if (claim.action === 'skip') {
-    Logger.log('Sijil untuk No. K/P ini sudah dihantar dengan nama dan peranan yang sama. Tiada apa dihantar.');
+    Logger.log('Sijil untuk No. K/P ini sudah dihantar dengan nama dan peranan yang sama. Tiada sijil baharu dihantar.');
     return;
   }
   try {

@@ -166,7 +166,7 @@ function clearSijilRecords() {
     keys.forEach(function (key) { properties.deleteProperty(key); });
     return keys.length;
   });
-  Logger.log('Rekod sijil dibuang: ' + removed + '. Penguji akan menerima sijil sebenar pada hari majlis.');
+  Logger.log('Rekod sijil dipadamkan: ' + removed + '. Penguji akan menerima sijil sebenar pada hari majlis.');
 }
 
 function logNotListed(name, icDigits, email, note) {
