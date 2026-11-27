@@ -6,11 +6,15 @@
 // showSendError from forms.js, and fillRememberedIc and forgetIc from remembered-ic.js; both load first.
 
 const VOTE_MIN_LETTERS = 3; // the web app answers nothing shorter, so the page does not ask
-const VOTE_SEARCH_DELAY_MS = 300;
+const VOTE_SEARCH_DELAY_MS = 150;
+const VOTE_MAX_NAMES = 10; // the web app answers at most this many, so a shorter reply holds every match
 const VOTE_SEARCH_TIMEOUT_MS = 10000;
 const VOTE_CHECK_AGAIN_MS = 60000; // while the web app still says "not yet", ask again each minute
 const VOTE_NOTICE = "Satu undi sahaja bagi setiap No. K/P. Undi pertama yang dikira.";
-const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian pilih daripada senarai.";
+const PICK_HELP = "Taip sekurang-kurangnya 3 huruf nama, kemudian tekan nama itu dalam senarai yang keluar.";
+const PICK_HOW_TO = "Cara mengundi: taip nama, kemudian tekan nama itu dalam senarai. Nama yang ditaip sahaja tanpa dipilih tidak boleh dihantar.";
+const PICK_MISSING = "Nama belum dipilih. Taip nama, kemudian tekan nama itu dalam senarai.";
+const PICK_TAP_ONE = "Tekan satu nama di bawah untuk memilih.";
 const VOTE_LOADING_TEXT = "Memuatkan undian…";
 const VOTE_WAITING_TEXT = "Undian Best Dress dibuka pada 5 Disember, 12.00 tengah hari.";
 const VOTE_CLOSED_TEXT = "Undian Best Dress sudah ditutup. Pemenang akan diumumkan sebentar lagi.";
@@ -41,7 +45,7 @@ function countLetters(text) {
 function findVoteErrors(values) {
   const errors = {};
   ["lelaki", "perempuan"].forEach((key) => {
-    if (!values[key]) errors[key] = "Pilih satu nama daripada senarai.";
+    if (!values[key]) errors[key] = PICK_MISSING;
   });
   if (!errors.lelaki && values.lelaki === values.perempuan) {
     errors.perempuan = "Pilih nama yang berlainan untuk Lelaki dan Perempuan.";
@@ -57,6 +61,25 @@ function toVoteBody(values) {
   return body;
 }
 
+// Same rule as nameKey in scripts/best-dress.gs, so the phone matches names the way the web app does.
+function nameKey(text) {
+  return String(text || "").toUpperCase().replace(/[^A-Z ]/g, "").replace(/ +/g, " ").trim();
+}
+
+// Every search answer is kept on the phone (they are names the web app already sent), so a longer query
+// shows matches at once. cache maps a query key to its reply. complete: a cached reply that held fewer
+// than VOTE_MAX_NAMES names already holds every match, so the web app need not be asked again.
+function cachedMatches(cache, key) {
+  const known = new Set();
+  let complete = false;
+  cache.forEach((names, cachedKey) => {
+    names.forEach((name) => known.add(name));
+    if (key.includes(cachedKey) && (cachedKey === key || names.length < VOTE_MAX_NAMES)) complete = true;
+  });
+  const names = [...known].filter((name) => nameKey(name).includes(key)).sort().slice(0, VOTE_MAX_NAMES);
+  return { names, complete };
+}
+
 // The reply is shaped by our own web app, but it still crosses the network: keep strings only.
 async function searchNames(query) {
   const controller = new AbortController();
@@ -66,7 +89,7 @@ async function searchNames(query) {
     if (!response.ok) throw new Error(`Name search answered ${response.status}`);
     const reply = await response.json();
     const names = Array.isArray(reply.names) ? reply.names.filter((name) => typeof name === "string") : [];
-    return { open: reply.open === true, names: names.slice(0, 10) };
+    return { open: reply.open === true, names: names.slice(0, VOTE_MAX_NAMES) };
   } finally {
     clearTimeout(timer);
   }
@@ -82,6 +105,7 @@ function voteNotOpenReason(now) {
 
 // ----- DOM -----
 
+const voteNameCache = new Map(); // query key -> names, kept for the page's life (see cachedMatches)
 let voteRenderId = 0; // each render bumps it, so an older check that answers late changes nothing
 
 // state: "hidden" | "open" | "closed", picked by pickVoteState in app.js.
@@ -118,6 +142,13 @@ async function openWhenServerAgrees(renderId) {
     return;
   }
   document.getElementById("undian-isi").replaceChildren(buildVoteForm());
+  warmNameSearch();
+}
+
+// The web app reads the attendance form only on the first search after its 5-minute cache runs out
+// (about 5 s). One throwaway 3-letter search while the guest reads the form pays that wait early.
+function warmNameSearch() {
+  searchNames("aaa").catch(() => {}); // nothing to show: the real search reports its own failure
 }
 
 function showVoteNotOpen() {
@@ -147,6 +178,7 @@ function buildVoteForm() {
   fillRememberedIc(form.querySelector("#f-undi-ic"));
   const button = el("button", { class: "btn", type: "submit", text: "Hantar Undian" });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
+  form.prepend(el("p", { class: "pick-how-to", text: PICK_HOW_TO }));
   form.append(el("p", { class: "vote-notice", text: VOTE_NOTICE }), button, status);
   const send = oneAtATime(() => submitVote(form, picks, button, status));
   form.addEventListener("submit", (event) => {
@@ -183,24 +215,35 @@ function buildPickField(field) {
     errorNode.hidden = true;
     list.replaceChildren();
     list.hidden = true;
-    status.textContent = `Pilihan anda: ${name}`;
+    status.classList.remove("is-warning");
+    status.textContent = `✓ Dipilih: ${name}`;
+  };
+
+  const showStatus = (text, warning = false) => {
+    status.textContent = text;
+    status.classList.toggle("is-warning", warning);
+  };
+
+  const showNames = (names) => {
+    showOptions(list, names, choose);
+    if (names.length) showStatus(PICK_TAP_ONE, true);
   };
 
   const runSearch = async (query, ticket) => {
-    status.textContent = "Mencari…";
     try {
       const reply = await searchNames(query);
+      if (reply.open) voteNameCache.set(nameKey(query), reply.names);
       if (ticket !== latest) return;
       if (!reply.open) {
         showVoteNotOpen();
         return;
       }
-      showOptions(list, reply.names, choose);
-      status.textContent = reply.names.length ? "" : "Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran.";
+      showNames(reply.names);
+      if (!reply.names.length) showStatus("Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran.");
     } catch (error) {
       if (ticket !== latest) return;
       console.error("Name search failed:", error);
-      status.textContent = "Carian gagal. Semak talian internet dan taip semula.";
+      showStatus("Carian gagal. Semak talian internet dan taip semula.", true);
     }
   };
 
@@ -216,8 +259,27 @@ function buildPickField(field) {
       status.textContent = "";
       return;
     }
+    const cached = cachedMatches(voteNameCache, nameKey(query));
+    if (cached.complete) {
+      showNames(cached.names);
+      if (!cached.names.length) showStatus("Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran.");
+      return;
+    }
+    if (cached.names.length) showOptions(list, cached.names, choose); // shown now, the web app may add more
+    showStatus("Mencari…");
     const ticket = latest;
     timer = setTimeout(() => runSearch(query, ticket), VOTE_SEARCH_DELAY_MS);
+  });
+
+  // Leaving the box with a typed but unpicked name says so at once, not only on Hantar.
+  // The wait lets a tap on a list option (which blurs the box first) pick the name before the check.
+  input.addEventListener("blur", () => {
+    setTimeout(() => {
+      if (pick.chosen || !input.value.trim()) return;
+      errorNode.textContent = PICK_MISSING;
+      errorNode.hidden = false;
+      input.setAttribute("aria-invalid", "true");
+    }, 250);
   });
   return pick;
 }

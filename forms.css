@@ -168,6 +168,20 @@ button.btn:disabled { filter: grayscale(0.35) brightness(0.85); cursor: progress
 .pick-option:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 2px; }
 .pick-status { margin: 0.35rem 0 0; font-size: 0.92rem; color: var(--cream-muted); }
 .pick-status:empty { display: none; }
+.pick-status.is-warning { font-weight: 600; color: var(--gold-light); }
+.field input.is-chosen ~ .pick-status { font-weight: 600; color: var(--gold-light); }
+/* The one rule guests miss: a typed name counts only once tapped in the list. */
+.pick-how-to {
+  margin: 0 0 var(--space-1);
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-card);
+  background: rgba(214, 168, 78, 0.1);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--gold-light);
+}
 .field input.is-chosen { border-color: var(--gold-light); background: rgba(214, 168, 78, 0.14); }
 
 .vote-notice { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--gold-light); }

@@ -72,7 +72,7 @@ test("a vote needs one picked name in each category and a valid IC", () => {
   assert.deepEqual(plain(findVoteErrors({ lelaki: "Ali", perempuan: "Siti", ic: "900101-08-1234" })), {});
   const errors = plain(findVoteErrors({ lelaki: "", perempuan: "", ic: "9001" }));
   assert.deepEqual(Object.keys(errors).sort(), ["ic", "lelaki", "perempuan"]);
-  assert.equal(errors.lelaki, "Pilih satu nama daripada senarai.");
+  assert.equal(errors.lelaki, "Nama belum dipilih. Taip nama, kemudian tekan nama itu dalam senarai.");
 });
 
 test("the same name cannot win both categories in one vote", () => {
@@ -160,3 +160,26 @@ test("if the open-check fails the form still shows, and a late answer to an old 
   await settle();
   assert.deepEqual(shown(again.card), ["FORM"]);
 });
+
+test("names already fetched show at once, and a short complete reply needs no new search", () => {
+  const { cachedMatches } = loadVoteHelpers();
+  const cache = new Map([["SIT", ["Siti Aminah", "Siti Nur'aini"]]]);
+  assert.deepEqual(plain(cachedMatches(cache, "SITI N")), { names: ["Siti Nur'aini"], complete: true });
+  assert.deepEqual(plain(cachedMatches(cache, "AMI")), { names: ["Siti Aminah"], complete: false });
+  const full = new Map([["AMI", Array.from({ length: 10 }, (_, i) => `Amin ${String.fromCharCode(65 + i)}`)]]);
+  assert.equal(cachedMatches(full, "AMIN").complete, false, "a reply of 10 may have left names out");
+  assert.equal(cachedMatches(full, "AMI").complete, true, "the same query is already answered");
+});
+
+test("an unpicked name is refused with the tap-in-the-list instruction", () => {
+  const { findVoteErrors } = loadVote();
+  const errors = findVoteErrors({ lelaki: "", perempuan: "Siti", ic: "900101-08-1234" });
+  assert.match(errors.lelaki, /tekan nama itu dalam senarai/);
+});
+
+function loadVoteHelpers() {
+  const context = { SETTINGS: READY, URLSearchParams, console };
+  vm.createContext(context);
+  vm.runInContext(`${FORMS_SOURCE}\n${VOTE_SOURCE}\n;globalThis.__h = { cachedMatches };`, context);
+  return context.__h;
+}
