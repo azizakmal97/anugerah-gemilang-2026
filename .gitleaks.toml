@@ -33,3 +33,9 @@ useDefault = true
 # condition = "AND"
 # paths = ['''README\.md''']
 # regexes = ['''PRIVATE KEY-----`''']
+
+[[allowlists]]
+description = "localStorage key names in remembered-ic.js (the phone keeps the attendance IC under them). Labels, not secrets."
+condition = "AND"
+paths = ['''remembered-ic\.js''']
+regexes = ['''anugerah2026-(ic|nama)''']

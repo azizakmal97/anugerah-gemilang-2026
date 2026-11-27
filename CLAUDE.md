@@ -109,6 +109,10 @@ Tokens and reasons: `.claude/skills/design-system/SKILL.md`.
   account chip says azizakmal@moh.gov.my). Never the built-in pane for Google: it is not signed in.
   Deploy with clasp (`clasp push --force`, then `clasp create-deployment --deploymentId ...`). Load test 2026-11-27: 30 searches at once all failed
   while each search reread the attendance form; the name list is now built per check-in.
+- Which Chrome (owner 2026-11-28): Google work only through Claude in Chrome on the xzizakmal97 profile,
+  the one with azizakmal@moh.gov.my signed in (deviceId 9bbffaab-e88f-4d0d-8c11-75159e45faed). Its
+  display name moves ("Browser 1", then "Browser 2" the same day), so pick it by that id and confirm the
+  account chip before every Run. Never the built-in browser pane for Google: it is not signed in.
 
 ---
 
