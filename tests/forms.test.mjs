@@ -113,7 +113,7 @@ test("every field of both forms is checked, and a complete answer has no errors"
   const { FORMS, findErrors } = loadForms();
   const empty = findErrors(FORMS.feedback, {});
   assert.equal(Object.keys(empty).length, FORMS.feedback.fields.length - 1); // all but the comment
-  const filled = { 562932983: "Siti Aminah", 718418112: "871212-08-0879", 1345289916: "KP Tapah", 75149903: "Peserta" };
+  const filled = { 562932983: "Siti Aminah", 718418112: "871212-08-0879", 1133614257: "Perempuan", 1345289916: "KP Tapah", 75149903: "Peserta" };
   assert.deepEqual({ ...findErrors(FORMS.attendance, filled) }, {});
 });
 
@@ -124,7 +124,9 @@ test("attendance asks for IC and role, so the e-sijil can be matched and picked"
   assert.deepEqual([...byEntry[75149903].options], ["Peserta", "Urus setia"]);
   assert.equal(validateField(byEntry[75149903], ""), "Sila pilih peranan anda.");
   const errors = findErrors(FORMS.attendance, { 562932983: "Siti", 1345289916: "KP Tapah" });
-  assert.deepEqual(Object.keys(errors).sort(), ["718418112", "75149903"]);
+  assert.deepEqual(Object.keys(errors).sort(), ["1133614257", "718418112", "75149903"]);
+  assert.equal(errors[1133614257], "Sila pilih jantina anda.");
+  assert.deepEqual([...byEntry[1133614257].options], ["Lelaki", "Perempuan"]);
 });
 
 test("attendance asks no email: the sijil is matched by IC only (owner 2026-11-17)", () => {
@@ -134,7 +136,8 @@ test("attendance asks no email: the sijil is matched by IC only (owner 2026-11-1
 
 test("answers go to Google as entry.<id> fields on the formResponse address", () => {
   const { FORMS, toFormBody, formResponseUrl } = loadForms();
-  const body = toFormBody(FORMS.attendance, { 562932983: "  Siti Aminah ", 718418112: "871212-08-0879", 1345289916: "KP Bidor", 75149903: "Urus setia" });
+  const body = toFormBody(FORMS.attendance, { 562932983: "  Siti Aminah ", 718418112: "871212-08-0879", 1133614257: "Perempuan", 1345289916: "KP Bidor", 75149903: "Urus setia" });
+  assert.equal(body.get("entry.1133614257"), "Perempuan");
   assert.equal(body.get("entry.75149903"), "Urus setia");
   assert.equal(body.get("entry.562932983"), "SITI AMINAH", "names are sent in capitals");
   assert.equal(body.get("entry.1345289916"), "KP Bidor");

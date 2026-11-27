@@ -7,6 +7,7 @@ const NAME_HELP = "Eja nama anda dengan betul kerana nama ini akan dicetak pada 
 const ATTENDANCE_NAME_HELP = "Tulis nama penuh anda.";
 const RATING_ENDS = ["Kurang memuaskan", "Sangat memuaskan"];
 const ROLES = ["Peserta", "Urus setia"]; // picks which e-sijil the guest gets
+const GENDERS = ["Lelaki", "Perempuan"]; // splits the Best Dress name lists (scripts/best-dress.gs)
 const CLINICS = ["KP Tapah", "KP Slim River", "KP Sungkai", "KP Bidor", "KP Tanjung Malim", "OMFS HSR", "Paeds Dental HSR"];
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const IC_PATTERN = /^\d{6}-?\d{2}-?\d{4}$/; // same rule as the Google Form
@@ -21,6 +22,7 @@ const FORMS = {
     fields: [
       { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name", uppercase: true },
       { entry: "718418112", kind: "ic", label: "No. Kad Pengenalan", help: "Untuk semakan sijil anda. Contoh: 900101-08-1234" },
+      { entry: "1133614257", kind: "choice", label: "Jantina", options: GENDERS, missing: "Sila pilih jantina anda." },
       { entry: "1345289916", kind: "select", label: "Klinik atau unit", options: CLINICS },
       { entry: "75149903", kind: "choice", label: "Peranan", options: ROLES },
     ],
@@ -50,6 +52,7 @@ function validateField(field, rawValue) {
     if (field.optional) return "";
     if (field.kind === "select") return "Sila pilih klinik atau unit.";
     if (field.kind === "rating") return "Sila pilih satu nilai, 1 hingga 5.";
+    if (field.missing) return field.missing;
     if (field.kind === "choice") return "Sila pilih peranan anda.";
     return "Sila isi ruangan ini.";
   }

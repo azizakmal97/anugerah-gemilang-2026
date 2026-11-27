@@ -13,10 +13,11 @@ Soalan untuk dua borang. Diluluskan pemilik pada 2026-11-17. Dibuat pada 2026-11
 |---|---|---|---|---|---|
 | 1 | Nama penuh | Tulis nama penuh anda. | Jawapan pendek | Ya | - |
 | 2 | No. Kad Pengenalan | Untuk semakan sijil anda. Contoh: 900101-08-1234 | Jawapan pendek (pengesahan: corak 900101-08-1234) | Ya | - |
-| 3 | Klinik atau unit | - | Dropdown | Ya | KP Tapah; KP Slim River; KP Sungkai; KP Bidor; KP Tanjung Malim; OMFS HSR; Paeds Dental HSR |
-| 4 | Peranan | - | Pilihan berganda | Ya | Peserta; Urus setia |
+| 3 | Jantina | - | Pilihan berganda | Ya | Lelaki; Perempuan |
+| 4 | Klinik atau unit | - | Dropdown | Ya | KP Tapah; KP Slim River; KP Sungkai; KP Bidor; KP Tanjung Malim; OMFS HSR; Paeds Dental HSR |
+| 5 | Peranan | - | Pilihan berganda | Ya | Peserta; Urus setia |
 
-Soalan 2 dan 4 ditambah pada P04 (`addAttendanceQuestions`). Soalan Emel dibuang pada 2026-11-17 (`removeAttendanceEmail`, keputusan pemilik). Sijil hanya dihantar kepada tetamu yang No. K/P-nya ada dalam borang ini, mengikut peranan yang dipilih.
+Soalan 2 dan 5 ditambah pada P04 (`addAttendanceQuestions`). Soalan 3 (Jantina) ditambah pada 2026-11-27 oleh fungsi yang sama supaya senarai nama Best Dress Lelaki dan Perempuan diasingkan. Soalan Emel dibuang pada 2026-11-17 (`removeAttendanceEmail`, keputusan pemilik). Sijil hanya dihantar kepada tetamu yang No. K/P-nya ada dalam borang ini, mengikut peranan yang dipilih.
 
 **Mesej selepas hantar:** Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!
 
