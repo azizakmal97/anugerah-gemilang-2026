@@ -435,7 +435,7 @@ azizakmal@moh.gov.my (check the account chip before every Run; slot moves). Depl
 Close every tab. The owner must say yes in the chat before step 2 (it sends real form answers and one
 email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-deployment first.
 
-- [ ] 1. Pre-check (read-only): `npm test`, `npm run lint`, `npm run build`; live site 200; search answers
+- [x] 1. Pre-check (read-only, passed 2026-11-28: 111 tests, lint, build, site 200, search closed, 5 triggers, 0 responses x3): `npm test`, `npm run lint`, `npm run build`; live site 200; search answers
       `{"open":false}`; Triggers page has refreshNameList, onFeedbackSubmit, recountWhileVoting,
       closeAttendanceForm, recountAfterVoting; all 3 forms have 0 responses. (Opus · low)
 - [ ] 2. Ask the owner: "OK to send test answers and one sijil email to <owner's email> now?" Wait for yes.
