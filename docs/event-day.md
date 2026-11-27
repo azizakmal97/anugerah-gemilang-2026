@@ -32,6 +32,9 @@ Set a short test window first: `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 ho
 ## 4. In the hall, 5 Dec
 
 - [ ] Before 12 pm: open the page on mobile data AND on the hotel wifi. Note which is faster.
+- [ ] Briefing for the urus setia at the door: check-ins sent before 12.00 pm do not count (no
+      vote, no e-sijil). A guest who checked in early must send attendance again after 12.00 pm.
+      The form says so on screen before 12.
 - [ ] If the internet fails: guests sign the printed attendance sheet (name, IC, Jantina, klinik,
       peranan). Best Dress falls back to paper slips. The committee types the sheet into the
       attendance form BEFORE 6 pm: answers sent after 6 pm do not count, so a guest typed in late

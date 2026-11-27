@@ -36,6 +36,10 @@ const MODES = {
   },
 };
 
+// Shown on the attendance form before 12.00 pm (a ?mod=hadir preview, a committee test, a phone
+// clock running fast): the server counts only check-ins sent from 12.00 pm (isEventTime in best-dress.gs).
+const EARLY_ATTENDANCE_NOTE = "Kehadiran yang dihantar sebelum 12.00 tengah hari tidak dikira. Sila hantar semula selepas 12.00 tengah hari.";
+
 function pickMode(now) {
   const requested = new URLSearchParams(location.search).get("mod");
   if (requested && MODES[requested]) return requested;
@@ -65,7 +69,11 @@ function renderEarlyFeedback(state) {
   renderForm(isOpen ? "feedback" : null, "maklum-balas-isi"); // forms.js
 }
 
-function renderAction(modeName) {
+function isEarlyAttendance(modeName, now) {
+  return modeName === "hadir" && now < SETTINGS.attendanceOpensAt;
+}
+
+function renderAction(modeName, isEarly = false) {
   const mode = MODES[modeName];
   const kicker = document.getElementById("action-kicker");
   const text = document.getElementById("action-text");
@@ -75,8 +83,9 @@ function renderAction(modeName) {
   text.textContent = mode.text;
   text.hidden = !mode.text;
   document.getElementById("countdown").hidden = !mode.showCountdown;
-  note.textContent = mode.note || "";
-  note.hidden = !mode.note;
+  const noteText = isEarly ? EARLY_ATTENDANCE_NOTE : mode.note || "";
+  note.textContent = noteText;
+  note.hidden = !noteText;
 
   renderForm(mode.form || null); // forms.js
 }
@@ -101,15 +110,17 @@ function setCountdownDigit(id, value) {
 }
 
 // Re-check every 30 s so an open phone flips mode at 12.00, 4.00 and 6.00 pm without a reload.
-let currentMode = null;
+let currentMode = null; // with the early-attendance flag, so the 12.00 pm note goes without a reload
 let currentVoteState = null;
 let currentEarlyFeedbackState = null;
 function tick() {
   const now = Date.now();
   const modeName = pickMode(now);
-  if (modeName !== currentMode) {
-    currentMode = modeName;
-    renderAction(modeName);
+  const isEarly = isEarlyAttendance(modeName, now);
+  const modeKey = `${modeName}${isEarly ? "-awal" : ""}`;
+  if (modeKey !== currentMode) {
+    currentMode = modeKey;
+    renderAction(modeName, isEarly);
   }
   const voteState = pickVoteState(modeName, now);
   if (voteState !== currentVoteState) {

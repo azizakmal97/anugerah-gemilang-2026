@@ -38,7 +38,7 @@ function loadApp({ search = "" } = {}) {
   };
   vm.createContext(context);
   // `const` declarations stay in the script scope, so expose what the tests need.
-  vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, pickVoteState, pickEarlyFeedbackState, renderEarlyFeedback, renderAction };`, context);
+  vm.runInContext(`${APP_SOURCE}\n;globalThis.__app = { SETTINGS, pickMode, pickVoteState, pickEarlyFeedbackState, renderEarlyFeedback, renderAction, isEarlyAttendance };`, context);
   return { app: context.__app, elements, formCalls, voteCalls, earlyFeedbackCalls };
 }
 
@@ -73,6 +73,18 @@ test("attendance time shows the attendance form, feedback time the feedback form
   app.renderAction("hadir");
   app.renderAction("selepas");
   assert.deepEqual(formCalls, ["attendance", "feedback"]);
+});
+
+test("the attendance form before 12.00 pm says such check-ins do not count", () => {
+  const { app, elements } = loadApp();
+  assert.equal(app.isEarlyAttendance("hadir", myt(11, 59)), true);
+  assert.equal(app.isEarlyAttendance("hadir", myt(12)), false);
+  assert.equal(app.isEarlyAttendance("selepas", myt(9)), false);
+  app.renderAction("hadir", true);
+  assert.match(elements["action-note"].textContent, /sebelum 12\.00 tengah hari tidak dikira/);
+  assert.equal(elements["action-note"].hidden, false);
+  app.renderAction("hadir", false);
+  assert.equal(elements["action-note"].hidden, true);
 });
 
 test("the countdown mode shows the countdown and no form", () => {
