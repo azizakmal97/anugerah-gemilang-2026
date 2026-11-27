@@ -447,7 +447,7 @@ email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-
       Voter IC ...0002 (UJIAN WANITA): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA. Own-name picks are
       dropped, so within 2 minutes "Keputusan Best Dress" must show UJIAN LELAKI 1 and UJIAN WANITA 1.
       Then a second vote from IC ...0001 must change nothing.
-- [ ] 6. Send one feedback with IC 900101-08-0001 and the owner's email. The e-sijil PDF arrives
+- [x] 6. (passed 28 Nov, owner confirmed name; "tidak ditemui" email skipped) Send one feedback with IC 900101-08-0001 and the owner's email. The e-sijil PDF arrives
       (owner confirms in chat), name printed right. A feedback with an IC not checked in gets the
       "tidak ditemui" email instead (only if the owner agrees to a second email).
 - [x] 7. (passed 28 Nov) Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
