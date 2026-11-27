@@ -439,18 +439,18 @@ email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-
       `{"open":false}`; Triggers page has refreshNameList, onFeedbackSubmit, recountWhileVoting,
       closeAttendanceForm, recountAfterVoting; all 3 forms have 0 responses. (Opus · low)
 - [ ] 2. Ask the owner: "OK to send test answers and one sijil email to <owner's email> now?" Wait for yes.
-- [ ] 3. Open a 1-hour test window: script properties `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 h (MYT, ISO with +08:00).
-- [ ] 4. Send through the real forms (same entry ids as `forms.js`): check-ins "UJIAN LELAKI" (Lelaki) and
+- [x] 3. (03:50 to 04:55 MYT, 28 Nov) Open a 1-hour test window: script properties `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 h (MYT, ISO with +08:00).
+- [x] 4. (passed 28 Nov) Send through the real forms (same entry ids as `forms.js`): check-ins "UJIAN LELAKI" (Lelaki) and
       "UJIAN WANITA" (Perempuan), test ICs 900101-08-0001 / 900101-08-0002. Within 1 minute: search
       `q=ujian&g=Lelaki` shows only UJIAN LELAKI, `g=Perempuan` only UJIAN WANITA.
-- [ ] 5. Send two votes. Voter IC ...0001 (UJIAN LELAKI): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA.
+- [x] 5. (passed 28 Nov: 1 and 1, repeat vote ignored) Send two votes. Voter IC ...0001 (UJIAN LELAKI): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA.
       Voter IC ...0002 (UJIAN WANITA): Lelaki = UJIAN LELAKI, Perempuan = UJIAN WANITA. Own-name picks are
       dropped, so within 2 minutes "Keputusan Best Dress" must show UJIAN LELAKI 1 and UJIAN WANITA 1.
       Then a second vote from IC ...0001 must change nothing.
 - [ ] 6. Send one feedback with IC 900101-08-0001 and the owner's email. The e-sijil PDF arrives
       (owner confirms in chat), name printed right. A feedback with an IC not checked in gets the
       "tidak ditemui" email instead (only if the owner agrees to a second email).
-- [ ] 7. Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
+- [x] 7. (passed 28 Nov) Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
       (warning before 12 pm shows), `?mod=selepas`; no console errors, no sideways scroll.
 - [ ] 8. Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
       check in, vote, send feedback. Report anything odd.
