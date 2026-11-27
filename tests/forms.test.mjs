@@ -173,11 +173,14 @@ test("an invalid answer is never sent and the field shows why", async () => {
   let fetched = false;
   const { submitForm } = loadForms({ fetch: async () => { fetched = true; } });
   const { form, errorNode } = fakeForm("");
-  const result = await submitForm(ONE_FIELD, form, node(), node(), () => {});
+  const status = node();
+  const result = await submitForm(ONE_FIELD, form, node(), status, () => {});
   assert.equal(result, "invalid");
   assert.equal(fetched, false);
   assert.equal(errorNode.hidden, false);
   assert.equal(errorNode.textContent, "Sila isi ruangan ini.");
+  assert.equal(status.hidden, false, "the line beside the button says something is missing");
+  assert.match(status.textContent, /belum diisi/);
 });
 
 test("the button is disabled while sending, then the thanks replace the form and its instruction", async () => {

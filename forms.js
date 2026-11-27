@@ -264,14 +264,29 @@ function showErrors(spec, form, errors) {
     });
   });
   const first = form.querySelector('[aria-invalid="true"]');
-  if (first) first.focus();
+  if (!first) return;
+  // The rating radios are hidden behind their tiles, so focus alone does not scroll on iPhone
+  // Safari: the guest at the button saw nothing happen (rehearsal 2026-11-28).
+  first.focus({ preventScroll: true });
+  const wrapper = first.closest && first.closest(".field");
+  if (wrapper && wrapper.scrollIntoView) wrapper.scrollIntoView({ block: "center" });
+}
+
+// Said beside the button too, because the first empty question may be a screen above it.
+function showMissingNotice(status) {
+  status.textContent = "Ada ruangan yang belum diisi. Sila semak tanda merah di atas.";
+  status.classList.add("is-error");
+  status.hidden = false;
 }
 
 async function submitForm(spec, form, button, status, restart, ownsInstruction = true) {
   const values = readValues(spec, form);
   const errors = findErrors(spec, values);
   showErrors(spec, form, errors);
-  if (Object.keys(errors).length) return "invalid";
+  if (Object.keys(errors).length) {
+    showMissingNotice(status);
+    return "invalid";
+  }
 
   button.disabled = true;
   button.textContent = "Menghantar…";
