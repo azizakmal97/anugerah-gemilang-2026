@@ -292,7 +292,6 @@ function cleanUpTestFeedback() {
 // clearAllTestData and press Run to end the test window, delete every answer in the three forms
 // and their response-tab rows (headers stay), forget every sijil record, drop the cached Best Dress
 // names and recount the results tab to empty. Run it again after the 3 or 4 Dec rehearsal.
-var TEST_DATA_FORM_TITLES = [ATTENDANCE_FORM_TITLE, FEEDBACK_TITLE, VOTE_FORM_TITLE];
 var OLD_NAMES_CACHE_KEYS = ['best-dress-names-v2'];
 
 function clearAllTestData() {
@@ -301,7 +300,8 @@ function clearAllTestData() {
   properties.deleteProperty(VOTE_TEST_KEY);
   Logger.log('Tetingkap ujian ditutup (' + TEST_FROM_KEY + ', ' + VOTE_TEST_KEY + ' dipadamkan).');
 
-  TEST_DATA_FORM_TITLES.forEach(function (title) {
+  // Listed here, not at the top: VOTE_FORM_TITLE comes from create-forms.gs, which tests may not load.
+  [ATTENDANCE_FORM_TITLE, FEEDBACK_TITLE, VOTE_FORM_TITLE].forEach(function (title) {
     var form = findFormNamed(title);
     var answerCount = form.getResponses().length;
     form.deleteAllResponses();
