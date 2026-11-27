@@ -426,7 +426,7 @@ Incident 2026-11-17 14:03: a mis-click hit Debug and ran `createForms` for 11 s;
 - Done 2026-11-17 21:44 (owner: "ya padam"): every answer before 5 Dec deleted from the forms' Responses: Kehadiran 3 -> 0, Maklum Balas 4 -> 0 (the owner's own and the "Ujian Laman" tests), Undian 0. Sheet tabs were already empty. TIADA_COUNT_2026-11-17 removed, names cache cleared, results recounted. Temporary function removed from Code.gs.
 - New Malay lines owed a Gemini proofread: urus setia email line "Dua e-Sijil anda dilampirkan...", replacement line "...menggantikan e-Sijil yang dihantar sebelum ini. Nama pada sijil mengikut maklum balas terbaru anda.", subject "(dikemas kini)", closed-form message "Pengesahan kehadiran sudah ditutup pada 6.00 petang, 5 Disember 2026. Terima kasih.", tab headers and notes in scripts/sijil-records.gs.
 
-### 🟡 P08 — Full rehearsal before the event (URGENT, owner 2026-11-28)
+### ✅ P08 — Full rehearsal before the event (URGENT, owner 2026-11-28)
 
 **Model:** Opus 5.5 · **Effort:** low (checks on settled code; step up to medium only if something fails)
 **Goal:** prove check-in, vote, feedback and e-sijil work end to end on the live system, then leave it clean.
@@ -452,11 +452,11 @@ email). Read `docs/event-day.md` section 3 and the memory note apps-script-live-
       "tidak ditemui" email instead (only if the owner agrees to a second email).
 - [x] 7. (passed 28 Nov) Page check at 375 px (built-in browser, no sign-in needed): `?mod=sebelum`, `?mod=hadir`
       (warning before 12 pm shows), `?mod=selepas`; no console errors, no sideways scroll.
-- [ ] 8. Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
+- [x] 8. (done 28 Nov; found: empty feedback ratings gave no message near the button, fixed in 0aa34e5) Owner phone test (owner, about 10 min): scan the QR on two phones (one iPhone if possible),
       check in, vote, send feedback. Report anything odd.
-- [ ] 9. Clean up: run `clearAllTestData` (deletes test answers, sheet rows, sijil records, cache) and
+- [x] 9. (done 28 Nov 05:42: 4 check-ins, 3 feedbacks, 5 votes, 4 sijil records cleared; 0 responses x3, search closed) Clean up: run `clearAllTestData` (deletes test answers, sheet rows, sijil records, cache) and
       delete `TEST_FROM` / `VOTE_TEST_UNTIL`. Verify 0 responses in all 3 forms and search `{"open":false}`.
-- [ ] 10. Record the result here and in `docs/event-day.md` section 3; commit, push.
+- [x] 10. Record the result here and in `docs/event-day.md` section 3; commit, push.
 
 **Also owed (separate, low):** the weekly Security Scan is red: it flags a storage key name; the fix is
 adding that name to the scan's allowlist. Needs the owner's yes. (Opus · low)

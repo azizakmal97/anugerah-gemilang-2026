@@ -23,6 +23,11 @@ After the rehearsal (section 3) the same cleanup is needed again: run `clearAllT
 
 ## 3. Rehearsal, 3 or 4 Dec (about 15 minutes, two phones)
 
+Done early on 28 Nov (P08 in PROGRESS.md): check-in, name search by gender, votes (own-name and repeat
+votes dropped), e-sijil email with the right name, pages at 375 px, owner test on two phones. One fix from it:
+a feedback sent with empty ratings now says so beside the button (0aa34e5). Test data cleared at 05:42 the
+same day. A second rehearsal on 3 or 4 Dec is optional; if run, clean up again with `clearAllTestData`.
+
 Set a short test window first: `TEST_FROM` = now, `VOTE_TEST_UNTIL` = now + 1 hour.
 
 - [ ] Phone A: open the QR link, `?mod=hadir`. Check in as "UJIAN LELAKI" (Lelaki).
