@@ -20,8 +20,10 @@ function loadTally(properties = {}) {
   vm.runInContext(read("best-dress-results.gs"), context);
   // JSON round trip: vm arrays fail deepEqual across realms.
   // Same rule as production: the day, plus the committee's test window when its properties are set.
-  return (votes, attendees, isCountedTime = context.countedTimeRule()) =>
+  const tally = (votes, attendees, isCountedTime = context.countedTimeRule()) =>
     JSON.parse(JSON.stringify(context.tallyVotes(votes, attendees, isCountedTime)));
+  tally.rule = (nowMs) => context.countedTimeRule(nowMs); // the rule as it reads at a given moment
+  return tally;
 }
 
 const attendee = (name, ic, timestamp = OPEN + MINUTE) => ({ name, ic, timestamp });
@@ -90,8 +92,18 @@ test("votes and attendance inside the committee's test window count only while i
   const inWindow = Date.parse("2026-11-22T10:00:00+08:00");
   const people = ATTENDEES.map((person) => ({ ...person, timestamp: inWindow }));
   const votes = [vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah", inWindow)];
-  assert.equal(loadTally(properties)(votes, people).voters, 1);
+  const tally = loadTally(properties);
+  assert.equal(tally(votes, people, tally.rule(inWindow + MINUTE)).voters, 1);
   assert.equal(loadTally()(votes, people).voters, 0); // window deleted: the test vote is gone
+});
+
+test("a test window left set stops counting its answers once it has ended", () => {
+  const properties = { TEST_FROM: "2026-11-21T12:00:00+08:00", VOTE_TEST_UNTIL: "2026-11-30T23:59:00+08:00" };
+  const inWindow = Date.parse("2026-11-22T10:00:00+08:00");
+  const people = ATTENDEES.map((person) => ({ ...person, timestamp: inWindow }));
+  const votes = [vote("900101-08-1111", "Ahmad Zaki", "Siti Aminah", inWindow)];
+  const tally = loadTally(properties);
+  assert.equal(tally(votes, people, tally.rule(OPEN + MINUTE)).voters, 0, "on the day, nobody deleted the window");
 });
 
 test("attendance sent outside 5 Dec, 12.00 to 6.00 pm, makes neither a voter nor a pick", () => {

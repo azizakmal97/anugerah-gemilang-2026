@@ -88,6 +88,11 @@ test("attendance sent inside the test window is searchable only while the window
   assert.deepEqual(loadSearch({ attendees }).searchReply("siti", OPEN + 1).names, []);
 });
 
+test("a test window nobody deleted no longer counts its check-ins on the day", () => {
+  const attendees = [guest("Siti Ujian", "900101084444", TEST_FROM + 60 * 1000), guest("Siti Hadir")];
+  assert.deepEqual(loadSearch({ attendees, properties: TEST_WINDOW }).searchReply("siti", OPEN + 1).names, ["Siti Hadir"]);
+});
+
 test("only attendance sent on 5 Dec, 12.00 to 6.00 pm, is searchable", () => {
   const attendees = [
     guest("Siti Awal", "900101081111", Date.parse("2026-11-17T20:00:00+08:00")),

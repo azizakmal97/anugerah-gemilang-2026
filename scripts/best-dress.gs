@@ -22,8 +22,9 @@
  * VOTE_TEST_UNTIL, for example 2026-11-21T12:00:00+08:00 and
  * 2026-11-30T23:59:00+08:00. Inside that window the search is open and every
  * answer sent in it counts like the day: names show in search, votes are
- * tallied and feedback gets a sijil. Delete both properties when testing ends:
- * every test answer then stops counting at once (see countedTimeRule).
+ * tallied and feedback gets a sijil. Test answers stop counting once
+ * VOTE_TEST_UNTIL has passed, even if nobody deletes the properties; delete
+ * both anyway when testing ends (see countedTimeRule).
  */
 
 // The one rule for which answers count (owner 2026-11-17, audit: the forms are public, so anyone
@@ -66,23 +67,26 @@ function searchReply(query, gender, nowMs) {
   if (!isVoteOpen(nowMs)) return { open: false, names: [] };
   var key = nameKey(query.slice(0, SEARCH_MAX_QUERY));
   if (key.replace(/ /g, '').length < SEARCH_MIN_LETTERS) return { open: true, names: [] };
-  return { open: true, names: matchNames(attendeeNames(), key, gender) };
+  return { open: true, names: matchNames(attendeeNames(nowMs), key, gender) };
 }
 
 function isVoteOpen(nowMs) {
-  return countedTimeRule()(nowMs);
+  return countedTimeRule(nowMs)(nowMs);
 }
 
 // Which answers count: those sent on the day, plus those sent inside the committee's test window
-// while it is set. Script properties are read once here, not once per answer.
-function countedTimeRule() {
+// while that window is still running (nowMs, default now). A window left set by mistake stops
+// counting its answers the moment it ends, so test rows can never reach the day's results.
+// Script properties are read once here, not once per answer.
+function countedTimeRule(nowMs) {
+  var now = nowMs === undefined ? Date.now() : nowMs;
   var properties = PropertiesService.getScriptProperties();
   var testFrom = Date.parse(properties.getProperty(TEST_FROM_KEY) || '');
   var testUntil = Date.parse(properties.getProperty(VOTE_TEST_KEY) || '');
-  var hasTestWindow = !isNaN(testFrom) && !isNaN(testUntil);
+  var testRunning = !isNaN(testFrom) && !isNaN(testUntil) && now < testUntil;
   return function (ms) {
     if (isEventTime(ms)) return true;
-    return hasTestWindow && ms >= testFrom && ms < testUntil;
+    return testRunning && ms >= testFrom && ms < testUntil;
   };
 }
 
@@ -105,7 +109,7 @@ function matchNames(attendees, key, gender) {
 
 // Distinct attendees ({ name, gender }) from attendance that counts (countedTimeRule), sorted.
 // Read from the cache; on a miss, one search at a time rebuilds it (the others wait, then reuse it).
-function attendeeNames() {
+function attendeeNames(nowMs) {
   var cache = CacheService.getScriptCache();
   var cached = readNameList(cache);
   if (cached) return cached.attendees;
@@ -114,7 +118,7 @@ function attendeeNames() {
   if (!lock.tryLock(NAMES_LOCK_WAIT_MS)) throw new Error('Name list is being rebuilt; try again');
   try {
     cached = readNameList(cache); // another search may have rebuilt it while this one waited
-    return cached ? cached.attendees : storeNameList(cache, buildNameList());
+    return cached ? cached.attendees : storeNameList(cache, buildNameList(nowMs));
   } finally {
     lock.releaseLock();
   }
@@ -156,10 +160,10 @@ function storeNameList(cache, list) {
   return list.attendees;
 }
 
-// Returns {count: responses read, attendees}. Reads the form; stores nothing.
-function buildNameList() {
+// Returns {count: responses read, attendees}. Reads the form; stores nothing. nowMs: see countedTimeRule.
+function buildNameList(nowMs) {
   var byKey = {};
-  var isCounted = countedTimeRule();
+  var isCounted = countedTimeRule(nowMs);
   var responses = findFormNamed(ATTENDANCE_FORM_TITLE).getResponses();
   responses.forEach(function (response) {
     if (!isCounted(response.getTimestamp().getTime())) return;
