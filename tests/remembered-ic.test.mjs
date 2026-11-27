@@ -8,6 +8,7 @@ import vm from "node:vm";
 const FORMS_SOURCE = readFileSync(new URL("../forms.js", import.meta.url), "utf8");
 const REMEMBERED_SOURCE = readFileSync(new URL("../remembered-ic.js", import.meta.url), "utf8");
 const IC = "871212-08-0879";
+const NAME = "Ali  bin Abu";
 const OTHER_IC = "900101-08-1234";
 
 // A phone's browser storage; `broken` acts like a private tab that refuses it.
@@ -120,6 +121,30 @@ test("the line shows only the last 4 digits, never the full IC", () => {
   assert.ok(!line.includes("871212"));
 });
 
+test("on a shared phone the line names whose IC it is, for the vote and for feedback", () => {
+  const { rememberIc, fillRememberedIc } = loadRemembered();
+  rememberIc(IC, NAME);
+  const vote = fakeIcInput();
+  fillRememberedIc(vote.input, "Undi");
+  assert.equal(vote.field.nextElementSibling.querySelector(".ic-text").textContent, "Undi sebagai ALI BIN ABU (K/P berakhir dengan 0879).");
+  const feedback = fakeIcInput();
+  fillRememberedIc(feedback.input, "Beri maklum balas");
+  assert.equal(feedback.field.nextElementSibling.querySelector(".ic-text").textContent, "Beri maklum balas sebagai ALI BIN ABU (K/P berakhir dengan 0879).");
+});
+
+test("a second guest's IC never shows with the first guest's name", () => {
+  const storage = fakeStorage();
+  const { rememberIc, forgetIc, fillRememberedIc } = loadRemembered({ storage });
+  rememberIc(IC, NAME);
+  rememberIc(OTHER_IC); // a check-in that sent no name
+  const card = fakeIcInput();
+  fillRememberedIc(card.input, "Undi");
+  assert.equal(card.field.nextElementSibling.querySelector(".ic-text").textContent, "No. K/P anda (berakhir 1234) diambil daripada pendaftaran.");
+  rememberIc(IC, NAME);
+  forgetIc();
+  assert.equal(storage.saved.size, 0, "the name goes with the IC");
+});
+
 test("Tukar brings the field back", () => {
   const { rememberIc, fillRememberedIc } = loadRemembered();
   rememberIc(IC);
@@ -161,9 +186,9 @@ test("forgetting clears the vote card only if it still holds the remembered IC",
 
 test("a saved IC is ignored after 31 Dec, and so is a saved value that is not an IC", () => {
   const storage = fakeStorage();
-  loadRemembered({ storage }).rememberIc(IC);
+  loadRemembered({ storage }).rememberIc(IC, NAME);
   assert.equal(loadRemembered({ storage, now: Date.UTC(2026, 11, 31, 16, 0) }).rememberedIc(), "");
-  assert.equal(storage.saved.size, 0, "the expired IC is removed");
+  assert.equal(storage.saved.size, 0, "the expired IC is removed, and its name with it");
 
   storage.setItem("anugerah2026-ic", "<b>hello</b>");
   assert.equal(loadRemembered({ storage }).rememberedIc(), "");

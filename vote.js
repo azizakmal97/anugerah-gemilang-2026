@@ -185,7 +185,7 @@ function buildVoteForm() {
       form.append(buildField({ ...field, entry: `undi-${field.key}` })); // forms.js; the id only names the DOM nodes
     }
   });
-  fillRememberedIc(form.querySelector("#f-undi-ic"));
+  fillRememberedIc(form.querySelector("#f-undi-ic"), "Undi");
   const button = el("button", { class: "btn", type: "submit", text: "Hantar Undian" });
   const status = el("p", { class: "form-status", role: "status", hidden: "" });
   form.prepend(el("p", { class: "pick-how-to", text: PICK_HOW_TO }));

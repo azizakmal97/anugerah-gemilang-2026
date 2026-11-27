@@ -18,6 +18,7 @@ const FORMS = {
     settingsKey: "attendanceFormUrl",
     submitLabel: "Sahkan Kehadiran",
     savesIcEntry: "718418112", // remembered once attendance is sent (remembered-ic.js)
+    savesNameEntry: "562932983", // kept with the IC, so a shared phone shows whose IC it is
     thanks: "Terima kasih. Kehadiran anda sudah direkod. Selamat menikmati majlis!",
     fields: [
       { entry: "562932983", kind: "text", label: "Nama penuh", help: ATTENDANCE_NAME_HELP, autocomplete: "name", uppercase: true },
@@ -144,7 +145,7 @@ function renderForm(formName, holderId = "borang") {
     return;
   }
   holder.append(buildForm(spec, () => renderForm(formName, holderId), ownsInstruction));
-  if (spec.fillsIcEntry) fillRememberedIc(document.getElementById(`f-${spec.fillsIcEntry}`)); // remembered-ic.js
+  if (spec.fillsIcEntry) fillRememberedIc(document.getElementById(`f-${spec.fillsIcEntry}`), "Beri maklum balas"); // remembered-ic.js
 }
 
 function buildForm(spec, restart, ownsInstruction) {
@@ -270,7 +271,7 @@ async function submitForm(spec, form, button, status, restart, ownsInstruction =
     showSendError(status, viewUrl);
     return "failed";
   }
-  if (spec.savesIcEntry) rememberIc(values[spec.savesIcEntry]);
+  if (spec.savesIcEntry) rememberIc(values[spec.savesIcEntry], values[spec.savesNameEntry]);
   if (spec.fillsIcEntry) forgetIc();
   showThanks(form, spec.thanks, ownsInstruction, () => {
     if (spec.savesIcEntry) forgetIc(); // "Hantar untuk orang lain": the next person starts empty

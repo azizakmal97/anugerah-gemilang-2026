@@ -41,7 +41,8 @@ No dependencies. `package-lock.json` exists only because CI runs `npm ci`.
 - Plain browser JS, classic scripts, no modules, no bundler. Globals live in `app.js`, `forms.js`, `remembered-ic.js`
   and `vote.js` only (that load order; `app.js` calls `renderForm` and `renderVote`).
 - The attendance IC is kept in the phone's browser by `remembered-ic.js` (spec `specs/remembered-ic.md`, owner
-  2026-11-17) so the vote and feedback start filled. The page shows only its last 4 digits.
+  2026-11-17) so the vote and feedback start filled. The page shows only its last 4 digits, beside the
+  name typed at attendance (kept with it, so a shared phone shows whose IC it is).
 - `app.js` = behaviour that matters (tested). `effects.js` = motion; the page must work if it fails.
 - Every motion respects `prefers-reduced-motion`.
 - Malay copy: never a comma before "dan", "atau", "serta", "untuk", "oleh". No em dash.
