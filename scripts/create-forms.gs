@@ -12,7 +12,7 @@
  * addIcQuestion instead and press Run. It adds "No. Kad Pengenalan" after
  * "Nama penuh" and skips itself if the question is already there.
  *
- * Attendance form already exists and still needs IC and Peranan? Pick
+ * Attendance form already exists and still needs IC, Jantina or Peranan? Pick
  * addAttendanceQuestions and press Run. Safe to run twice.
  *
  * Attendance form still asks for Emel? Pick removeAttendanceEmail and press
@@ -40,6 +40,8 @@ var IC_HELP = 'Untuk dicetak pada sijil. Contoh: 900101-08-1234';
 var ATTENDANCE_IC_HELP = 'Untuk semakan sijil anda. Contoh: 900101-08-1234';
 var ROLE_TITLE = 'Peranan';
 var ROLES = ['Peserta', 'Urus setia'];
+var GENDER_TITLE = 'Jantina'; // read by attendeeNames in best-dress.gs to split the vote lists
+var GENDERS = ['Lelaki', 'Perempuan'];
 var IC_PATTERN = '^\\d{6}-?\\d{2}-?\\d{4}$';
 var IC_PATTERN_HELP = 'Format: 900101-08-1234';
 var ATTENDANCE_TITLE = 'Kehadiran Majlis Anugerah Gemilang 2026';
@@ -119,6 +121,7 @@ function buildAttendanceForm() {
 
   addShortText(form, 'Nama penuh', ATTENDANCE_NAME_HELP);
   addIcItem(form, ATTENDANCE_IC_HELP);
+  addGenderItem(form);
   form.addListItem()
     .setTitle('Klinik atau unit')
     .setChoiceValues(CLINICS)
@@ -195,6 +198,13 @@ function addRoleItem(form) {
     .setRequired(true);
 }
 
+function addGenderItem(form) {
+  return form.addMultipleChoiceItem()
+    .setTitle(GENDER_TITLE)
+    .setChoiceValues(GENDERS)
+    .setRequired(true);
+}
+
 // One-off for the feedback form that already exists. Safe to run twice.
 function addIcQuestion() {
   var form = findFormByTitle(FEEDBACK_TITLE);
@@ -217,13 +227,19 @@ function addIcQuestion() {
 
 // One-off for the attendance form that already exists (P04). The e-sijil goes only to
 // guests found here, so it needs the IC to match on and the role that picks the sijil.
-// Adds IC after "Nama penuh" and Peranan after "Klinik atau unit". Safe to run twice.
+// Adds IC after "Nama penuh", Jantina after IC (owner 2026-11-27: so the Best Dress Lelaki list
+// shows only men) and Peranan after "Klinik atau unit". Safe to run twice.
 function addAttendanceQuestions() {
   var form = findFormByTitle(ATTENDANCE_TITLE);
   if (!findItem(form, IC_TITLE)) {
     var icItem = addIcItem(form, ATTENDANCE_IC_HELP);
     form.moveItem(icItem.getIndex(), requireItem(form, 'Nama penuh').getIndex() + 1);
     Logger.log('Soalan "' + IC_TITLE + '" ditambah selepas "Nama penuh".');
+  }
+  if (!findItem(form, GENDER_TITLE)) {
+    var genderItem = addGenderItem(form);
+    form.moveItem(genderItem.getIndex(), requireItem(form, IC_TITLE).getIndex() + 1);
+    Logger.log('Soalan "' + GENDER_TITLE + '" ditambah selepas "' + IC_TITLE + '".');
   }
   if (!findItem(form, ROLE_TITLE)) {
     var roleItem = addRoleItem(form);

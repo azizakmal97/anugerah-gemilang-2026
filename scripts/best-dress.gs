@@ -3,6 +3,8 @@
  *
  * A web app the event page calls while a guest types a name. It answers with
  * at most 10 names of people who confirmed attendance, only after 3 letters,
+ * only of the asked gender (g=Lelaki or g=Perempuan; a guest with no Jantina
+ * answer, such as a test row sent before the question existed, shows in both),
  * and only while voting is open (12.00 pm to 6.00 pm, 5 Dec 2026). The reply
  * holds names only: never an IC, never an email, never the full list.
  *
@@ -40,19 +42,19 @@ var TEST_FROM_KEY = 'TEST_FROM';
 var SEARCH_MIN_LETTERS = 3;
 var SEARCH_MAX_RESULTS = 10;
 var SEARCH_MAX_QUERY = 40;
-var NAMES_CACHE_KEY = 'best-dress-names';
+var NAMES_CACHE_KEY = 'best-dress-names-v2'; // v2: entries carry the guest's Jantina
 var NAMES_CACHE_SECONDS = 300; // a guest who confirms attendance shows up in search within 5 minutes
 
 function doGet(e) {
-  var query = String((e && e.parameter && e.parameter.q) || '');
-  return jsonReply(searchReply(query, Date.now()));
+  var parameters = (e && e.parameter) || {};
+  return jsonReply(searchReply(String(parameters.q || ''), String(parameters.g || ''), Date.now()));
 }
 
-function searchReply(query, nowMs) {
+function searchReply(query, gender, nowMs) {
   if (!isVoteOpen(nowMs)) return { open: false, names: [] };
   var key = nameKey(query.slice(0, SEARCH_MAX_QUERY));
   if (key.replace(/ /g, '').length < SEARCH_MIN_LETTERS) return { open: true, names: [] };
-  return { open: true, names: matchNames(attendeeNames(), key) };
+  return { open: true, names: matchNames(attendeeNames(), key, gender) };
 }
 
 function isVoteOpen(nowMs) {
@@ -77,15 +79,19 @@ function nameKey(text) {
   return String(text).toUpperCase().replace(/[^A-Z ]/g, '').replace(/ +/g, ' ').trim();
 }
 
-function matchNames(names, key) {
+// attendees: [{ name, gender }]. An unknown gender in the query (or none) keeps everyone.
+function matchNames(attendees, key, gender) {
+  var byGender = gender === 'Lelaki' || gender === 'Perempuan';
   var found = [];
-  for (var i = 0; i < names.length && found.length < SEARCH_MAX_RESULTS; i++) {
-    if (nameKey(names[i]).indexOf(key) !== -1) found.push(names[i]);
+  for (var i = 0; i < attendees.length && found.length < SEARCH_MAX_RESULTS; i++) {
+    var attendee = attendees[i];
+    if (byGender && attendee.gender && attendee.gender !== gender) continue;
+    if (nameKey(attendee.name).indexOf(key) !== -1) found.push(attendee.name);
   }
   return found;
 }
 
-// Distinct names from attendance that counts (countedTimeRule), sorted, cached so 125 phones typing at once do not reread the form.
+// Distinct attendees ({ name, gender }) from attendance that counts (countedTimeRule), sorted, cached so 125 phones typing at once do not reread the form.
 function attendeeNames() {
   var cache = CacheService.getScriptCache();
   var cached = cache.get(NAMES_CACHE_KEY);
@@ -95,13 +101,14 @@ function attendeeNames() {
   var isCounted = countedTimeRule();
   findFormNamed(ATTENDANCE_FORM_TITLE).getResponses().forEach(function (response) {
     if (!isCounted(response.getTimestamp().getTime())) return;
-    var name = String(readAnswers(response)['Nama penuh'] || '').replace(/\s+/g, ' ').trim();
+    var answers = readAnswers(response);
+    var name = String(answers['Nama penuh'] || '').replace(/\s+/g, ' ').trim();
     var key = nameKey(name);
-    if (key && !byKey[key]) byKey[key] = name;
+    if (key && !byKey[key]) byKey[key] = { name: name, gender: String(answers['Jantina'] || '') };
   });
-  var names = Object.keys(byKey).sort().map(function (key) { return byKey[key]; });
-  cache.put(NAMES_CACHE_KEY, JSON.stringify(names), NAMES_CACHE_SECONDS);
-  return names;
+  var attendees = Object.keys(byKey).sort().map(function (key) { return byKey[key]; });
+  cache.put(NAMES_CACHE_KEY, JSON.stringify(attendees), NAMES_CACHE_SECONDS);
+  return attendees;
 }
 
 function jsonReply(body) {

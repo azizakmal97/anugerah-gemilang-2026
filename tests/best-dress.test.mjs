@@ -33,13 +33,15 @@ function loadSearch({ attendees = [], properties = {} } = {}) {
   vm.createContext(context);
   vm.runInContext(SOURCE, context);
   // JSON round trip: the reply goes out as JSON anyway, and vm arrays fail deepEqual across realms.
-  const searchReply = (query, nowMs) => JSON.parse(JSON.stringify(context.searchReply(query, nowMs)));
+  // gender is optional here, so the older tests read as before: no g sent keeps every guest.
+  const searchReply = (query, nowMs, gender = "") => JSON.parse(JSON.stringify(context.searchReply(query, gender, nowMs)));
   return { searchReply, formReads: () => formReads };
 }
 
 // readAnswers is faked as identity, so one object is both the response and its answers.
-const guest = (name, ic = "900101081234", sentAt = OPEN + 60 * 1000) => ({
+const guest = (name, ic = "900101081234", sentAt = OPEN + 60 * 1000, jantina = "") => ({
   "Nama penuh": name,
+  ...(jantina && { Jantina: jantina }),
   "No. Kad Pengenalan": ic,
   Peranan: "Peserta",
   getTimestamp: () => new Date(sentAt),
@@ -126,4 +128,21 @@ test("the attendance list is read once and then served from the cache", () => {
   searchReply("siti", OPEN);
   searchReply("amin", OPEN);
   assert.equal(formReads(), 1);
+});
+
+test("a gendered search lists only that gender, plus guests who never answered Jantina", () => {
+  const attendees = [
+    guest("Ahmad Lelaki", "900101081111", OPEN + 1, "Lelaki"),
+    guest("Ahmad Perempuan", "900101082222", OPEN + 1, "Perempuan"),
+    guest("Ahmad Lama", "900101083333", OPEN + 1),
+  ];
+  const { searchReply } = loadSearch({ attendees });
+  assert.deepEqual(searchReply("ahmad", OPEN + 2, "Lelaki").names, ["Ahmad Lama", "Ahmad Lelaki"]);
+  assert.deepEqual(searchReply("ahmad", OPEN + 2, "Perempuan").names, ["Ahmad Lama", "Ahmad Perempuan"]);
+  assert.equal(searchReply("ahmad", OPEN + 2, "x").names.length, 3, "an unknown g filters nothing");
+});
+
+test("the reply never carries a guest's Jantina, only names", () => {
+  const { searchReply } = loadSearch({ attendees: [guest("Siti Aminah", "900101081234", OPEN + 1, "Perempuan")] });
+  assert.deepEqual(searchReply("siti", OPEN + 2, "Perempuan"), { open: true, names: ["Siti Aminah"] });
 });

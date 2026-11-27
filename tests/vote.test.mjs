@@ -183,3 +183,10 @@ function loadVoteHelpers() {
   vm.runInContext(`${FORMS_SOURCE}\n${VOTE_SOURCE}\n;globalThis.__h = { cachedMatches };`, context);
   return context.__h;
 }
+
+test("each name search asks for its own gender's list", async () => {
+  let asked = "";
+  const fetch = async (url) => { asked = url; return { ok: true, json: async () => ({ open: true, names: [] }) }; };
+  await loadVote({ fetch }).searchNames("siti", "Perempuan");
+  assert.equal(asked, `${READY.voteSearchUrl}?q=siti&g=Perempuan`);
+});

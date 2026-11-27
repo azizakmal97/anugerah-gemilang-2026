@@ -24,8 +24,9 @@ const VOTE_CLOSED_TEXT = "Undian Best Dress sudah ditutup. Pemenang akan diumumk
 const VOTE = {
   thanks: "Terima kasih. Undian anda sudah diterima.",
   fields: [
-    { key: "lelaki", entry: "1108392799", kind: "pick", label: "Lelaki", help: PICK_HELP },
-    { key: "perempuan", entry: "2135311797", kind: "pick", label: "Perempuan", help: PICK_HELP },
+    // gender matches the attendance form's Jantina answer, so each list holds only that gender
+    { key: "lelaki", entry: "1108392799", kind: "pick", label: "Lelaki", gender: "Lelaki", help: PICK_HELP },
+    { key: "perempuan", entry: "2135311797", kind: "pick", label: "Perempuan", gender: "Perempuan", help: PICK_HELP },
     { key: "ic", entry: "1013454233", kind: "ic", label: "No. Kad Pengenalan anda", help: "Untuk semakan satu undi bagi setiap orang. Contoh: 900101-08-1234" },
   ],
 };
@@ -81,11 +82,13 @@ function cachedMatches(cache, key) {
 }
 
 // The reply is shaped by our own web app, but it still crosses the network: keep strings only.
-async function searchNames(query) {
+// gender ("Lelaki" or "Perempuan") keeps the list to that gender; leave it out for the open-check.
+async function searchNames(query, gender = "") {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), VOTE_SEARCH_TIMEOUT_MS);
   try {
-    const response = await fetch(`${SETTINGS.voteSearchUrl}?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+    const genderPart = gender ? `&g=${encodeURIComponent(gender)}` : "";
+    const response = await fetch(`${SETTINGS.voteSearchUrl}?q=${encodeURIComponent(query)}${genderPart}`, { signal: controller.signal });
     if (!response.ok) throw new Error(`Name search answered ${response.status}`);
     const reply = await response.json();
     const names = Array.isArray(reply.names) ? reply.names.filter((name) => typeof name === "string") : [];
@@ -105,7 +108,8 @@ function voteNotOpenReason(now) {
 
 // ----- DOM -----
 
-const voteNameCache = new Map(); // query key -> names, kept for the page's life (see cachedMatches)
+// One cache per gender (query key -> names), kept for the page's life (see cachedMatches).
+const voteNameCaches = { Lelaki: new Map(), Perempuan: new Map() };
 let voteRenderId = 0; // each render bumps it, so an older check that answers late changes nothing
 
 // state: "hidden" | "open" | "closed", picked by pickVoteState in app.js.
@@ -204,6 +208,7 @@ function buildPickField(field) {
   ]);
 
   const pick = { wrapper, input, errorNode, chosen: "" };
+  const nameCache = voteNameCaches[field.gender];
   let timer = null;
   let latest = 0; // only the newest search may fill the list, however the replies arrive
 
@@ -231,8 +236,8 @@ function buildPickField(field) {
 
   const runSearch = async (query, ticket) => {
     try {
-      const reply = await searchNames(query);
-      if (reply.open) voteNameCache.set(nameKey(query), reply.names);
+      const reply = await searchNames(query, field.gender);
+      if (reply.open) nameCache.set(nameKey(query), reply.names);
       if (ticket !== latest) return;
       if (!reply.open) {
         showVoteNotOpen();
@@ -259,7 +264,7 @@ function buildPickField(field) {
       status.textContent = "";
       return;
     }
-    const cached = cachedMatches(voteNameCache, nameKey(query));
+    const cached = cachedMatches(nameCache, nameKey(query));
     if (cached.complete) {
       showNames(cached.names);
       if (!cached.names.length) showStatus("Nama tidak ditemui. Pastikan dia sudah sahkan kehadiran.");
